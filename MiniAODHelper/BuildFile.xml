@@ -1,0 +1,23 @@
+<use name="CommonTools/Utils"/>
+<use name="DataFormats/FWLite"/>
+<use name="DataFormats/Math"/>
+<use name="root"/>
+<use name="roottmva"/>
+<use name="FWCore/Framework"/>
+<use name="FWCore/PluginManager"/>
+<use name="FWCore/ParameterSet"/>
+<use name="DataFormats/BeamSpot"/>
+<use name="DataFormats/Candidate"/>
+<use name="DataFormats/HepMCCandidate"/>
+<use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/RecoCandidate"/>
+<use name="DataFormats/VertexReco"/>
+<use name="PhysicsTools/Utilities"/>
+<use name="SimDataFormats/PileupSummaryInfo"/>
+<use name="HLTrigger/HLTcore"/>
+<use name="JetMETCorrections/Objects"/>
+<use name="CondFormats/JetMETObjects"/>
+<export>
+  <lib   name="1"/>
+</export>
+
