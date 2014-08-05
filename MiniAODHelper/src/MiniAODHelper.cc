@@ -104,14 +104,14 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
 
 
 std::vector<pat::Muon> 
-MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const muonID::muonID iMuonID){
+MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID){
 
   CheckSetUp();
 
   std::vector<pat::Muon> selectedMuons;
 
   for( std::vector<pat::Muon>::const_iterator it = inputMuons.begin(), ed = inputMuons.end(); it != ed; ++it ){
-    if( isGoodMuon(*it,iMuonID) ) selectedMuons.push_back(*it);
+    if( isGoodMuon(*it,iMinPt,iMuonID) ) selectedMuons.push_back(*it);
   }
 
   return selectedMuons;
@@ -119,14 +119,14 @@ MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const 
 
 
 std::vector<pat::Electron> 
-MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const electronID::electronID iElectronID){
+MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const float iMinPt, const electronID::electronID iElectronID){
 
   CheckSetUp();
 
   std::vector<pat::Electron> selectedElectrons;
 
   for( std::vector<pat::Electron>::const_iterator it = inputElectrons.begin(), ed = inputElectrons.end(); it != ed; ++it ){
-    if( isGoodElectron(*it,iElectronID) ) selectedElectrons.push_back(*it);
+    if( isGoodElectron(*it,iMinPt,iElectronID) ) selectedElectrons.push_back(*it);
   }
 
   return selectedElectrons;
@@ -217,31 +217,15 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets){
 
 
 bool 
-MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const muonID::muonID iMuonID){
+MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muonID::muonID iMuonID){
 
   CheckVertexSetUp();
 
-  double minTightMuonPt = 30.;
-  double minLooseMuonPt = 10.;
+  double minMuonPt = iMinPt;
 
   float maxLooseMuonAbsEta = 2.5;
   float maxTightMuonAbsEta = 2.1;
 
-  switch(analysis){
-  case analysisType::LJ:
-    minTightMuonPt = 30.;
-    break;
-  case analysisType::TauLJ:
-  case analysisType::TauDIL:
-    minTightMuonPt = 20.;
-    break;
-  case analysisType::DIL:
-    minTightMuonPt = 20.;
-    break;
-  default:
-    ThrowFatalError("analysis != analysisType::LJ, analysisType::DIL, analysisType::Tau. Check your code.");
-    break;
-  }
 
   // Be skeptical about this muon making it through
   bool passesKinematics	= false;
@@ -266,13 +250,13 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const muonID::muonID iMuonID){
   case muonID::muonPtEtaIsoTrackerOnly:
   case muonID::muonNoCuts:
   case muonID::muonLoose:
-    passesKinematics = ((iMuon.pt() >= minLooseMuonPt) && (fabs(iMuon.eta()) <= maxLooseMuonAbsEta));
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxLooseMuonAbsEta));
     passesIso        = (GetMuonRelIso(iMuon) < 0.200);
     isPFMuon         = true;
     passesID         = (( iMuon.isGlobalMuon() || iMuon.isTrackerMuon() ) && isPFMuon);
     break;
   case muonID::muonTight:
-    passesKinematics = ((iMuon.pt() >= minTightMuonPt) && (fabs(iMuon.eta()) <= maxTightMuonAbsEta));
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxTightMuonAbsEta));
     passesIso        = (GetMuonRelIso(iMuon) < 0.120);
     isPFMuon         = true;
 
@@ -303,31 +287,15 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const muonID::muonID iMuonID){
 
 
 bool 
-MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const electronID::electronID iElectronID){
+MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const electronID::electronID iElectronID){
 
   CheckVertexSetUp();
 
-  double minTightElectronPt = 30.;
-  double minLooseElectronPt = 10.;
+  double minElectronPt = iMinPt;
 
   float maxLooseElectronAbsEta = 2.5;
   float maxTightElectronAbsEta = 2.5;
 
-  switch(analysis){
-  case analysisType::LJ:
-    minTightElectronPt = 30.;
-    break;
-  case analysisType::TauLJ:
-  case analysisType::TauDIL:
-    minTightElectronPt = 20.;
-    break;
-  case analysisType::DIL:
-    minTightElectronPt = 20.;
-    break;
-  default:
-    ThrowFatalError("analysis != analysisType::LJ, analysisType::DIL, analysisType::Tau. Check your code.");
-    break;
-  }
 
   // Be skeptical about this electron making it through
   bool passesKinematics	= false;
@@ -367,13 +335,13 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const electronID::
   case electronID::electronLooseMinusTrigPresel:
   case electronID::electronNoCuts:
   case electronID::electronLoose:
-    passesKinematics = ((iElectron.pt() >= minLooseElectronPt) && (fabs(iElectron.eta()) <= maxLooseElectronAbsEta) && !inCrack);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxLooseElectronAbsEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.200);
     passesID         = ( passMVAId53x && no_exp_inner_trkr_hits && d04 && notConv && myTrigPresel );
     break;
   case electronID::electronTightMinusTrigPresel:
   case electronID::electronTight:
-    passesKinematics = ((iElectron.pt() >= minTightElectronPt) && (fabs(iElectron.eta()) <= maxTightElectronAbsEta) && !inCrack);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxTightElectronAbsEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.100);
     passesID         = ( id && no_exp_inner_trkr_hits && myTrigPresel );
     break;

@@ -474,7 +474,7 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   std::vector<pat::Muon> selectedMuons;
   if( pfmuons.isValid() ){
-    selectedMuons = miniAODhelper.GetSelectedMuons(*pfmuons, muonID::muonTight);
+    selectedMuons = miniAODhelper.GetSelectedMuons(*pfmuons, 30., muonID::muonTight);
 
     for( std::vector<pat::Muon>::const_iterator pfmu = pfmuons->begin(); pfmu!=pfmuons->end(); ++pfmu ){
       int ncut = 0;
@@ -564,7 +564,7 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   std::vector<pat::Electron> selectedElectrons;
   if( pfelectrons.isValid() ){
-    selectedElectrons = miniAODhelper.GetSelectedElectrons(*pfelectrons, electronID::electronTight);
+    selectedElectrons = miniAODhelper.GetSelectedElectrons(*pfelectrons, 30., electronID::electronTight);
     for( std::vector<pat::Electron>::const_iterator pfele = pfelectrons->begin(); pfele!=pfelectrons->end(); ++pfele ){
       int ncut = 0;
       h_electron_selection->Fill(0.5+ncut++, 1);
@@ -698,7 +698,7 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   numAK4Jets_noTightLeptons_ += int( cleanSelectedJets.size() );
 
   std::vector<pat::Electron> electronsNoMu = miniAODhelper.RemoveOverlaps(selectedMuons, *pfelectrons);
-  std::vector<pat::Electron> cleanSelectedElectrons = miniAODhelper.GetSelectedElectrons(electronsNoMu, electronID::electronTight);
+  std::vector<pat::Electron> cleanSelectedElectrons = miniAODhelper.GetSelectedElectrons(electronsNoMu, 30., electronID::electronTight);
 
   numCleanTightElectrons_ += int( cleanSelectedElectrons.size() );
 
