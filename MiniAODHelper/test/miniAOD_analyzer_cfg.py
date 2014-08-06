@@ -4,6 +4,7 @@ process = cms.Process("MAOD")
 
 # initialize MessageLogger and output report
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.GlobalTag.globaltag = 'PLS170_V7AN1::All'
@@ -11,7 +12,7 @@ process.GlobalTag.globaltag = 'PLS170_V7AN1::All'
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(100)
+    input = cms.untracked.int32(-1)
     )
 
 from JetMETCorrections.Configuration.JetCorrectionServices_cff import *

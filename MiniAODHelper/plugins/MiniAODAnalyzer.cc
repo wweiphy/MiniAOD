@@ -155,15 +155,31 @@ class MiniAODAnalyzer : public edm::EDAnalyzer {
   TH1D* h_muon_pt;
   TH1D* h_muon_eta;
   TH1D* h_muon_phi;
+  TH1D* h_num_muon;
 
   TH1D* h_electron_pt;
   TH1D* h_electron_eta;
   TH1D* h_electron_phi;
+  TH1D* h_num_electron;
 
   TH1D* h_jet_pt;
   TH1D* h_jet_eta;
   TH1D* h_jet_phi;
+  TH1D* h_num_jet;
+  TH2D* h_jet_pt_jec;
 
+  TH1D* h_cleanjet_pt;
+  TH1D* h_cleanjet_eta;
+  TH1D* h_cleanjet_phi;
+  TH1D* h_num_cleanjet;
+
+  TH1D* h_dR_muon_electron;
+  TH1D* h_dR_jet_electron;
+  TH1D* h_dR_jet_muon;
+  TH1D* h_dR_cleanjet_electron;
+  TH1D* h_dR_cleanjet_muon;
+
+  TH2D* h_jetPt_cleanjetPt;
 
   MiniAODHelper miniAODhelper;
 };
@@ -259,15 +275,33 @@ MiniAODAnalyzer::MiniAODAnalyzer(const edm::ParameterSet& iConfig)
   h_muon_pt = fs_->make<TH1D>("h_muon_pt",";muon p_{T}", 300 , 0 , 300 );
   h_muon_eta = fs_->make<TH1D>("h_muon_eta",";muon #eta", 100 , -3.0 , 3.0 );
   h_muon_phi = fs_->make<TH1D>("h_muon_phi",";muon #phi", 62 , -3.15 , 3.15 );
+  h_num_muon = fs_->make<TH1D>("h_num_muon",";Number of tight muons", 5 , -0.5 , 4.5 );
 
   h_electron_pt = fs_->make<TH1D>("h_electron_pt",";electron p_{T}", 300 , 0 , 300 );
   h_electron_eta = fs_->make<TH1D>("h_electron_eta",";electron #eta", 100 , -3.0 , 3.0 );
   h_electron_phi = fs_->make<TH1D>("h_electron_phi",";electron #phi", 62 , -3.15 , 3.15 );
+  h_num_electron = fs_->make<TH1D>("h_num_electron",";Number of tight electrons", 5 , -0.5 , 4.5 );
 
   h_jet_pt = fs_->make<TH1D>("h_jet_pt",";jet p_{T}", 300 , 0 , 300 );
   h_jet_eta = fs_->make<TH1D>("h_jet_eta",";jet #eta", 100 , -3.0 , 3.0 );
   h_jet_phi = fs_->make<TH1D>("h_jet_phi",";jet #phi", 62 , -3.15 , 3.15 );
+  h_num_jet = fs_->make<TH1D>("h_num_jet",";Number of AK4 jets", 13 , -0.5 , 12.5 );
 
+  h_jet_pt_jec = fs_->make<TH2D>("h_jet_pt_jec",";jet p_{T};jet energy scale", 300 , 0 , 300, 100 , 0.5 , 1.5 );
+
+  h_cleanjet_pt = fs_->make<TH1D>("h_cleanjet_pt",";jet p_{T}", 300 , 0 , 300 );
+  h_cleanjet_eta = fs_->make<TH1D>("h_cleanjet_eta",";jet #eta", 100 , -3.0 , 3.0 );
+  h_cleanjet_phi = fs_->make<TH1D>("h_cleanjet_phi",";jet #phi", 62 , -3.15 , 3.15 );
+  h_num_cleanjet = fs_->make<TH1D>("h_num_cleanjet",";Number of cleaned AK4 jets", 13 , -0.5 , 12.5 );
+
+
+  h_dR_muon_electron = fs_->make<TH1D>("h_dR_muon_electron",";#DeltaR(muon,electron)", 122 , -0.1 , 6.0 );
+  h_dR_jet_electron = fs_->make<TH1D>("h_dR_jet_electron",";#DeltaR(jet,electron)", 122 , -0.1 , 6.0 );
+  h_dR_jet_muon = fs_->make<TH1D>("h_dR_jet_muon",";#DeltaR(jet,muon)", 122 , -0.1 , 6.0 );
+  h_dR_cleanjet_electron = fs_->make<TH1D>("h_dR_cleanjet_electron",";#DeltaR(clean jet,electron)", 122 , -0.1 , 6.0 );
+  h_dR_cleanjet_muon = fs_->make<TH1D>("h_dR_cleanjet_muon",";#DeltaR(clean jet,muon)", 122 , -0.1 , 6.0 );
+
+  h_jetPt_cleanjetPt = fs_->make<TH2D>("h_jetPt_cleanjetPt",";jet p_{T};clean jet p_{T}", 300 , 0 , 300, 100 , 0 , 100 );
 
 
   std::string era = "2012_53x";
@@ -529,6 +563,10 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     int nMu = 0;
     for( std::vector<pat::Muon>::const_iterator pfmu = selectedMuons.begin(); pfmu!=selectedMuons.end(); ++pfmu ){
 
+      h_muon_pt->Fill(pfmu->pt());
+      h_muon_eta->Fill(pfmu->eta());
+      h_muon_phi->Fill(pfmu->phi());
+
       unsigned int nSources = pfmu->numberOfSourceCandidatePtrs();
       if( verbose_ ) std::cout << " ==> Muon, nSources = " << nSources << std::endl;
 
@@ -609,6 +647,10 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     int nEle = 0;
     for( std::vector<pat::Electron>::const_iterator pfele = selectedElectrons.begin(); pfele!=selectedElectrons.end(); ++pfele ){
 
+      h_electron_pt->Fill(pfele->pt());
+      h_electron_eta->Fill(pfele->eta());
+      h_electron_phi->Fill(pfele->phi());
+
       unsigned int nSources = pfele->numberOfSourceCandidatePtrs();
       if( verbose_ ) std::cout << " ==> Electron, nSources = " << nSources << std::endl;
 
@@ -646,13 +688,24 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     selectedJets = miniAODhelper.GetSelectedJets(*pfjets, 30., 2.4, jetID::jetLoose, '-' );
     int nJet = 0;
 
+    std::vector<pat::Jet> looseSelectedJets = miniAODhelper.GetSelectedJets(*pfjets, 20., 2.4, jetID::jetLoose, '-' );
+
+    for( std::vector<pat::Jet>::const_iterator pfjet = looseSelectedJets.begin(); pfjet!=looseSelectedJets.end(); ++pfjet ){
+      double scale = corrector->correction(pfjet->correctedJet(0), iEvent, iSetup);
+      h_jet_pt_jec->Fill(pfjet->pt(), scale);
+    }
+
     for( std::vector<pat::Jet>::const_iterator pfjet = selectedJets.begin(); pfjet!=selectedJets.end(); ++pfjet ){
+
+      h_jet_pt->Fill(pfjet->pt());
+      h_jet_eta->Fill(pfjet->eta());
+      h_jet_phi->Fill(pfjet->phi());
 
       double scale = corrector->correction(pfjet->correctedJet(0), iEvent, iSetup);
 
       if( verbose_ ){
 	printf("\t ak4 iJet = %d,\t pT = %.1f,\t eta = %.2f,\t phi = %.2f,\t raw pT = %.1f,\t re-corrected pT = %.1f \n",
-	     nJet, pfjet->pt(), pfjet->eta(), pfjet->phi(), pfjet->correctedJet(0).pt(), scale*pfjet->correctedJet(0).pt() );
+	       nJet, pfjet->pt(), pfjet->eta(), pfjet->phi(), pfjet->correctedJet(0).pt(), scale*pfjet->correctedJet(0).pt() );
 	printf("\t\t PUid = %.2f,\t CSV = %.3f,\t vtxMass = %.2f,\t vtxNtracks = %.1f,\t vtx3DVal = %.3f,\t vtx3DSig = %.3f \n",
 	       pfjet->userFloat("pileupJetId:fullDiscriminant"), pfjet->bDiscriminator("combinedSecondaryVertexBJetTags"), pfjet->userFloat("vtxMass"), pfjet->userFloat("vtxNtracks"), pfjet->userFloat("vtx3DVal"), pfjet->userFloat("vtx3DSig") );
       }
@@ -688,6 +741,10 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   int nJet = 0;
   for( std::vector<pat::Jet>::const_iterator pfjet = cleanSelectedJets.begin(); pfjet!=cleanSelectedJets.end(); ++pfjet ){
+    h_cleanjet_pt->Fill(pfjet->pt());
+    h_cleanjet_eta->Fill(pfjet->eta());
+    h_cleanjet_phi->Fill(pfjet->phi());
+
     if( verbose_ ){ 
       printf("\t Clean AK4 iJet = %d,\t pT = %.1f,\t eta = %.2f,\t phi = %.2f \n",
 	     nJet, pfjet->pt(), pfjet->eta(), pfjet->phi() );
@@ -703,7 +760,81 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   numCleanTightElectrons_ += int( cleanSelectedElectrons.size() );
 
 
+  h_num_muon->Fill(selectedMuons.size());
+  h_num_electron->Fill(selectedElectrons.size());
+  h_num_jet->Fill(selectedJets.size());
+  h_num_cleanjet->Fill(cleanSelectedJets.size());
 
+
+  for( std::vector<pat::Electron>::const_iterator pfele = selectedElectrons.begin(); pfele!=selectedElectrons.end(); ++pfele ){
+    for( std::vector<pat::Muon>::const_iterator pfmu = selectedMuons.begin(); pfmu!=selectedMuons.end(); ++pfmu ){
+      double deltaR = miniAODhelper.DeltaR(pfele,pfmu);
+      h_dR_muon_electron->Fill(deltaR);
+    }
+  }
+
+  for( std::vector<pat::Jet>::const_iterator pfjet = selectedJets.begin(); pfjet!=selectedJets.end(); ++pfjet ){
+    for( std::vector<pat::Muon>::const_iterator pfmu = selectedMuons.begin(); pfmu!=selectedMuons.end(); ++pfmu ){
+      double deltaR = miniAODhelper.DeltaR(pfjet,pfmu);
+      h_dR_jet_muon->Fill(deltaR);
+    }
+
+    for( std::vector<pat::Electron>::const_iterator pfele = selectedElectrons.begin(); pfele!=selectedElectrons.end(); ++pfele ){
+      double deltaR = miniAODhelper.DeltaR(pfjet,pfele);
+      h_dR_jet_electron->Fill(deltaR);
+    }
+
+    pat::Jet uncleanedJet = (*pfjet);
+    pat::Jet cleanJetNoMu  = miniAODhelper.RemoveOverlap(selectedMuons, uncleanedJet);
+    pat::Jet cleanJetNoEle = miniAODhelper.RemoveOverlap(selectedElectrons, cleanJetNoMu);
+
+    if( abs(pfjet->pt()-cleanJetNoEle.pt())>5. ){
+      h_jetPt_cleanjetPt->Fill(pfjet->pt(),cleanJetNoEle.pt());
+      // printf("\t ak4 iJet = %d,\t pT = %.1f,\t eta = %.2f,\t phi = %.2f,\t raw pT = %.1f,\t cleaned jet pT = %.1f \n",
+      // 	     int(pfjet-selectedJets.begin()), pfjet->pt(), pfjet->eta(), pfjet->phi(), pfjet->correctedJet(0).pt(), cleanJetNoEle.pt() );
+    }
+  }
+
+  for( std::vector<pat::Jet>::const_iterator pfjet = cleanSelectedJets.begin(); pfjet!=cleanSelectedJets.end(); ++pfjet ){
+    for( std::vector<pat::Muon>::const_iterator pfmu = selectedMuons.begin(); pfmu!=selectedMuons.end(); ++pfmu ){
+      double deltaR = miniAODhelper.DeltaR(pfjet,pfmu);
+      h_dR_cleanjet_muon->Fill(deltaR);
+    }
+
+    for( std::vector<pat::Electron>::const_iterator pfele = selectedElectrons.begin(); pfele!=selectedElectrons.end(); ++pfele ){
+      double deltaR = miniAODhelper.DeltaR(pfjet,pfele);
+      h_dR_cleanjet_electron->Fill(deltaR);
+
+      // if( deltaR<0.05 ){
+
+      // 	unsigned int nSources = pfele->numberOfSourceCandidatePtrs();
+      // 	std::cout << " ==> Electron, nSources = " << nSources << std::endl;
+      // 	printf("\t iEle = %d,\t vx = %.2f,\t vy = %.2f,\t vz = %.1f, \t pT = %.1f,\t eta = %.2f,\t phi = %.2f \n",
+      // 	       int(pfele-selectedElectrons.begin()), pfele->vx(), pfele->vy(), pfele->vz(), pfele->pt(), pfele->eta(), pfele->phi() );
+
+      // 	for(unsigned int i=0; i<nSources; i++) {
+      // 	  reco::CandidatePtr source = pfele->sourceCandidatePtr(i);
+      // 	  if( source.isNonnull() && source.isAvailable() ){
+      // 	    const reco::Candidate & c1 = *(source);
+      // 	    printf("\t\t iDau = %d,\t source id = %d,\t pT = %.1f,\t eta = %.2f,\t phi = %.2f,\t vx = %.2f,\t vy = %.2f,\t vz = %.1f \n", 
+      // 		   i, c1.pdgId(), c1.pt(), c1.eta(), c1.phi(), c1.vx(), c1.vy(), c1.vz());
+      // 	  }
+      // 	}
+
+ 
+      // 	std::cout << "\t\t => Jet, Number of Daughters = " << pfjet->numberOfDaughters() << std::endl;
+      // 	printf("\t ak4 iJet = %d,\t pT = %.1f,\t eta = %.2f,\t phi = %.2f,\t raw pT = %.1f \n",
+      // 	       int(pfjet-cleanSelectedJets.begin()), pfjet->pt(), pfjet->eta(), pfjet->phi(), pfjet->correctedJet(0).pt() );
+
+      // 	for( unsigned int iDau=0; iDau<pfjet->numberOfDaughters(); iDau++ ){
+      // 	  printf("\t\t iDau = %d,\t id = %d,\t vx = %.2f,\t vy = %.2f,\t vz = %.1f, \t pT = %.1f,\t eta = %.2f,\t phi = %.2f \n",
+      // 		 iDau, pfjet->daughter(iDau)->pdgId(), pfjet->daughter(iDau)->vx(), pfjet->daughter(iDau)->vy(), pfjet->daughter(iDau)->vz(), pfjet->daughter(iDau)->pt(), pfjet->daughter(iDau)->eta(), pfjet->daughter(iDau)->phi() );
+      // 	}
+
+      // }
+
+    }
+  }
 
 
   std::vector<pat::Jet> selectedCA12Jets;
