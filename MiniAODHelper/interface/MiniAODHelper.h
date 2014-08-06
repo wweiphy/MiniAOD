@@ -160,14 +160,11 @@ PATObj1 MiniAODHelper::RemoveOverlap( const std::vector<PATObj2>& other, const P
     unsigned int nSources2 = iobj2->numberOfSourceCandidatePtrs();
 
     for( unsigned int i1=0; i1<nSources1; i1++ ){
-      bool uncleanSourceHasOverlap = false;
-
       reco::CandidatePtr source1 = unclean.sourceCandidatePtr(i1);
 
       if( !(source1.isNonnull() && source1.isAvailable()) ) continue;
 
       for( unsigned int i2=0; i2<nSources2; i2++ ){
-
 	reco::CandidatePtr source2 = iobj2->sourceCandidatePtr(i2);
 
 	if( !(source2.isNonnull() && source2.isAvailable()) ) continue;
@@ -175,19 +172,6 @@ PATObj1 MiniAODHelper::RemoveOverlap( const std::vector<PATObj2>& other, const P
 	if( source1==source2 ){
 	  hasOverlaps = true;
 	  overlaps.push_back(source2);
-	  uncleanSourceHasOverlap = true;
-	}
-      }
-
-      if( !uncleanSourceHasOverlap ){
-	if( (abs((*source1).pdgId())==11 && iobj2->isElectron()) ||
-	    (abs((*source1).pdgId())==13 && iobj2->isMuon()) ){
-
-	  double deltaR = reco::deltaR((*source1).eta(), (*source1).phi(), iobj2->eta(), iobj2->phi());
-	  if( deltaR<0.01 ){
-	    overlaps.push_back(source1);
-	    hasOverlaps = true;
-	  }
 	}
       }
 

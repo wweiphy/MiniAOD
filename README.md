@@ -6,8 +6,8 @@ Tools for miniAOD exploration
 ## Installation
 Follow These Steps:
 
-    cmsrel CMSSW_7_0_6_patch1
-    cd CMSSW_7_0_6_patch1/src
+    cmsrel CMSSW_7_0_7_patch1
+    cd CMSSW_7_0_7_patch1/src
     cmsenv
 
     voms-proxy-init --voms cms
