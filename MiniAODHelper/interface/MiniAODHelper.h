@@ -184,9 +184,6 @@ PATObj1 MiniAODHelper::RemoveOverlap( const std::vector<PATObj2>& other, const P
 	    (abs((*source1).pdgId())==13 && iobj2->isMuon()) ){
 
 	  double deltaR = reco::deltaR((*source1).eta(), (*source1).phi(), iobj2->eta(), iobj2->phi());
-	  /* std::cout << "\t deltaR = " << deltaR << std::endl; */
-	  /* std::cout << "\t source: eta = " << (*source1).eta() << ",\t phi = " << (*source1).phi() << ",\t pt = " << (*source1).pt() << std::endl; */
-	  /* std::cout << "\t iobj2:  eta = " << iobj2->eta() << ",\t phi = " << iobj2->phi() << ",\t pt = " << iobj2->pt() << std::endl; */
 	  if( deltaR<0.01 ){
 	    overlaps.push_back(source1);
 	    hasOverlaps = true;

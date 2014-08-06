@@ -804,35 +804,6 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     for( std::vector<pat::Electron>::const_iterator pfele = selectedElectrons.begin(); pfele!=selectedElectrons.end(); ++pfele ){
       double deltaR = miniAODhelper.DeltaR(pfjet,pfele);
       h_dR_cleanjet_electron->Fill(deltaR);
-
-      // if( deltaR<0.05 ){
-
-      // 	unsigned int nSources = pfele->numberOfSourceCandidatePtrs();
-      // 	std::cout << " ==> Electron, nSources = " << nSources << std::endl;
-      // 	printf("\t iEle = %d,\t vx = %.2f,\t vy = %.2f,\t vz = %.1f, \t pT = %.1f,\t eta = %.2f,\t phi = %.2f \n",
-      // 	       int(pfele-selectedElectrons.begin()), pfele->vx(), pfele->vy(), pfele->vz(), pfele->pt(), pfele->eta(), pfele->phi() );
-
-      // 	for(unsigned int i=0; i<nSources; i++) {
-      // 	  reco::CandidatePtr source = pfele->sourceCandidatePtr(i);
-      // 	  if( source.isNonnull() && source.isAvailable() ){
-      // 	    const reco::Candidate & c1 = *(source);
-      // 	    printf("\t\t iDau = %d,\t source id = %d,\t pT = %.1f,\t eta = %.2f,\t phi = %.2f,\t vx = %.2f,\t vy = %.2f,\t vz = %.1f \n", 
-      // 		   i, c1.pdgId(), c1.pt(), c1.eta(), c1.phi(), c1.vx(), c1.vy(), c1.vz());
-      // 	  }
-      // 	}
-
- 
-      // 	std::cout << "\t\t => Jet, Number of Daughters = " << pfjet->numberOfDaughters() << std::endl;
-      // 	printf("\t ak4 iJet = %d,\t pT = %.1f,\t eta = %.2f,\t phi = %.2f,\t raw pT = %.1f \n",
-      // 	       int(pfjet-cleanSelectedJets.begin()), pfjet->pt(), pfjet->eta(), pfjet->phi(), pfjet->correctedJet(0).pt() );
-
-      // 	for( unsigned int iDau=0; iDau<pfjet->numberOfDaughters(); iDau++ ){
-      // 	  printf("\t\t iDau = %d,\t id = %d,\t vx = %.2f,\t vy = %.2f,\t vz = %.1f, \t pT = %.1f,\t eta = %.2f,\t phi = %.2f \n",
-      // 		 iDau, pfjet->daughter(iDau)->pdgId(), pfjet->daughter(iDau)->vx(), pfjet->daughter(iDau)->vy(), pfjet->daughter(iDau)->vz(), pfjet->daughter(iDau)->pt(), pfjet->daughter(iDau)->eta(), pfjet->daughter(iDau)->phi() );
-      // 	}
-
-      // }
-
     }
   }
 
