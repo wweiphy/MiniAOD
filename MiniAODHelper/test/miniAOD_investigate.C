@@ -240,7 +240,7 @@ void miniAOD_investigate( int maxNentries=-1, int Njobs=1, int jobN=1 ) {
 
       std::vector<pat::Muon> selectedMuons;
       if( pfmuons.isValid() ){
-	selectedMuons = miniAODhelper.GetSelectedMuons(*pfmuons, muonID::muonTight);
+	selectedMuons = miniAODhelper.GetSelectedMuons(*pfmuons, 30., muonID::muonTight);
 
 	for( std::vector<pat::Muon>::const_iterator pfmu = pfmuons->begin(); pfmu!=pfmuons->end(); ++pfmu ){
 	  int ncut = 0;
@@ -330,7 +330,7 @@ void miniAOD_investigate( int maxNentries=-1, int Njobs=1, int jobN=1 ) {
 
       std::vector<pat::Electron> selectedElectrons;
       if( pfelectrons.isValid() ){
-	selectedElectrons = miniAODhelper.GetSelectedElectrons(*pfelectrons, electronID::electronTight);
+	selectedElectrons = miniAODhelper.GetSelectedElectrons(*pfelectrons, 30., electronID::electronTight);
 	for( std::vector<pat::Electron>::const_iterator pfele = pfelectrons->begin(); pfele!=pfelectrons->end(); ++pfele ){
 	  int ncut = 0;
 	  h_electron_selection->Fill(0.5+ncut++, 1);
