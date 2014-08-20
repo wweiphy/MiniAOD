@@ -165,6 +165,11 @@ class MiniAODAnalyzer : public edm::EDAnalyzer {
   TH1D* h_jet_pt;
   TH1D* h_jet_eta;
   TH1D* h_jet_phi;
+  TH1D* h_jet_csv;
+  TH1D* h_jet_csv_b;
+  TH1D* h_jet_csv_c;
+  TH1D* h_jet_csv_l;
+  TH1D* h_jet_csv_o;
   TH1D* h_num_jet;
   TH2D* h_jet_pt_jec;
 
@@ -285,6 +290,11 @@ MiniAODAnalyzer::MiniAODAnalyzer(const edm::ParameterSet& iConfig)
   h_jet_pt = fs_->make<TH1D>("h_jet_pt",";jet p_{T}", 300 , 0 , 300 );
   h_jet_eta = fs_->make<TH1D>("h_jet_eta",";jet #eta", 100 , -3.0 , 3.0 );
   h_jet_phi = fs_->make<TH1D>("h_jet_phi",";jet #phi", 62 , -3.15 , 3.15 );
+  h_jet_csv = fs_->make<TH1D>("h_jet_csv",";jet CSV", 220, -1.1, 1.1 );
+  h_jet_csv_b = fs_->make<TH1D>("h_jet_csv_b",";b jet CSV", 220, -1.1, 1.1 );
+  h_jet_csv_c = fs_->make<TH1D>("h_jet_csv_c",";c jet CSV", 220, -1.1, 1.1 );
+  h_jet_csv_l = fs_->make<TH1D>("h_jet_csv_l",";udsg jet CSV", 220, -1.1, 1.1 );
+  h_jet_csv_o = fs_->make<TH1D>("h_jet_csv_o",";other jet CSV", 220, -1.1, 1.1 );
   h_num_jet = fs_->make<TH1D>("h_num_jet",";Number of AK4 jets", 13 , -0.5 , 12.5 );
 
   h_jet_pt_jec = fs_->make<TH2D>("h_jet_pt_jec",";jet p_{T};jet energy scale", 300 , 0 , 300, 100 , 0.5 , 1.5 );
@@ -700,6 +710,18 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       h_jet_pt->Fill(pfjet->pt());
       h_jet_eta->Fill(pfjet->eta());
       h_jet_phi->Fill(pfjet->phi());
+
+      double CSV = pfjet->bDiscriminator("combinedSecondaryVertexBJetTags");
+      if( CSV<-5 ) CSV = -1.0;
+      else if( CSV>-5 && CSV<0 ) CSV = -0.5;
+      h_jet_csv->Fill(CSV);
+
+      int flavor = pfjet->partonFlavour();
+      if( abs(flavor)==5 ) h_jet_csv_b->Fill(CSV);
+      else if( abs(flavor)==4 ) h_jet_csv_c->Fill(CSV);
+      else if( (abs(flavor)<=3 && abs(flavor)!=0) || abs(flavor)==22 ) h_jet_csv_l->Fill(CSV);
+      else h_jet_csv_o->Fill(CSV);
+
 
       double scale = corrector->correction(pfjet->correctedJet(0), iEvent, iSetup);
 
