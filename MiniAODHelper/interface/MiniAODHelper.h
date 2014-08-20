@@ -54,6 +54,7 @@
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
+#include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -80,6 +81,12 @@ namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg };
 
 using namespace std;
 
+//To use when the object is either a reference or a pointer
+template<typename T>
+T * ptr(T & obj) { return &obj; } //turn reference into pointer!
+template<typename T>
+T * ptr(T * obj) { return obj; } //obj is already pointer, return it!
+
 class MiniAODHelper{
 
   // === Functions === //
@@ -104,7 +111,7 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&);
-  std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&);
+  std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID);
   bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
@@ -112,6 +119,7 @@ class MiniAODHelper{
   float GetElectronRelIso(const pat::Electron&) const;
   bool PassesCSV(const pat::Jet&, const char);
 
+  template <typename T> T GetSortedByPt(const T&);
   template <typename T, typename S> std::vector<T> RemoveOverlaps( const std::vector<S>&, const std::vector<T>& );
   template <typename T, typename S> T RemoveOverlap( const std::vector<S>&, const T& );
 
@@ -138,6 +146,7 @@ class MiniAODHelper{
 
   const JetCorrector* corrector;
   FactorizedJetCorrector* useJetCorrector;
+  JetCorrectionUncertainty *jecUnc_;
 
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
 
@@ -145,6 +154,14 @@ class MiniAODHelper{
   inline void CheckVertexSetUp() const { if(!vertexIsSet){ ThrowFatalError("Vertex is not set."); } };
 
 }; // End of class prototype
+
+
+// === Returned sorted input collection, by descending pT === //
+template <typename T> T MiniAODHelper::GetSortedByPt(const T& collection){
+  T result = collection;
+  std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return ptr(a)->pt() > ptr(b)->pt();});
+  return result;
+}
 
 
 template <typename PATObj1, typename PATObj2> 

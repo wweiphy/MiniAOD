@@ -98,6 +98,10 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
 
   useJetCorrector = new FactorizedJetCorrector(vPar);
 
+  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
+
+  jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+
   factorizedjetcorrectorIsSet = true;
 }
 
@@ -188,27 +192,48 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 
 
 std::vector<pat::Jet> 
-MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets){
+MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sysType::sysType iSysType ){
 
   CheckSetUp();
 
   std::vector<pat::Jet> outputJets;
 
+  if( !(factorizedjetcorrectorIsSet && rhoIsSet) ){
+    std::cout << " !! ERROR !! Trying to use FWLite Framework GetCorrectedJets without setting factorized jet corrector !" << std::endl;
+
+    return inputJets;
+  }
+
   for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
     pat::Jet jet = (*it);
     double scale = 1.;
 
-    if( factorizedjetcorrectorIsSet && rhoIsSet ){
-      useJetCorrector->setJetEta(it->eta());
-      useJetCorrector->setJetPt(it->pt());
-      useJetCorrector->setJetA(it->jetArea());
-      useJetCorrector->setRho(useRho); 
+    useJetCorrector->setJetEta(it->eta());
+    useJetCorrector->setJetPt(it->pt());
+    useJetCorrector->setJetA(it->jetArea());
+    useJetCorrector->setRho(useRho); 
 
-      scale = useJetCorrector->getCorrection();
-    }
-    else std::cout << " !! ERROR !! Trying to use FWLite Framework GetCorrectedJets without setting factorized jet corrector !" << std::endl;
+    scale = useJetCorrector->getCorrection();
 
     jet.scaleEnergy( scale );
+
+    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+      jecUnc_->setJetEta(it->eta());
+      jecUnc_->setJetPt(it->pt()); // here you must use the CORRECTED jet pt
+      double unc = 1;
+      double jes = 1;
+      if( iSysType==sysType::JESup ){
+	unc = jecUnc_->getUncertainty(true);
+	jes = 1 + unc;
+      }
+      else if( iSysType==sysType::JESdown ){
+	unc = jecUnc_->getUncertainty(false);
+	jes = 1 - unc;
+      }
+
+      jet.scaleEnergy( jes );
+    }
+
     outputJets.push_back(jet);
   }
 
