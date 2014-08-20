@@ -168,6 +168,7 @@ void miniAOD_investigate( int maxNentries=-1, int Njobs=1, int jobN=1 ) {
 
   miniAODhelper.SetUp(era, insample, iAnalysisType, isData);
 
+  miniAODhelper.SetFactorizedJetCorrector();
 
   //
   // Loop over events
@@ -210,7 +211,6 @@ void miniAOD_investigate( int maxNentries=-1, int Njobs=1, int jobN=1 ) {
 
 
       miniAODhelper.SetRho(rho);
-      miniAODhelper.SetFactorizedJetCorrector();
 
 
       int nvtx=0;
