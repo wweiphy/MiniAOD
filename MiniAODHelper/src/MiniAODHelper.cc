@@ -82,6 +82,15 @@ void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
 }
 
 // Set up parameters one by one
+void MiniAODHelper::SetJetCorrectorUncertainty(){
+
+  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
+
+  jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+
+}
+
+// Set up parameters one by one
 void MiniAODHelper::SetFactorizedJetCorrector(){
 
   // Create the JetCorrectorParameter objects, the order does not matter.
@@ -170,7 +179,7 @@ MiniAODHelper::GetUncorrectedJets(const std::vector<pat::Jet>& inputJets){
 
 
 std::vector<pat::Jet> 
-MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup){
+MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType){
 
   CheckSetUp();
 
@@ -184,6 +193,24 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
     else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
 
     jet.scaleEnergy( scale );
+
+    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+      jecUnc_->setJetEta(jet.eta());
+      jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
+      double unc = 1;
+      double jes = 1;
+      if( iSysType==sysType::JESup ){
+	unc = jecUnc_->getUncertainty(true);
+	jes = 1 + unc;
+      }
+      else if( iSysType==sysType::JESdown ){
+	unc = jecUnc_->getUncertainty(false);
+	jes = 1 - unc;
+      }
+
+      jet.scaleEnergy( jes );
+    }
+
     outputJets.push_back(jet);
   }
 
@@ -218,8 +245,8 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
     jet.scaleEnergy( scale );
 
     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
-      jecUnc_->setJetEta(it->eta());
-      jecUnc_->setJetPt(it->pt()); // here you must use the CORRECTED jet pt
+      jecUnc_->setJetEta(jet.eta());
+      jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
       double unc = 1;
       double jes = 1;
       if( iSysType==sysType::JESup ){

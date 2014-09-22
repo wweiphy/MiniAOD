@@ -103,6 +103,7 @@ class MiniAODHelper{
   void SetRho(double);
 
   void SetJetCorrector(const JetCorrector*);
+  void SetJetCorrectorUncertainty();
 
   void SetFactorizedJetCorrector();
 
@@ -110,7 +111,7 @@ class MiniAODHelper{
   std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
-  std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&);
+  std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID);
   bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
