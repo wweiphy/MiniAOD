@@ -126,6 +126,7 @@ class MiniAODHelper{
 
   template <typename T, typename S> double DeltaR( const S&, const T& );
   template <typename T, typename S> std::vector<T> GetDifference( const std::vector<S>&, const std::vector<T>& );
+  template <typename T, typename S> std::vector<T> GetUnion( const std::vector<S>&, const std::vector<T>& );
 
  private:
   bool isSetUp;
@@ -165,13 +166,6 @@ template <typename T> T MiniAODHelper::GetSortedByPt(const T& collection){
 }
 
 
-
-
-
-
-
-
-
 // === Return the difference of the two input collections, sorted by descending pT === //
 template <typename PATObj1, typename PATObj2>
 std::vector<PATObj1> MiniAODHelper::GetDifference(const std::vector<PATObj2>& col2,const std::vector<PATObj1>& col1 ){
@@ -198,6 +192,34 @@ std::vector<PATObj1> MiniAODHelper::GetDifference(const std::vector<PATObj2>& co
   }
   // Sort by descending pT
   return GetSortedByPt(difference);
+}
+
+// ===return sum (union) of two collections, with overlap removed === //
+template <typename PATObj1, typename PATObj2>
+std::vector<PATObj1> MiniAODHelper::GetUnion(const std::vector<PATObj2>& col2,const std::vector<PATObj1>& col1 ){
+
+  std::vector<PATObj1> unions = col1;
+
+  for( typename std::vector<PATObj2>::const_iterator iobj2 = col2.begin(); iobj2!=col2.end(); ++iobj2 ){
+    bool presentInSecondCollection = false;
+    for( typename std::vector<PATObj1>::const_iterator iobj1 = col1.begin(); iobj1!=col1.end(); ++iobj1 ){
+      if(DeltaR(iobj1,iobj2) < 0.00001){
+	presentInSecondCollection = true;
+	bool sameMomentum = (fabs(ptr(*iobj1)->px() - ptr(*iobj2)->px()) < 0.00001) &&
+	  (fabs(ptr(*iobj1)->py() - ptr(*iobj2)->py()) < 0.00001) &&
+	  (fabs(ptr(*iobj1)->pz() - ptr(*iobj2)->pz()) < 0.00001);
+	if(!sameMomentum){ cerr << "ERROR: found two objects with same eta and phi, but different momenta. This may be caused by mixing corrected and uncorrected collections." << endl;
+	  cout << setprecision(7) << "Eta1: " << ptr(*iobj1)->eta() << "\tPhi1: " << ptr(*iobj1)->phi() << "\tpT1: " << ptr(*iobj1)->pt() << endl;
+	  cout << setprecision(7) << "Eta2: " << ptr(*iobj2)->eta() << "\tPhi2: " << ptr(*iobj2)->phi() << "\tpT2: " << ptr(*iobj2)->pt() << endl;
+	  throw std::logic_error("Inside GetUnion");
+	}
+	break;
+      }
+    }
+    if(!presentInSecondCollection){ unions.push_back(*iobj2); }
+  }
+  // Sort by descending pT
+  return GetSortedByPt(unions);
 }
 
 
@@ -250,7 +272,6 @@ PATObj1 MiniAODHelper::RemoveOverlap( const std::vector<PATObj2>& other, const P
 
   return cleaned;
 }
-
 
 
 template <typename PATObj1, typename PATObj2> 
