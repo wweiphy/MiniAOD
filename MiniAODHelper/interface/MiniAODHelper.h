@@ -125,7 +125,7 @@ class MiniAODHelper{
   template <typename T, typename S> T RemoveOverlap( const std::vector<S>&, const T& );
 
   template <typename T, typename S> double DeltaR( const S&, const T& );
-
+  template <typename T, typename S> std::vector<T> GetDifference( const std::vector<S>&, const std::vector<T>& );
 
  private:
   bool isSetUp;
@@ -162,6 +162,42 @@ template <typename T> T MiniAODHelper::GetSortedByPt(const T& collection){
   T result = collection;
   std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return ptr(a)->pt() > ptr(b)->pt();});
   return result;
+}
+
+
+
+
+
+
+
+
+
+// === Return the difference of the two input collections, sorted by descending pT === //
+template <typename PATObj1, typename PATObj2>
+std::vector<PATObj1> MiniAODHelper::GetDifference(const std::vector<PATObj2>& col2,const std::vector<PATObj1>& col1 ){
+
+  std::vector<PATObj1> difference;
+
+  for( typename std::vector<PATObj1>::const_iterator iobj1 = col1.begin(); iobj1!=col1.end(); ++iobj1 ){
+    bool presentInSecondCollection = false;
+    for( typename std::vector<PATObj2>::const_iterator iobj2 = col2.begin(); iobj1!=col2.end(); ++iobj2 ){
+      if(DeltaR(iobj1,iobj2) < 0.00001){
+	presentInSecondCollection = true;
+	bool sameMomentum = (fabs(ptr(*iobj1)->px() - ptr(*iobj2)->px()) < 0.00001) &&
+	  (fabs(ptr(*iobj1)->py() - ptr(*iobj2)->py()) < 0.00001) &&
+	  (fabs(ptr(*iobj1)->pz() - ptr(*iobj2)->pz()) < 0.00001);
+	if(!sameMomentum){ cerr << "ERROR: found two objects with same eta and phi, but different momenta. This may be caused by mixing corrected and uncorrected collections." << endl;
+	  cout << setprecision(7) << "Eta1: " << ptr(*iobj1)->eta() << "\tPhi1: " << ptr(*iobj1)->phi() << "\tpT1: " << ptr(*iobj1)->pt() << endl;
+	  cout << setprecision(7) << "Eta2: " << ptr(*iobj2)->eta() << "\tPhi2: " << ptr(*iobj2)->phi() << "\tpT2: " << ptr(*iobj2)->pt() << endl;
+	  throw std::logic_error("Inside GetDifference");
+	}
+	break;
+      }
+    }
+    if(!presentInSecondCollection){ difference.push_back(*iobj1); }
+  }
+  // Sort by descending pT
+  return GetSortedByPt(difference);
 }
 
 
