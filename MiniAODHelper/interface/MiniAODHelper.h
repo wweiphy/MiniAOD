@@ -109,12 +109,14 @@ class MiniAODHelper{
 
   std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID);
   std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID);
+  std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tauID::tauID);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID);
   bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
+  bool isGoodTau(const pat::Tau&, const float, const tauID::tauID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
   float GetMuonRelIso(const pat::Muon&) const;
   float GetElectronRelIso(const pat::Electron&) const;

@@ -146,6 +146,22 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
 }
 
 
+std::vector<pat::Tau> 
+MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const float iMinPt, const tauID::tauID iTauID){
+
+  CheckSetUp();
+
+  std::vector<pat::Tau> selectedTaus;
+
+  for( std::vector<pat::Tau>::const_iterator it = inputTaus.begin(), ed = inputTaus.end(); it != ed; ++it ){
+    if( isGoodTau(*it,iMinPt,iTauID) ) selectedTaus.push_back(*it);
+  }
+
+  return selectedTaus;
+}
+
+
+
 std::vector<pat::Jet> 
 MiniAODHelper::GetSelectedJets(const std::vector<pat::Jet>& inputJets, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVwp){
 
@@ -402,7 +418,17 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   return (passesKinematics && passesIso && passesID);
 }
 
+bool 
+MiniAODHelper::isGoodTau(const pat::Tau& iTau, const float iMinPt, const tauID::tauID iTauID){
 
+  CheckVertexSetUp();
+ 
+  double minTauPt = iMinPt;
+  
+  bool passesKinematics = false;
+  passesKinematics = (iTau.pt() >= 20) && (fabs(iTau.eta()) <= 2.1) && (iTau.pt() > minTauPt);
+  return passesKinematics;
+}
 
 bool 
 MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint){
