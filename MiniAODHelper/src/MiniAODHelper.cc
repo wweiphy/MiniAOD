@@ -242,9 +242,9 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
   std::vector<pat::Jet> outputJets;
 
   if( !(factorizedjetcorrectorIsSet && rhoIsSet) ){
-    std::cout << " !! ERROR !! Trying to use FWLite Framework GetCorrectedJets without setting factorized jet corrector !" << std::endl;
+   std::cout << " !! ERROR !! Trying to use FWLite Framework GetCorrectedJets without setting factorized jet corrector !" << std::endl;
 
-    return inputJets;
+     return inputJets;
   }
 
   for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
@@ -284,6 +284,65 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 }
 
 
+
+
+
+
+
+
+
+
+
+
+std::vector<pat::Jet> 
+MiniAODHelper::GetCleanJets(const std::vector<pat::Jet>& jets, const LeptonCollection& leptons, const float maxDeltaR) {
+  CheckSetUp();
+  vector<bool> isCleanJet (jets.size(), true);
+  //  pat::JetCollection cleanJets;
+  std::vector<pat::Jet> cleanJets;
+  int matchIndex;
+  float minDeltaR;
+  float dR;
+
+  for (auto& lepton: leptons) {
+    matchIndex = -1;
+    dR = 999.0;
+    minDeltaR = maxDeltaR;
+    for (unsigned i=0; i<jets.size(); i++) {
+    //for( std::vector<pat::Jet>::const_iterator it = jets.begin(), ed = jets.end(); it != ed; ++it ){
+      dR = reco::deltaR(lepton.eta_, lepton.phi_, jets.at(i).eta(), jets.at(i).phi());
+      if (dR < minDeltaR) {
+	minDeltaR = dR;
+	matchIndex = i;
+      }
+
+    }
+    //only clean out closest jet
+    if (matchIndex != -1) isCleanJet.at(matchIndex) = false;
+  }
+  for (unsigned i=0; i<jets.size(); i++) {
+    if (isCleanJet.at(i)) {
+      cleanJets.push_back(jets.at(i));
+    }
+  }
+  return cleanJets;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 bool 
 MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muonID::muonID iMuonID){
 
@@ -292,6 +351,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
   double minMuonPt = iMinPt;
 
   float maxLooseMuonAbsEta = 2.5;
+
   float maxTightMuonAbsEta = 2.1;
 
 

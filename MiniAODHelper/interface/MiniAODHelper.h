@@ -46,6 +46,7 @@
 #include "DataFormats/PatCandidates/interface/Lepton.h"
 #include "DataFormats/PatCandidates/interface/Isolation.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
+#include "DataFormats/PatCandidates/interface/Particle.h"
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
 
@@ -58,6 +59,9 @@
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+
+#include "ttHMultileptonAnalysis/TemplateMakers/interface/Lepton.h"
+
 
 #endif
 
@@ -114,6 +118,7 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
+  std::vector<pat::Jet> GetCleanJets(const std::vector<pat::Jet>&, const LeptonCollection&, const float);
   bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID);
   bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
   bool isGoodTau(const pat::Tau&, const float, const tauID::tauID);
@@ -123,6 +128,7 @@ class MiniAODHelper{
   bool PassesCSV(const pat::Jet&, const char);
 
   template <typename T> T GetSortedByPt(const T&);
+  template <typename T> T GetSortedByCSV(const T&);
   template <typename T, typename S> std::vector<T> RemoveOverlaps( const std::vector<S>&, const std::vector<T>& );
   template <typename T, typename S> T RemoveOverlap( const std::vector<S>&, const T& );
 
@@ -167,6 +173,12 @@ template <typename T> T MiniAODHelper::GetSortedByPt(const T& collection){
   return result;
 }
 
+// === Returned sorted input collection, by descending CSV === //
+template <typename T> T MiniAODHelper::GetSortedByCSV(const T& collection){
+  T result = collection;
+  std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return a.bDiscriminator("combinedSecondaryVertexBJetTags") > b.bDiscriminator("combinedSecondaryVertexBJetTags");});
+  return result;
+}
 
 // === Return the difference of the two input collections, sorted by descending pT === //
 template <typename PATObj1, typename PATObj2>
