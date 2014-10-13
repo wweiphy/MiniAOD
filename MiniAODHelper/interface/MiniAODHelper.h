@@ -40,10 +40,10 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Lepton.h"
 #include "DataFormats/PatCandidates/interface/GenericParticle.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "DataFormats/PatCandidates/interface/Lepton.h"
 #include "DataFormats/PatCandidates/interface/Isolation.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Particle.h"
@@ -59,8 +59,6 @@
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
-
-#include "ttHMultileptonAnalysis/TemplateMakers/interface/Lepton.h"
 
 
 #endif
@@ -118,7 +116,6 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
-  std::vector<pat::Jet> GetCleanJets(const std::vector<pat::Jet>&, const LeptonCollection&, const float);
   bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID);
   bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
   bool isGoodTau(const pat::Tau&, const float, const tauID::tauID);
