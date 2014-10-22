@@ -630,11 +630,11 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       if( pfele->pt()>30 && fabs(pfele->eta())<2.5 && !inCrack ) h_electron_selection->Fill(0.5+ncut++, 1);
       else continue;
 
-      if( pfele->gsfTrack().isAvailable() ){
-	if( pfele->gsfTrack()->trackerExpectedHitsInner().numberOfHits()<=0 ) h_electron_selection->Fill(0.5+ncut++, 1);
-	else continue;
-      }
-      else continue;
+//      if( pfele->gsfTrack().isAvailable() ){
+//	if( pfele->gsfTrack()->trackerExpectedHitsInner().numberOfHits()<=0 ) h_electron_selection->Fill(0.5+ncut++, 1);
+//	else continue;
+//      }
+//      else continue;
 
       if( pfele->passConversionVeto() ) h_electron_selection->Fill(0.5+ncut++, 1);
       else continue;

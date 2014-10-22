@@ -383,11 +383,11 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   bool d02 = false; 
   bool d04 = false;
   bool dZ  = false;
-  bool no_exp_inner_trkr_hits = false;
+  bool no_exp_inner_trkr_hits = true; //false; // see below
   if( iElectron.gsfTrack().isAvailable() ){
     d02 = ( fabs(iElectron.gsfTrack()->dxy(vertex.position())) < 0.02 );
     d04 = ( fabs(iElectron.gsfTrack()->dxy(vertex.position())) < 0.04 );
-    no_exp_inner_trkr_hits = ( iElectron.gsfTrack()->trackerExpectedHitsInner().numberOfHits() <= 0 );
+    //no_exp_inner_trkr_hits = ( iElectron.gsfTrack()->trackerExpectedHitsInner().numberOfHits() <= 0 ); // deprecated in 7_2_0 .. replace with ..?
     dZ = ( fabs(iElectron.gsfTrack()->dz(vertex.position())) < 1. );
   }
 
