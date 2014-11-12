@@ -116,10 +116,10 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
-  bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID);
-  bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
-  bool isGoodTau(const pat::Tau&, const float, const tauID::tauID);
-  bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
+  virtual bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID);
+  virtual bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
+  virtual bool isGoodTau(const pat::Tau&, const float, const tauID::tauID);
+  virtual bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
   float GetMuonRelIso(const pat::Muon&) const;
   float GetElectronRelIso(const pat::Electron&) const;
   bool PassesCSV(const pat::Jet&, const char);
@@ -133,7 +133,8 @@ class MiniAODHelper{
   template <typename T, typename S> std::vector<T> GetDifference( const std::vector<S>&, const std::vector<T>& );
   template <typename T, typename S> std::vector<T> GetUnion( const std::vector<S>&, const std::vector<T>& );
 
- private:
+ protected:
+  
   bool isSetUp;
   bool vertexIsSet;
   bool rhoIsSet;
