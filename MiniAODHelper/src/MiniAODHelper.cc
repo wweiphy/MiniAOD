@@ -309,6 +309,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
 
 
   switch(iMuonID){
+  case muonID::muonPreselection:
   case muonID::muonSide:
   case muonID::muonSideLooseMVA:
   case muonID::muonSideTightMVA:
@@ -397,6 +398,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
 
 
   switch(iElectronID){
+  case electronID::electronPreselection:
   case electronID::electronSide:
   case electronID::electronSideLooseMVA:
   case electronID::electronSideTightMVA:
