@@ -120,7 +120,7 @@ class MiniAODHelper{
   virtual bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
   virtual bool isGoodTau(const pat::Tau&, const float, const tauID::tauID);
   virtual bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
-  float GetMuonRelIso(const pat::Muon&) const;
+  virtual float GetMuonRelIso(const pat::Muon&) const;
   float GetElectronRelIso(const pat::Electron&) const;
   bool PassesCSV(const pat::Jet&, const char);
 
