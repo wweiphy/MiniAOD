@@ -460,6 +460,7 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   // Jet ID
   switch(iJetID){
   case jetID::none:
+  case jetID::jetPU:
   case jetID::jetMinimal:
   case jetID::jetLooseAOD:
   case jetID::jetLoose:
