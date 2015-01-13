@@ -186,7 +186,7 @@ MiniAODHelper::GetUncorrectedJets(const std::vector<pat::Jet>& inputJets){
 
   for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
     pat::Jet jet = (*it);
-    jet.setP4( it->correctedJet(0).p4() );
+    //jet.setP4( it->correctedJet(0).p4() );
     outputJets.push_back(jet);
   }
 
