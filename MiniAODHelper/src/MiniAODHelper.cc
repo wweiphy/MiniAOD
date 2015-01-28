@@ -37,7 +37,7 @@ void MiniAODHelper::SetUp(string iEra, int iSampleNumber, const analysisType::an
   isData       = iIsData;
 
   // Error checking here
-  if((era != "2011") && (era != "2012_52x") && (era != "2012_53x")){ ThrowFatalError("era set to '" + era + "' but it has to be either 2011, 2012_52x, or 2012_53x"); }
+  if((era != "2011") && (era != "2012_52x") && (era != "2012_53x") && (era != "2015_72x") && (era != "2015_73x") && (era != "2015_74x")){ ThrowFatalError("era set to '" + era + "' but it has to be either 2011, 2012_52x, 2012_53x, 2015_72x, 2015_73x, or 2015_74x"); }
   if(sampleNumber==0){ ThrowFatalError("'sampleNumber' cannot be '0'."); }
 
   // Setup PU reweighing
