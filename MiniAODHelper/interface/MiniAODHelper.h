@@ -49,6 +49,7 @@
 #include "DataFormats/PatCandidates/interface/Particle.h"
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
+#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
 
 #include "DataFormats/Math/interface/LorentzVector.h"
 
@@ -77,8 +78,10 @@ namespace sysType{enum sysType{NA, JERup, JERdown, JESup, JESdown, hfSFup, hfSFd
 namespace jetID{		enum jetID{			none, jetPU, jetMinimal, jetLooseAOD, jetLoose, jetTight }; }
 namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight }; }
 namespace muonID{		enum muonID{		muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonNoCuts }; }
-namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronNoCuts }; }
+namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronNoCuts, electronLooseCutBased, electronTightCutBased }; }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
+namespace coneSize{ enum coneSize{R03,R04};}
+namespace corrType{ enum corrType{deltaBeta,rhoEA};}
 
 
 using namespace std;
@@ -120,8 +123,11 @@ class MiniAODHelper{
   virtual bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
   virtual bool isGoodTau(const pat::Tau&, const float, const tauID::tauID);
   virtual bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
-  virtual float GetMuonRelIso(const pat::Muon&) const;
+  //  virtual float GetMuonRelIso(const pat::Muon&) const;
+  float GetMuonRelIso(const pat::Muon&) const;
+  float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
   float GetElectronRelIso(const pat::Electron&) const;
+  float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType) const;
   bool PassesCSV(const pat::Jet&, const char);
 
   template <typename T> T GetSortedByPt(const T&);

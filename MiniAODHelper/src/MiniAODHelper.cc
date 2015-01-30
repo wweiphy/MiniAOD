@@ -145,7 +145,6 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
   return selectedElectrons;
 }
 
-
 std::vector<pat::Tau> 
 MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const float iMinPt, const tauID::tauID iTauID){
 
@@ -404,6 +403,8 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electronSideTightMVA:
   case electronID::electronLooseMinusTrigPresel:
   case electronID::electronNoCuts:
+  case electronID::electronLooseCutBased:
+  case electronID::electronTightCutBased:
   case electronID::electronLoose:
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxLooseElectronAbsEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.200);
@@ -491,6 +492,62 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
   return result;
 }
 
+//overloaded
+float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const
+{
+  //rho corrections based on phys14
+  //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
+  // !!! NOTE !!! rho used should be: fixedGridRhoFastjetAll
+  float result = 9999; 
+  
+  double correction = 9999.;
+  double EffArea = 9999.;
+  double Eta = abs(iMuon.eta());
+  
+  double pfIsoCharged;
+  double pfIsoNeutral;
+  double pfIsoPUSubtracted;
+  
+  switch(iconeSize)
+    {
+    case coneSize::R04:
+      if (Eta >= 0. && Eta < 0.8) EffArea = 0.1546;
+      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.1325;
+      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0913;
+      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1212;
+      else if (Eta >= 2.0 && Eta <= 2.5) EffArea = 0.2085;
+      
+      pfIsoCharged = iMuon.pfIsolationR04().sumChargedHadronPt;
+      pfIsoNeutral = iMuon.pfIsolationR04().sumNeutralHadronEt + iMuon.pfIsolationR04().sumPhotonEt;
+      
+      switch(icorrType){
+      case corrType::rhoEA: correction = useRho*EffArea; break;
+      case corrType::deltaBeta: correction =  0.5*iMuon.pfIsolationR04().sumPUPt; break;}
+      
+      pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
+      result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
+      break;
+    case coneSize::R03:
+      if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
+      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
+      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
+      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
+      else if (Eta >= 2.0 && Eta <= 2.5) EffArea = 0.1177;
+      
+      pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
+      pfIsoNeutral = iMuon.pfIsolationR03().sumNeutralHadronEt + iMuon.pfIsolationR03().sumPhotonEt;
+      
+      switch(icorrType){
+      case corrType::rhoEA:  correction = useRho*EffArea; break;
+      case corrType::deltaBeta: correction = 0.5*iMuon.pfIsolationR03().sumPUPt; break;}
+      
+      pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
+      result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
+      break;
+    }
+  
+  return result;
+}
 
 float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 {
@@ -502,6 +559,47 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
   double pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - 0.5*iElectron.pfIsolationVariables().sumPUPt );
 
   result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
+  
+  return result;
+}
+
+//overloaded
+float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const
+{
+  //rho corrections based on phys14
+  //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
+  // !!! NOTE !!! rho used should be: fixedGridRhoFastjetAll
+  float result = 9999; 
+  
+  double correction = 9999.;
+  double EffArea = 9999.;
+  double Eta = abs(iElectron.eta());
+  
+  double pfIsoCharged;
+  double pfIsoNeutral;
+  double pfIsoPUSubtracted;
+  
+  switch(iconeSize)
+    {
+    case coneSize::R04:
+    case coneSize::R03:
+      if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
+      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
+      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
+      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
+      else if (Eta >= 2.0 && Eta <= 2.5) EffArea = 0.1177;
+      
+      pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
+      pfIsoNeutral = iElectron.pfIsolationVariables().sumNeutralHadronEt + iElectron.pfIsolationVariables().sumPhotonEt;
+      
+      switch(icorrType){
+      case corrType::rhoEA:  correction = useRho*EffArea; break;
+      case corrType::deltaBeta: correction = 0.5*iElectron.pfIsolationVariables().sumPUPt; break;}
+      
+      pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
+      result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
+      break;
+    }
   
   return result;
 }
