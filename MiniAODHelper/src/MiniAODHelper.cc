@@ -317,6 +317,8 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
   case muonID::muonPtEtaIsoOnly:
   case muonID::muonPtEtaIsoTrackerOnly:
   case muonID::muonNoCuts:
+  case muonID::muonLooseCutBased:
+  case muonID::muonTightCutBased:
   case muonID::muonLoose:
     passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxLooseMuonAbsEta));
     passesIso        = (GetMuonRelIso(iMuon) < 0.200);
