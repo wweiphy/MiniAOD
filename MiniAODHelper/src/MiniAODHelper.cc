@@ -517,7 +517,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.1325;
       else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0913;
       else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1212;
-      else if (Eta >= 2.0 && Eta <= 2.5) EffArea = 0.2085;
+      else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.2085;
       
       pfIsoCharged = iMuon.pfIsolationR04().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR04().sumNeutralHadronEt + iMuon.pfIsolationR04().sumPhotonEt;
@@ -534,7 +534,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
       else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
       else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
-      else if (Eta >= 2.0 && Eta <= 2.5) EffArea = 0.1177;
+      else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1177;
       
       pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR03().sumNeutralHadronEt + iMuon.pfIsolationR03().sumPhotonEt;
@@ -585,11 +585,11 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
     {
     case coneSize::R04:
     case coneSize::R03:
-      if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
-      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
-      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
-      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
-      else if (Eta >= 2.0 && Eta <= 2.5) EffArea = 0.1177;
+      if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
+      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
+      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
+      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
+      else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
       
       pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
       pfIsoNeutral = iElectron.pfIsolationVariables().sumNeutralHadronEt + iElectron.pfIsolationVariables().sumPhotonEt;
