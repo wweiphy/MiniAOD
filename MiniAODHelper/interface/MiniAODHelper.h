@@ -77,8 +77,8 @@ namespace analysisType{ enum analysisType{ LJ, DIL, TauLJ, TauDIL }; }
 namespace sysType{enum sysType{NA, JERup, JERdown, JESup, JESdown, hfSFup, hfSFdown, lfSFdown, lfSFup, TESup, TESdown, CSVLFup, CSVLFdown, CSVHFup, CSVHFdown, CSVHFStats1up, CSVHFStats1down, CSVLFStats1up, CSVLFStats1down, CSVHFStats2up, CSVHFStats2down, CSVLFStats2up, CSVLFStats2down, CSVCErr1up, CSVCErr1down, CSVCErr2up, CSVCErr2down }; }
 namespace jetID{		enum jetID{			none, jetPU, jetMinimal, jetLooseAOD, jetLoose, jetTight }; }
 namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight }; }
-namespace muonID{		enum muonID{		muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonRaw, muonLooseCutBased, muonTightCutBased, muonCutBased}; }
-namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased}; }
+namespace muonID{	enum muonID{ muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonRaw, muonLooseCutBased, muonTightCutBased, muonCutBased }; }
+namespace electronID{	enum electronID{ electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronCutBased}; }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
@@ -129,6 +129,7 @@ class MiniAODHelper{
   float GetElectronRelIso(const pat::Electron&) const;
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType) const;
   bool PassesCSV(const pat::Jet&, const char);
+  bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
 
   template <typename T> T GetSortedByPt(const T&);
   template <typename T> T GetSortedByCSV(const T&);

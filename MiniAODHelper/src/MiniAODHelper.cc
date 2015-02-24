@@ -185,7 +185,7 @@ MiniAODHelper::GetUncorrectedJets(const std::vector<pat::Jet>& inputJets){
 
   for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
     pat::Jet jet = (*it);
-    //jet.setP4( it->correctedJet(0).p4() );
+    jet.setP4( it->correctedJet(0).p4() );
     outputJets.push_back(jet);
   }
 
@@ -291,7 +291,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
 
   float maxLooseMuonAbsEta = 2.5;
 
-  float maxTightMuonAbsEta = 2.1;
+  float maxTightMuonAbsEta = 2.4;
 
 
   // Be skeptical about this muon making it through
@@ -323,13 +323,13 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
   case muonID::muonLoose:
     passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxLooseMuonAbsEta));
     passesIso        = (GetMuonRelIso(iMuon) < 0.200);
-    isPFMuon         = true;
+    isPFMuon         = iMuon.isPFMuon();
     passesID         = (( iMuon.isGlobalMuon() || iMuon.isTrackerMuon() ) && isPFMuon);
     break;
   case muonID::muonTight:
     passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxTightMuonAbsEta));
-    passesIso        = (GetMuonRelIso(iMuon) < 0.120);
-    isPFMuon         = true;
+    passesIso        = (GetMuonRelIso(iMuon) < 0.100);
+    isPFMuon         = iMuon.isPFMuon();
 
     if( iMuon.globalTrack().isAvailable() ){
       passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.) 
@@ -337,7 +337,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
 			      );
     }
     if( iMuon.muonBestTrack().isAvailable() ){
-      passesMuonBestTrackID = ( (fabs(iMuon.muonBestTrack()->dxy(vertex.position())) < 0.2)
+      passesMuonBestTrackID = ( (fabs(iMuon.muonBestTrack()->dxy(vertex.position())) < 0.05)
 				&& (fabs(iMuon.muonBestTrack()->dz(vertex.position())) < 0.5)
 				);
     }
@@ -373,15 +373,17 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   bool passesIso        = false;
   bool passesID         = false;
 
+  double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
+  double absSCeta = fabs(SCeta);
+
   bool inCrack = false;
-  if( iElectron.superCluster().isAvailable() )
-    inCrack = ( fabs(iElectron.superCluster()->position().eta())>1.4442 && fabs(iElectron.superCluster()->position().eta())<1.5660 );
+  if( iElectron.superCluster().isAvailable() ) inCrack = ( absSCeta>1.4442 && absSCeta<1.5660 );
 
 
   bool myTrigPresel = true;
 
-  double eleID      = iElectron.electronID("eidTight");
-  bool passMVAId53x = ( eleID>0.5 );  // For 2012_53x, tighter selection
+  //double eleID      = iElectron.electronID("eidTight");
+  bool passMVAId53x = true;//( eleID>0.5 );  // For 2012_53x, tighter selection
 
   bool d02 = false; 
   bool d04 = false;
@@ -420,7 +422,17 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesIso        = (GetElectronRelIso(iElectron) < 0.100);
     passesID         = ( id && no_exp_inner_trkr_hits && myTrigPresel );
     break;
+  case electronID::electronPhys14L:
+  case electronID::electronPhys14M:
+  case electronID::electronPhys14T:
+    id = PassElectronPhys14Id( iElectron, iElectronID );
+    passesIso = id;
+    passesID = id;
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxTightElectronAbsEta) && !inCrack);
+    break;
   }
+
+  
 
   return (passesKinematics && passesIso && passesID);
 }
@@ -486,10 +498,10 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
 {
   float result = 9999; 
 
-  double pfIsoCharged = iMuon.pfIsolationR04().sumChargedHadronPt;
-  double pfIsoNeutral = iMuon.pfIsolationR04().sumNeutralHadronEt + iMuon.pfIsolationR04().sumPhotonEt;
+  double pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
+  double pfIsoNeutral = iMuon.pfIsolationR03().sumNeutralHadronEt + iMuon.pfIsolationR03().sumPhotonEt;
 
-  double pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - 0.5*iMuon.pfIsolationR04().sumPUPt );
+  double pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - 0.5*iMuon.pfIsolationR03().sumPUPt );
 
   result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
   
@@ -611,7 +623,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
   CheckSetUp();
 
-  float csvValue = iJet.bDiscriminator("combinedSecondaryVertexBJetTags");
+  float csvValue = iJet.bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags");
 
   // CSV b-tagging requirement
   switch(iCSVworkingPoint){
@@ -621,4 +633,134 @@ bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint)
   case '-':	return true;                            break;
   }
   return false;
+}
+
+
+bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
+
+  double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
+  double absSCeta = fabs(SCeta);
+
+  bool isEB = ( absSCeta < 1.479 );
+
+  double pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
+  double pfIsoNeutralHadron = iElectron.pfIsolationVariables().sumNeutralHadronEt;
+  double pfIsoNeutralPhoton = iElectron.pfIsolationVariables().sumPhotonEt;
+  double pfIsoSumPUPt = iElectron.pfIsolationVariables().sumPUPt;
+
+  double relIso = (pfIsoCharged + std::max( pfIsoNeutralHadron + pfIsoNeutralPhoton - 0.5*pfIsoSumPUPt, 0.0 ))/iElectron.pt();
+
+
+  double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();
+  double dEtaIn = fabs( iElectron.deltaEtaSuperClusterTrackAtVtx() );
+  double dPhiIn = fabs( iElectron.deltaPhiSuperClusterTrackAtVtx() );
+  double hOverE = iElectron.hcalOverEcal();
+
+  double ooEmooP = -999;
+  if( iElectron.ecalEnergy() == 0 ) ooEmooP = 1e30;
+  else if( !std::isfinite(iElectron.ecalEnergy()) ) ooEmooP = 1e30;
+  else ooEmooP = fabs(1.0/iElectron.ecalEnergy() - iElectron.eSuperClusterOverP()/iElectron.ecalEnergy() );
+
+  double d0 = -999;
+  double dZ = -999;
+  double expectedMissingInnerHits = -999;
+  if( iElectron.gsfTrack().isAvailable() ){
+    d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
+    dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
+    expectedMissingInnerHits = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
+  }
+
+  bool passConversionVeto = ( iElectron.passConversionVeto() );
+
+  bool pass = false;
+  switch(iElectronID){
+  case electronID::electronPhys14L:
+    if( isEB ){
+      pass = ( full5x5_sigmaIetaIeta < 0.010557 &&
+	       dEtaIn < 0.012442 &&
+	       dPhiIn < 0.072624 &&
+	       hOverE < 0.121476 &&
+	       ooEmooP < 0.221803 &&
+	       d0 < 0.022664 &&
+	       dZ < 0.173670 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.120026
+	       );
+    }
+    else{
+      pass = ( full5x5_sigmaIetaIeta < 0.032602 &&
+	       dEtaIn < 0.010654 &&
+	       dPhiIn < 0.145129 &&
+	       hOverE < 0.131862 &&
+	       ooEmooP < 0.142283 &&
+	       d0 < 0.097358 &&
+	       dZ < 0.198444 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.162914
+	       );
+    }
+    break;
+  case electronID::electronPhys14M:
+    if( isEB ){
+      pass = ( full5x5_sigmaIetaIeta < 0.010399 &&
+	       dEtaIn < 0.007641 &&
+	       dPhiIn < 0.032643 &&
+	       hOverE < 0.060662 &&
+	       ooEmooP < 0.153897 &&
+	       d0 < 0.011811 &&
+	       dZ < 0.070775 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.097213
+	       );
+    }
+    else{
+      pass = ( full5x5_sigmaIetaIeta < 0.029524 &&
+	       dEtaIn < 0.009285 &&
+	       dPhiIn < 0.042447 &&
+	       hOverE < 0.104263 &&
+	       ooEmooP < 0.137468 &&
+	       d0 < 0.051682 &&
+	       dZ < 0.180720 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.116708
+	       );
+    }
+    break;
+  case electronID::electronPhys14T:
+    if( isEB ){
+      pass = ( full5x5_sigmaIetaIeta < 0.010181 &&
+	       dEtaIn < 0.006574 &&
+	       dPhiIn < 0.022868 &&
+	       hOverE < 0.037553 &&
+	       ooEmooP < 0.131191 &&
+	       d0 < 0.009924 &&
+	       dZ < 0.015310 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.074355
+	       );
+    }
+    else{
+      pass = ( full5x5_sigmaIetaIeta < 0.028766 &&
+	       dEtaIn < 0.005681 &&
+	       dPhiIn < 0.032046 &&
+	       hOverE < 0.081902 &&
+	       ooEmooP < 0.106055 &&
+	       d0 < 0.027261 &&
+	       dZ < 0.147154 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.090185
+	       );
+    }
+    break;
+  default:
+    break;
+  }
+
+  return pass;
 }
