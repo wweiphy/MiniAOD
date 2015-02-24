@@ -146,14 +146,14 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
 }
 
 std::vector<pat::Tau> 
-MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const float iMinPt, const tauID::tauID iTauID){
+MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const float iMinPt, const tau::ID id){
 
   CheckSetUp();
 
   std::vector<pat::Tau> selectedTaus;
 
   for( std::vector<pat::Tau>::const_iterator it = inputTaus.begin(), ed = inputTaus.end(); it != ed; ++it ){
-    if( isGoodTau(*it,iMinPt,iTauID) ) selectedTaus.push_back(*it);
+    if( isGoodTau(*it,iMinPt,id) ) selectedTaus.push_back(*it);
   }
 
   return selectedTaus;
@@ -437,16 +437,48 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   return (passesKinematics && passesIso && passesID);
 }
 
-bool 
-MiniAODHelper::isGoodTau(const pat::Tau& iTau, const float iMinPt, const tauID::tauID iTauID){
-
+bool
+MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID id)
+{
   CheckVertexSetUp();
- 
-  double minTauPt = iMinPt;
-  
+
+  double minTauPt = min_pt;
+
   bool passesKinematics = false;
-  passesKinematics = (iTau.pt() >= 20) && (fabs(iTau.eta()) <= 2.1) && (iTau.pt() > minTauPt);
-  return passesKinematics;
+  bool passesIsolation = false;
+  bool passesID = tau.tauID("decayModeFinding") >= .5;
+
+  switch (id) {
+     case tau::nonIso:
+        passesID = passesID and \
+                   tau.tauID("againstMuonLoose3") >= .5 and \
+                   tau.tauID("againstElectronVLooseMVA5") >= .5;
+        passesIsolation = true;
+        break;
+     case tau::loose:
+        passesID = passesID and \
+                   tau.tauID("againstMuonLoose3") >= .5 and \
+                   tau.tauID("againstElectronVLooseMVA5") >= .5;
+        passesIsolation = tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits") >= .5;
+        break;
+     case tau::medium:
+        passesID = passesID and \
+                   tau.tauID("againstMuonLoose3") >= .5 and \
+                   tau.tauID("againstElectronLooseMVA5") >= .5;
+        passesIsolation = tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits") >= .5;
+        break;
+     case tau::tight:
+        passesID = passesID and \
+                   tau.tauID("againstMuonTight3") >= .5 and \
+                   tau.tauID("againstElectronMediumMVA5") >= .5;
+        passesIsolation = tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits") >= .5;
+        break;
+  }
+
+  // systematics are only defined for p_T > 20
+  passesKinematics = (tau.pt() >= 20) && (fabs(tau.eta()) <= 2.1) && (tau.pt() > minTauPt);
+
+  return passesKinematics && passesIsolation && passesID;
 }
 
 bool 
