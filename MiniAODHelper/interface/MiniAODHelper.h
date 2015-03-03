@@ -116,14 +116,14 @@ class MiniAODHelper{
 
   void SetFactorizedJetCorrector();
 
-  std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID);
+  std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta);
   std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
-  virtual bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID);
+  virtual bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
   virtual bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID);
   virtual bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   virtual bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
