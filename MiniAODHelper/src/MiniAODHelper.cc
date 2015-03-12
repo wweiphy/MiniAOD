@@ -319,6 +319,8 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
   case muonID::muonPtEtaIsoOnly:
   case muonID::muonPtEtaIsoTrackerOnly:
   case muonID::muonRaw:
+  case muonID::muonLooseMvaBased:
+  case muonID::muonTightMvaBased:
   case muonID::muonLooseCutBased:
   case muonID::muonTightCutBased:
   case muonID::muonCutBased:
