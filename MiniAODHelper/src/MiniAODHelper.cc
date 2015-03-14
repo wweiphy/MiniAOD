@@ -415,6 +415,8 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electronLooseCutBased:
   case electronID::electronTightCutBased:
   case electronID::electronCutBased:
+  case electronID::electronLooseMvaBased:
+  case electronID::electronTightMvaBased:
   case electronID::electronLoose:
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxLooseElectronAbsEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.200);
