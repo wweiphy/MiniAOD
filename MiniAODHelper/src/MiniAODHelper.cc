@@ -178,20 +178,44 @@ MiniAODHelper::GetSelectedJets(const std::vector<pat::Jet>& inputJets, const flo
 }
 
 
-std::vector<pat::Jet> 
-MiniAODHelper::GetUncorrectedJets(const std::vector<pat::Jet>& inputJets){
+std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
+	const std::vector<pat::Jet> &inputJets)
+{
+	CheckSetUp();
+	
+	std::vector<pat::Jet> outputJets;
+	outputJets.reserve(inputJets.size());
+	
+	for (std::vector<pat::Jet>::const_iterator it = inputJets.begin(),
+		ed = inputJets.end(); it != ed; ++it) {
+		
+		pat::Jet jet = (*it);
+		jet.setP4(it->correctedJet(0).p4());
+		outputJets.push_back(jet);
+	}
+	
+	return outputJets;
+}
 
-  CheckSetUp();
 
-  std::vector<pat::Jet> outputJets;
-
-  for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
-    pat::Jet jet = (*it);
-    jet.setP4( it->correctedJet(0).p4() );
-    outputJets.push_back(jet);
-  }
-
-  return outputJets;
+/// Overload of GetUncorrectedJets(const std::vector<pat::Jet>&)
+std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
+	edm::Handle<pat::JetCollection> inputJets)
+{
+	CheckSetUp();
+	
+	std::vector<pat::Jet> outputJets;
+	outputJets.reserve(inputJets->size());
+	
+	for (pat::JetCollection::const_iterator it = inputJets->begin(),
+		ed = inputJets->end(); it != ed; ++it) {
+		
+		pat::Jet jet = (*it);
+		jet.setP4(it->correctedJet(0).p4());
+		outputJets.push_back(jet);
+	}
+	
+	return outputJets;
 }
 
 
