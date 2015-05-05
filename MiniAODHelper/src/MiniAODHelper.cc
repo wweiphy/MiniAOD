@@ -830,7 +830,12 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
 }
 
 
-//// tt+X categorization
+//// tt+X categorization -----------------------------
+//// tt+b:  additionalJetEventId = 51 or 52
+//// tt+bb: additionalJetEventId = 53, 54 or 55
+//// tt+c:  additionalJetEventId = 41 or 42
+//// tt+cc: additionalJetEventId = 43, 44 or 45
+//// tt+lf: additionalJetEventId = 0
 int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, const std::vector<int>& genBHadIndex, const std::vector<int>& genBHadJetIndex, const std::vector<int>& genBHadFlavour, const std::vector<int>& genBHadFromTopWeakDecay, const std::vector<reco::GenParticle>& genBHadPlusMothers, const std::vector<std::vector<int> >& genBHadPlusMothersIndices, const std::vector<int>& genBHadLeptonHadronIndex, const std::vector<int>& genBHadLeptonViaTau, const std::vector<int>& genCHadFlavour, const std::vector<int>& genCHadJetIndex, const std::vector<int>& genCHadFromTopWeakDecay, const std::vector<int>& genCHadBHadronId, const double genJetPtMin_, const double genJetAbsEtaMax_) {
 
     // Map <jet index, number of specific hadrons in the jet>
