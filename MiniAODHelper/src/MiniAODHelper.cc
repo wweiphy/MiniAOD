@@ -591,35 +591,43 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
   switch(iconeSize)
     {
     case coneSize::R04:
-      if (Eta >= 0. && Eta < 0.8) EffArea = 0.1546;
-      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.1325;
-      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0913;
-      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1212;
-      else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.2085;
-      
       pfIsoCharged = iMuon.pfIsolationR04().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR04().sumNeutralHadronEt + iMuon.pfIsolationR04().sumPhotonEt;
       
       switch(icorrType){
-      case corrType::rhoEA: correction = useRho*EffArea; break;
-      case corrType::deltaBeta: correction =  0.5*iMuon.pfIsolationR04().sumPUPt; break;}
+      case corrType::rhoEA:
+	if (Eta >= 0. && Eta < 0.8) EffArea = 0.1546;
+	else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.1325;
+	else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0913;
+	else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1212;
+	else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.2085;
+	correction = useRho*EffArea;
+	break;
+      case corrType::deltaBeta:
+	correction =  0.5*iMuon.pfIsolationR04().sumPUPt;
+	break;
+      }
       
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
       break;
     case coneSize::R03:
-      if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
-      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
-      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
-      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
-      else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1177;
-      
       pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR03().sumNeutralHadronEt + iMuon.pfIsolationR03().sumPhotonEt;
       
       switch(icorrType){
-      case corrType::rhoEA:  correction = useRho*EffArea; break;
-      case corrType::deltaBeta: correction = 0.5*iMuon.pfIsolationR03().sumPUPt; break;}
+      case corrType::rhoEA:
+	if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
+	else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
+	else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
+	else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
+	else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1177;
+	correction = useRho*EffArea;
+	break;
+      case corrType::deltaBeta:
+	correction = 0.5*iMuon.pfIsolationR03().sumPUPt;
+	break;
+      }
       
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
