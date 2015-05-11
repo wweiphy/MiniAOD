@@ -61,7 +61,6 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
-
 #endif
 
 typedef std::map<std::string, std::string> mparams;
@@ -106,16 +105,13 @@ class MiniAODHelper{
 
   // Set up MiniAODHelper
   void SetUp(string, int, const analysisType::analysisType, bool);
-
   void SetVertex(const reco::Vertex&);
-
   void SetRho(double);
-
   void SetJetCorrector(const JetCorrector*);
   void SetJetCorrectorUncertainty();
-
   void SetFactorizedJetCorrector();
-
+  void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
+  
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
@@ -163,6 +159,8 @@ class MiniAODHelper{
   float CSVLwp, CSVMwp, CSVTwp;
 
   double useRho;
+  const std::vector<pat::PackedCandidate> * allcands_;
+  std::vector<const pat::PackedCandidate *> charged_, neutral_, pileup_;
 
   reco::Vertex vertex;
 

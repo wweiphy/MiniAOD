@@ -75,6 +75,50 @@ void MiniAODHelper::SetRho(double inputRho){
   rhoIsSet = true;
 }
 
+namespace {
+  struct ByEta {
+    bool operator()(const pat::PackedCandidate *c1, const pat::PackedCandidate *c2) const {
+      return c1->eta() < c2->eta();
+    }
+    bool operator()(float c1eta, const pat::PackedCandidate *c2) const {
+      return c1eta < c2->eta();
+    }
+    bool operator()(const pat::PackedCandidate *c1, float c2eta) const {
+      return c1->eta() < c2eta;
+    }
+  };
+}
+
+// Set up parameters one by one
+void MiniAODHelper::SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh, float dz_thresh, bool also_leptons){
+
+  allcands_ = &all;
+  charged_.clear(); neutral_.clear(); pileup_.clear();
+  for (const pat::PackedCandidate &p : all) {
+    if (p.charge() == 0) {
+      neutral_.push_back(&p);
+    } 
+    else { 
+
+      if ( (abs(p.pdgId()) == 211 ) || ( also_leptons && ((abs(p.pdgId()) == 11 ) || (abs(p.pdgId()) == 13 )) ) )  {
+	
+	if (p.fromPV() > fromPV_thresh && fabs(p.dz()) < dz_thresh ) {
+	  charged_.push_back(&p);
+	} 
+	else {
+	  pileup_.push_back(&p);
+	}
+      }
+    }
+  }
+  //  if (weightCone_ > 0) weights_.resize(neutral_.size());
+  //  std::fill(weights_.begin(), weights_.end(), -1.f);
+  std::sort(charged_.begin(), charged_.end(), ByEta());
+  std::sort(neutral_.begin(), neutral_.end(), ByEta());
+  std::sort(pileup_.begin(),  pileup_.end(),  ByEta());
+  //  clearVetos();
+}
+
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
 
