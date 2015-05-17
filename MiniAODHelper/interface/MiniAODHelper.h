@@ -76,15 +76,13 @@ namespace analysisType{ enum analysisType{ LJ, DIL, TauLJ, TauDIL }; }
 namespace sysType{enum sysType{NA, JERup, JERdown, JESup, JESdown, hfSFup, hfSFdown, lfSFdown, lfSFup, TESup, TESdown, CSVLFup, CSVLFdown, CSVHFup, CSVHFdown, CSVHFStats1up, CSVHFStats1down, CSVLFStats1up, CSVLFStats1down, CSVHFStats2up, CSVHFStats2down, CSVLFStats2up, CSVLFStats2down, CSVCErr1up, CSVCErr1down, CSVCErr2up, CSVCErr2down }; }
 namespace jetID{		enum jetID{			none, jetPU, jetMinimal, jetLooseAOD, jetLoose, jetTight }; }
 namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight }; }
-namespace tau {
-   enum ID {
-      nonIso, loose, medium, tight
-   };
-}
+namespace tau { enum ID { nonIso, loose, medium, tight }; }
+namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, selfVetoFirst=2};}
+
 namespace muonID{		enum muonID{		muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonRaw, muonLooseCutBased, muonTightCutBased, muonCutBased, muonLooseMvaBased, muonTightMvaBased, muon2lss }; }
 namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss }; }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
-namespace coneSize{ enum coneSize{R03,R04};}
+namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
 
 using namespace std;
@@ -132,6 +130,9 @@ class MiniAODHelper{
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType) const;
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
+  void addVetos(const reco::Candidate &cand);
+  void clearVetos();
+  float isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId=-1) const;
   int ttHFCategorization(const std::vector<reco::GenJet>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<reco::GenParticle>&, const std::vector<std::vector<int> >&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const double, const double);
 
   template <typename T> T GetSortedByPt(const T&);
@@ -161,7 +162,8 @@ class MiniAODHelper{
   double useRho;
   const std::vector<pat::PackedCandidate> * allcands_;
   std::vector<const pat::PackedCandidate *> charged_, neutral_, pileup_;
-
+  //  mutable std::vector<float> weights_;
+  std::vector<const reco::Candidate *> vetos_;
   reco::Vertex vertex;
 
   const JetCorrector* corrector;

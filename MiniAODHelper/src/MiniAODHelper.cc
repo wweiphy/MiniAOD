@@ -116,7 +116,7 @@ void MiniAODHelper::SetPackedCandidates(const std::vector<pat::PackedCandidate> 
   std::sort(charged_.begin(), charged_.end(), ByEta());
   std::sort(neutral_.begin(), neutral_.end(), ByEta());
   std::sort(pileup_.begin(),  pileup_.end(),  ByEta());
-  //  clearVetos();
+  clearVetos();
 }
 
 // Set up parameters one by one
@@ -638,46 +638,75 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       pfIsoCharged = iMuon.pfIsolationR04().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR04().sumNeutralHadronEt + iMuon.pfIsolationR04().sumPhotonEt;
       
-      switch(icorrType){
-      case corrType::rhoEA:
-	if (Eta >= 0. && Eta < 0.8) EffArea = 0.1546;
-	else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.1325;
-	else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0913;
-	else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1212;
-	else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.2085;
-	correction = useRho*EffArea;
-	break;
-      case corrType::deltaBeta:
-	correction =  0.5*iMuon.pfIsolationR04().sumPUPt;
-	break;
-      }
+      switch(icorrType)
+	{
+	case corrType::rhoEA:
+	  //based on R04 Phys14_25ns_v1
+	  if (abs(Eta) < 0.8) EffArea = 0.1546;
+	  else if (abs(Eta) < 1.3) EffArea = 0.1325;
+	  else if (abs(Eta) < 2.0) EffArea = 0.0913;
+	  else if (abs(Eta) < 2.2) EffArea = 0.1212;
+	  else EffArea = 0.2085;
+	  correction = useRho*EffArea;
+	  break;
+	case corrType::deltaBeta:
+	  correction =  0.5*iMuon.pfIsolationR04().sumPUPt;
+	  break;
+	}
       
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
       break;
+
     case coneSize::R03:
       pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR03().sumNeutralHadronEt + iMuon.pfIsolationR03().sumPhotonEt;
       
-      switch(icorrType){
-      case corrType::rhoEA:
-	if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
-	else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
-	else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
-	else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
-	else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1177;
-	correction = useRho*EffArea;
-	break;
-      case corrType::deltaBeta:
-	correction = 0.5*iMuon.pfIsolationR03().sumPUPt;
-	break;
-      }
+      switch(icorrType)
+	{
+	case corrType::rhoEA:
+	  //effective area based on R03 Phys14_25ns_v1
+	  if (abs(Eta) < 0.8) EffArea = 0.0913;
+	  else if (abs(Eta) < 1.3) EffArea = 0.0765;
+	  else if (abs(Eta) < 2.0) EffArea = 0.0546;
+	  else if (abs(Eta) < 2.2) EffArea = 0.0728;
+	  else EffArea = 0.1177;
+	  correction = useRho*EffArea;
+	  break;
+	case corrType::deltaBeta:
+	  correction = 0.5*iMuon.pfIsolationR03().sumPUPt;
+	  break;
+	}
       
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
       break;
+
+    case coneSize::miniIso:
+      double miniIsoR = 10.0/min(max(iMuon.pt(), float(50.)),float(200.));
+      pfIsoCharged = isoSumRaw(charged_, iMuon, miniIsoR, 0.0001, 0.0, SelfVetoPolicy::selfVetoAll);
+      pfIsoNeutral = isoSumRaw(neutral_, iMuon, miniIsoR, 0.01, 0.5, SelfVetoPolicy::selfVetoAll);
+      switch(icorrType)
+	{
+	case corrType::rhoEA:
+	  //effective area based on R03 Phys14_25ns_v1
+	  if (abs(Eta) < 0.8) EffArea = 0.0913;
+	  else if (abs(Eta) < 1.3) EffArea = 0.0765;
+	  else if (abs(Eta) < 2.0) EffArea = 0.0546;
+	  else if (abs(Eta) < 2.2) EffArea = 0.0728;
+	  else EffArea = 0.1177;
+	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
+	  break;
+	case corrType::deltaBeta: 
+	  double miniAbsIsoPU = isoSumRaw(pileup_, iMuon, miniIsoR, 0.01, 0.5, SelfVetoPolicy::selfVetoAll);
+	  correction = 0.5*miniAbsIsoPU;
+	  break;
+	}
+      pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction);
+      result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
+      break;
+      
     }
-  
   return result;
 }
 
@@ -698,7 +727,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 //overloaded
 float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const
 {
-  //rho corrections based on phys14
+  //rho*EA corrections based on phys14
   //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
   // !!! NOTE !!! rho used should be: fixedGridRhoFastjetAll
   float result = 9999; 
@@ -715,26 +744,66 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
     {
     case coneSize::R04:
     case coneSize::R03:
-      if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
-      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
-      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
-      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
-      else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
-      
       pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
       pfIsoNeutral = iElectron.pfIsolationVariables().sumNeutralHadronEt + iElectron.pfIsolationVariables().sumPhotonEt;
       
-      switch(icorrType){
-      case corrType::rhoEA:  correction = useRho*EffArea; break;
-      case corrType::deltaBeta: correction = 0.5*iElectron.pfIsolationVariables().sumPUPt; break;}
-      
+      switch(icorrType)
+	{
+	case corrType::rhoEA:
+	  if (abs(Eta) < 0.8) EffArea = 0.1013;
+	  else if (abs(Eta) < 1.3) EffArea = 0.0988;
+	  else if (abs(Eta) < 2.0) EffArea = 0.0572;
+	  else if (abs(Eta) < 2.2) EffArea = 0.0842;
+	  else EffArea = 0.1530;
+	  correction = useRho*EffArea;
+	  break;
+	case corrType::deltaBeta:
+	  correction = 0.5*iElectron.pfIsolationVariables().sumPUPt;
+	  break;
+	}
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
       break;
+    case coneSize::miniIso:
+      double innerR_ch;
+      double innerR_nu;
+      double miniIsoR = 10.0/min(max(iElectron.pt(), float(50.)),float(200.));
+      if (iElectron.isEB())
+	{ 
+	  innerR_ch = 0.0;
+	  innerR_nu = 0.0;
+	} 
+      else
+	{
+	  innerR_ch = 0.015;
+	  innerR_nu = 0.08;
+	}
+      
+      pfIsoCharged = isoSumRaw(charged_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
+      pfIsoNeutral = isoSumRaw(neutral_, iElectron, miniIsoR, innerR_nu, 0.0, SelfVetoPolicy::selfVetoNone, 22)+isoSumRaw(neutral_, iElectron, miniIsoR, 0.0, 0.0, SelfVetoPolicy::selfVetoNone, 130);
+      switch(icorrType)
+	{
+	case corrType::rhoEA:
+	  //effective area based on R03
+	  if (abs(Eta) < 0.8) EffArea = 0.1013;
+	  else if (abs(Eta) < 1.3) EffArea = 0.0988;
+	  else if (abs(Eta) < 2.0) EffArea = 0.0572;
+	  else if (abs(Eta) < 2.2) EffArea = 0.0842;
+	  else EffArea = 0.1530;
+	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
+	  break;
+	case corrType::deltaBeta: 
+	  double miniAbsIsoPU = isoSumRaw(pileup_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
+	  correction = 0.5*miniAbsIsoPU;
+	  break;
+	}
+      pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction);
+      result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
+      break;
     }
-  
   return result;
 }
+
 
 bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
   CheckSetUp();
@@ -881,6 +950,53 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
   return pass;
 }
 
+void MiniAODHelper::addVetos(const reco::Candidate &cand) {
+  for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
+    const reco::CandidatePtr &cp = cand.sourceCandidatePtr(i);
+    if (cp.isNonnull() && cp.isAvailable()) vetos_.push_back(&*cp);
+  }
+}
+
+void MiniAODHelper::clearVetos() {
+  vetos_.clear();
+}
+
+float MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId) const
+{
+  float dR2 = dR*dR, innerR2 = innerR*innerR;
+  
+  std::vector<const reco::Candidate *> vetos(vetos_);
+  for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
+    if (selfVeto == SelfVetoPolicy::selfVetoNone) break;
+    const reco::CandidatePtr &cp = cand.sourceCandidatePtr(i);
+    if (cp.isNonnull() && cp.isAvailable()) {
+      vetos.push_back(&*cp);
+      if (selfVeto == SelfVetoPolicy::selfVetoFirst) break;
+    }
+  }
+  
+  typedef std::vector<const pat::PackedCandidate *>::const_iterator IT;
+  IT candsbegin = std::lower_bound(cands.begin(), cands.end(), cand.eta() - dR, ByEta());
+  IT candsend = std::upper_bound(candsbegin, cands.end(), cand.eta() + dR, ByEta());
+  
+  double isosum = 0;
+  for (IT icharged = candsbegin; icharged < candsend; ++icharged) {
+    // pdgId
+    if (pdgId > 0 && abs((*icharged)->pdgId()) != pdgId) continue;
+    // threshold
+    if (threshold > 0 && (*icharged)->pt() < threshold) continue;
+    // cone
+    float mydr2 = reco::deltaR2(**icharged, cand);
+    if (mydr2 >= dR2 || mydr2 < innerR2) continue;
+    // veto
+    if (std::find(vetos.begin(), vetos.end(), *icharged) != vetos.end()) {
+      continue;
+    }
+    // add to sum
+    isosum += (*icharged)->pt();
+  }
+  return isosum;
+}
 
 //// tt+X categorization -----------------------------
 //// tt+b:  additionalJetEventId = 51 or 52
