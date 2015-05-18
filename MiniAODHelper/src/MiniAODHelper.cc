@@ -118,7 +118,7 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
 
 
 std::vector<pat::Muon> 
-MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const float iMaxEta){
+MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const float iMaxEta, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
   CheckSetUp();
 
