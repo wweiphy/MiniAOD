@@ -161,16 +161,15 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
 }
 
 
-
 std::vector<pat::Muon> 
-MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
+MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const float iMaxEta, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
   CheckSetUp();
 
   std::vector<pat::Muon> selectedMuons;
 
   for( std::vector<pat::Muon>::const_iterator it = inputMuons.begin(), ed = inputMuons.end(); it != ed; ++it ){
-    if( isGoodMuon(*it,iMinPt,iMuonID,iconeSize,icorrType) ) selectedMuons.push_back(*it);
+    if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType) ) selectedMuons.push_back(*it);
   }
 
   return selectedMuons;
@@ -178,14 +177,14 @@ MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const 
 
 
 std::vector<pat::Electron> 
-MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const float iMinPt, const electronID::electronID iElectronID){
+MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const float iMinPt, const electronID::electronID iElectronID, const float iMaxEta){
 
   CheckSetUp();
 
   std::vector<pat::Electron> selectedElectrons;
 
   for( std::vector<pat::Electron>::const_iterator it = inputElectrons.begin(), ed = inputElectrons.end(); it != ed; ++it ){
-    if( isGoodElectron(*it,iMinPt,iElectronID) ) selectedElectrons.push_back(*it);
+    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID) ) selectedElectrons.push_back(*it);
   }
 
   return selectedElectrons;
@@ -353,16 +352,13 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 }
 
 bool 
-MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
+MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
   CheckVertexSetUp();
 
   double minMuonPt = iMinPt;
 
-  float maxLooseMuonAbsEta = 2.5;
-
-  float maxTightMuonAbsEta = 2.4;
-
+  double maxMuonEta = iMaxEta;
 
   // Be skeptical about this muon making it through
   bool passesKinematics	= false;
@@ -394,13 +390,37 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
   case muonID::muonCutBased:
   case muonID::muon2lss:
   case muonID::muonLoose:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxLooseMuonAbsEta));
+//     passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+//     passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.200);
+//     isPFMuon         = iMuon.isPFMuon();
+//     passesID         = (( iMuon.isGlobalMuon() || iMuon.isTrackerMuon() ) && isPFMuon);
+
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
     passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.200);
     isPFMuon         = iMuon.isPFMuon();
-    passesID         = (( iMuon.isGlobalMuon() || iMuon.isTrackerMuon() ) && isPFMuon);
+
+    if( iMuon.globalTrack().isAvailable() ){
+      passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.) 
+			      && (iMuon.globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
+			      );
+    }
+    if( iMuon.muonBestTrack().isAvailable() ){
+      passesMuonBestTrackID = ( (fabs(iMuon.muonBestTrack()->dxy(vertex.position())) < 0.2)
+				&& (fabs(iMuon.muonBestTrack()->dz(vertex.position())) < 0.5)
+				);
+    }
+    if( iMuon.innerTrack().isAvailable() )
+      passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0);
+    if( iMuon.track().isAvailable() )
+      passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
+
+    passesTrackerID = ( passesGlobalTrackID && passesMuonBestTrackID && passesInnerTrackID && passesTrackID && (iMuon.numberOfMatchedStations() > 1) );
+
+    passesID        = (iMuon.isGlobalMuon() && isPFMuon && passesTrackerID);
+
     break;
   case muonID::muonTight:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxTightMuonAbsEta));
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
     passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.12);
     isPFMuon         = iMuon.isPFMuon();
 
@@ -428,17 +448,17 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
   return (passesKinematics && passesIso && passesID);
 }
 
-
-
 bool 
-MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const electronID::electronID iElectronID){
+MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta, const electronID::electronID iElectronID){
 
   CheckVertexSetUp();
 
   double minElectronPt = iMinPt;
 
-  float maxLooseElectronAbsEta = 2.4;
-  float maxTightElectronAbsEta = 2.4;
+  float maxElectronEta = iMaxEta;
+
+//   float maxLooseElectronAbsEta = 2.4;
+//   float maxTightElectronAbsEta = 2.4;
 
 
   // Be skeptical about this electron making it through
@@ -488,13 +508,13 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electronTightMvaBased:
   case electronID::electron2lss:
   case electronID::electronLoose:
-    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxLooseElectronAbsEta) && !inCrack);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.200);
     passesID         = ( passMVAId53x && no_exp_inner_trkr_hits && d04 && notConv && myTrigPresel );
     break;
   case electronID::electronTightMinusTrigPresel:
   case electronID::electronTight:
-    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxTightElectronAbsEta) && !inCrack);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.100);
     passesID         = ( id && no_exp_inner_trkr_hits && myTrigPresel );
     break;
@@ -504,7 +524,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     id = PassElectronPhys14Id( iElectron, iElectronID );
     passesIso = id;
     passesID = id;
-    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxTightElectronAbsEta) && !inCrack);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     break;
   }
 
