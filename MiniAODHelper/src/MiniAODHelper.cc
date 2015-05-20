@@ -703,7 +703,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       break;
 
     case coneSize::miniIso:
-      double miniIsoR = 10.0/min(max(iMuon.pt(), float(50.)),float(200.));
+      double miniIsoR = 10.0/min(max(iMuon.pt(), double(50.)),double(200.));
       pfIsoCharged = isoSumRaw(charged_, iMuon, miniIsoR, 0.0001, 0.0, SelfVetoPolicy::selfVetoAll);
       pfIsoNeutral = isoSumRaw(neutral_, iMuon, miniIsoR, 0.01, 0.5, SelfVetoPolicy::selfVetoAll);
       switch(icorrType)
@@ -787,7 +787,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
     case coneSize::miniIso:
       double innerR_ch;
       double innerR_nu;
-      double miniIsoR = 10.0/min(max(iElectron.pt(), float(50.)),float(200.));
+      double miniIsoR = 10.0/min(max(iElectron.pt(), double(50.)),double(200.));
       if (iElectron.isEB())
 	{ 
 	  innerR_ch = 0.0;
