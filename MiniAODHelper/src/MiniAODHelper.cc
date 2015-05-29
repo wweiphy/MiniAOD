@@ -75,6 +75,7 @@ void MiniAODHelper::SetRho(double inputRho){
   rhoIsSet = true;
 }
 
+
 namespace {
   struct ByEta {
     bool operator()(const pat::PackedCandidate *c1, const pat::PackedCandidate *c2) const {
@@ -190,6 +191,7 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
   return selectedElectrons;
 }
 
+
 std::vector<pat::Tau> 
 MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const float iMinPt, const tau::ID id){
 
@@ -203,7 +205,6 @@ MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const flo
 
   return selectedTaus;
 }
-
 
 
 std::vector<pat::Jet> 
@@ -221,9 +222,8 @@ MiniAODHelper::GetSelectedJets(const std::vector<pat::Jet>& inputJets, const flo
 }
 
 
-std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
-	const std::vector<pat::Jet> &inputJets)
-{
+std::vector<pat::Jet> 
+MiniAODHelper::GetUncorrectedJets(const std::vector<pat::Jet> &inputJets){
 	CheckSetUp();
 	
 	std::vector<pat::Jet> outputJets;
@@ -240,11 +240,9 @@ std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
 	return outputJets;
 }
 
-
 /// Overload of GetUncorrectedJets(const std::vector<pat::Jet>&)
-std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
-	edm::Handle<pat::JetCollection> inputJets)
-{
+std::vector<pat::Jet> 
+MiniAODHelper::GetUncorrectedJets(edm::Handle<pat::JetCollection> inputJets){
 	CheckSetUp();
 	
 	std::vector<pat::Jet> outputJets;
@@ -351,6 +349,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
   return outputJets;
 }
 
+
 bool 
 MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
@@ -448,6 +447,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
   return (passesKinematics && passesIso && passesID);
 }
 
+
 bool 
 MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta, const electronID::electronID iElectronID){
 
@@ -533,9 +533,9 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   return (passesKinematics && passesIso && passesID);
 }
 
+
 bool
-MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID id)
-{
+MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID id){
   CheckVertexSetUp();
 
   double minTauPt = min_pt;
@@ -576,6 +576,7 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
 
   return passesKinematics && passesIsolation && passesID;
 }
+
 
 bool 
 MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint){
@@ -622,8 +623,8 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 }
 
 
-float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
-{
+float 
+MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const{
   float result = 9999; 
 
   double pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
@@ -637,8 +638,8 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
 }
 
 //overloaded
-float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const
-{
+float 
+MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const{
   //rho corrections based on phys14
   //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
   // !!! NOTE !!! rho used should be: fixedGridRhoFastjetAll
@@ -730,8 +731,9 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
   return result;
 }
 
-float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
-{
+
+float 
+MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const{
   float result = 9999; 
 
   double pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
@@ -745,8 +747,8 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 }
 
 //overloaded
-float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const
-{
+float 
+MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const{
   //rho*EA corrections based on phys14
   //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
   // !!! NOTE !!! rho used should be: fixedGridRhoFastjetAll
@@ -825,10 +827,11 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 }
 
 
-bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
+bool 
+MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
   CheckSetUp();
 
-  float csvValue = iJet.bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags");
+  float csvValue = iJet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
 
   // CSV b-tagging requirement
   switch(iCSVworkingPoint){
@@ -841,7 +844,8 @@ bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint)
 }
 
 
-bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
+bool 
+MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
 
   double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
   double absSCeta = fabs(SCeta);
@@ -970,19 +974,26 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
   return pass;
 }
 
-void MiniAODHelper::addVetos(const reco::Candidate &cand) {
+
+void 
+
+MiniAODHelper::addVetos(const reco::Candidate &cand){
   for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
     const reco::CandidatePtr &cp = cand.sourceCandidatePtr(i);
     if (cp.isNonnull() && cp.isAvailable()) vetos_.push_back(&*cp);
   }
 }
 
-void MiniAODHelper::clearVetos() {
+
+void 
+MiniAODHelper::clearVetos(){
   vetos_.clear();
 }
 
-float MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId) const
-{
+
+
+float 
+MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId) const{
   float dR2 = dR*dR, innerR2 = innerR*innerR;
   
   std::vector<const reco::Candidate *> vetos(vetos_);
@@ -1018,13 +1029,17 @@ float MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> &
   return isosum;
 }
 
+
 //// tt+X categorization -----------------------------
 //// tt+b:  additionalJetEventId = 51 or 52
 //// tt+bb: additionalJetEventId = 53, 54 or 55
 //// tt+c:  additionalJetEventId = 41 or 42
 //// tt+cc: additionalJetEventId = 43, 44 or 45
 //// tt+lf: additionalJetEventId = 0
-int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, const std::vector<int>& genBHadIndex, const std::vector<int>& genBHadJetIndex, const std::vector<int>& genBHadFlavour, const std::vector<int>& genBHadFromTopWeakDecay, const std::vector<reco::GenParticle>& genBHadPlusMothers, const std::vector<std::vector<int> >& genBHadPlusMothersIndices, const std::vector<int>& genBHadLeptonHadronIndex, const std::vector<int>& genBHadLeptonViaTau, const std::vector<int>& genCHadFlavour, const std::vector<int>& genCHadJetIndex, const std::vector<int>& genCHadFromTopWeakDecay, const std::vector<int>& genCHadBHadronId, const double genJetPtMin_, const double genJetAbsEtaMax_) {
+
+
+int 
+MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, const std::vector<int>& genBHadIndex, const std::vector<int>& genBHadJetIndex, const std::vector<int>& genBHadFlavour, const std::vector<int>& genBHadFromTopWeakDecay, const std::vector<reco::GenParticle>& genBHadPlusMothers, const std::vector<std::vector<int> >& genBHadPlusMothersIndices, const std::vector<int>& genBHadLeptonHadronIndex, const std::vector<int>& genBHadLeptonViaTau, const std::vector<int>& genCHadFlavour, const std::vector<int>& genCHadJetIndex, const std::vector<int>& genCHadFromTopWeakDecay, const std::vector<int>& genCHadBHadronId, const double genJetPtMin_, const double genJetAbsEtaMax_) {
 
     // Map <jet index, number of specific hadrons in the jet>
     // B jets with b hadrons directly from top quark decay
