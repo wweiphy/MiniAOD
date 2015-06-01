@@ -120,8 +120,8 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
 
-  bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
-  bool isGoodElectron(const pat::Electron&, const float, const float, const electronID::electronID);
+  bool isGoodMuon(const pat::Muon&, const float, const muonID::muonID, const float = 2.4, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta);
+  bool isGoodElectron(const pat::Electron&, const float, const electronID::electronID, const float = 2.4);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;

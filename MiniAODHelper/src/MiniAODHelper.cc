@@ -170,7 +170,7 @@ MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const 
   std::vector<pat::Muon> selectedMuons;
 
   for( std::vector<pat::Muon>::const_iterator it = inputMuons.begin(), ed = inputMuons.end(); it != ed; ++it ){
-    if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType) ) selectedMuons.push_back(*it);
+    if( isGoodMuon(*it,iMinPt,iMuonID,iMaxEta,iconeSize,icorrType) ) selectedMuons.push_back(*it);
   }
 
   return selectedMuons;
@@ -185,7 +185,7 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
   std::vector<pat::Electron> selectedElectrons;
 
   for( std::vector<pat::Electron>::const_iterator it = inputElectrons.begin(), ed = inputElectrons.end(); it != ed; ++it ){
-    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID) ) selectedElectrons.push_back(*it);
+    if( isGoodElectron(*it,iMinPt,iElectronID,iMaxEta) ) selectedElectrons.push_back(*it);
   }
 
   return selectedElectrons;
@@ -351,7 +351,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 
 
 bool 
-MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
+MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muonID::muonID iMuonID, const float iMaxEta, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
   CheckVertexSetUp();
 
@@ -449,7 +449,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
 
 
 bool 
-MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta, const electronID::electronID iElectronID){
+MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const electronID::electronID iElectronID, const float iMaxEta){
 
   CheckVertexSetUp();
 
