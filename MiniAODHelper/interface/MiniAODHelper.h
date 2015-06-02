@@ -142,6 +142,8 @@ class MiniAODHelper{
   template <typename T> T GetSortedByCSV(const T&);
   template <typename T, typename S> std::vector<T> RemoveOverlaps( const std::vector<S>&, const std::vector<T>& );
   template <typename T, typename S> T RemoveOverlap( const std::vector<S>&, const T& );
+  template <typename T> std::vector<pat::Jet> RemoveJetOverlaps( const std::vector<T>&, const std::vector<pat::Jet>& );
+  template <typename T> pat::Jet RemoveJetOverlap( const std::vector<T>&, const pat::Jet& );
 
   template <typename T, typename S> double DeltaR( const S&, const T& );
   template <typename T, typename S> std::vector<T> GetDifference( const std::vector<S>&, const std::vector<T>& );
@@ -310,6 +312,138 @@ std::vector<PATObj1> MiniAODHelper::RemoveOverlaps( const std::vector<PATObj2>& 
     PATObj1 myobj = (*iobj1);
     PATObj1 clean = RemoveOverlap(other, myobj);
 
+    cleaned.push_back(clean);
+  }
+
+  return cleaned;
+}
+
+
+template <typename PATObj1> 
+pat::Jet MiniAODHelper::RemoveJetOverlap( const std::vector<PATObj1>& other, const pat::Jet& unclean ){
+
+  unsigned int nSources1 = unclean.numberOfSourceCandidatePtrs();
+  bool hasOverlaps = false;
+
+  std::vector<reco::CandidatePtr> overlaps;
+
+  for( typename std::vector<PATObj1>::const_iterator iobj2 = other.begin(); iobj2!=other.end(); ++iobj2 ){
+
+    unsigned int nSources2 = iobj2->numberOfSourceCandidatePtrs();
+
+    for( unsigned int i1=0; i1<nSources1; i1++ ){
+      reco::CandidatePtr source1 = unclean.sourceCandidatePtr(i1);
+
+      if( !(source1.isNonnull() && source1.isAvailable()) ) continue;
+
+      for( unsigned int i2=0; i2<nSources2; i2++ ){
+	      reco::CandidatePtr source2 = iobj2->sourceCandidatePtr(i2);
+
+	      if( !(source2.isNonnull() && source2.isAvailable()) ) continue;
+
+	      if( source1==source2 ){
+	        hasOverlaps = true;
+	        overlaps.push_back(source2);
+	      }
+      }
+    }
+  }// end loop over iobj22
+
+  pat::Jet cleaned = unclean;
+  
+  if( hasOverlaps ){
+    math::XYZTLorentzVector original = cleaned.p4();
+    
+    reco::PFJet::Specific cleanedSpecific;
+    if(cleaned.isPFJet()){
+      cleanedSpecific = cleaned.pfSpecific();
+    }  
+    
+    for( int iOverlap=0; iOverlap<int(overlaps.size()); iOverlap++ ){
+
+      const reco::Candidate & cOverlap = *(overlaps[iOverlap]);
+      math::XYZTLorentzVector overlaper = cOverlap.p4();
+
+      original -= overlaper;
+      
+      if(cleaned.isPFJet()){
+        switch (std::abs(cOverlap.pdgId())) {
+          case 211: //PFCandidate::h:       // charged hadron
+          cleanedSpecific.mChargedHadronEnergy -= cOverlap.energy();
+          cleanedSpecific.mChargedHadronMultiplicity--;
+          cleanedSpecific.mChargedMultiplicity--;
+          break;
+
+          case 130: //PFCandidate::h0 :    // neutral hadron
+          cleanedSpecific.mNeutralHadronEnergy -= cOverlap.energy();
+          cleanedSpecific.mNeutralHadronMultiplicity--;
+          cleanedSpecific.mNeutralMultiplicity--;
+          break;
+
+          case 22: //PFCandidate::gamma:   // photon
+          cleanedSpecific.mPhotonEnergy -= cOverlap.energy();
+          cleanedSpecific.mPhotonMultiplicity--;
+          cleanedSpecific.mNeutralEmEnergy -= cOverlap.energy();
+          cleanedSpecific.mNeutralMultiplicity--;
+          break;
+
+          case 11: // PFCandidate::e:       // electron 
+          cleanedSpecific.mElectronEnergy -= cOverlap.energy();
+          cleanedSpecific.mElectronMultiplicity--;
+          cleanedSpecific.mChargedEmEnergy -= cOverlap.energy(); 
+          cleanedSpecific.mChargedMultiplicity--;
+          break;
+
+          case 13: //PFCandidate::mu:      // muon
+          cleanedSpecific.mMuonEnergy -= cOverlap.energy();
+          cleanedSpecific.mMuonMultiplicity--;
+          cleanedSpecific.mChargedMuEnergy -= cOverlap.energy();
+          cleanedSpecific.mChargedMultiplicity--;
+          break;
+
+          case 1: // PFCandidate::h_HF :    // hadron in HF
+          cleanedSpecific.mHFHadronEnergy -= cOverlap.energy();
+          cleanedSpecific.mHFHadronMultiplicity--;
+          cleanedSpecific.mNeutralMultiplicity--;
+          break;
+
+          case 2: //PFCandidate::egamma_HF :    // electromagnetic in HF
+          cleanedSpecific.mHFEMEnergy -= cOverlap.energy();
+          cleanedSpecific.mHFEMMultiplicity--;
+          cleanedSpecific.mNeutralEmEnergy -= cOverlap.energy();
+          cleanedSpecific.mNeutralMultiplicity--;
+          break;
+
+
+          default:
+          edm::LogWarning("DataNotFound") <<"MiniAODHelper::RemoveOverlap: Unknown PFCandidate::ParticleType: "
+          <<cOverlap.pdgId()<<" is ignored\n";
+          break;
+        }
+      }
+    }
+    
+    cleaned.setP4( original );
+    
+    if(cleaned.isPFJet()){
+      cleaned.setPFSpecific(cleanedSpecific);
+    }
+  }
+
+  return cleaned;
+}
+
+
+template <typename PATObj1> 
+std::vector<pat::Jet> MiniAODHelper::RemoveJetOverlaps( const std::vector<PATObj1>& other, const std::vector<pat::Jet>& unclean ){
+
+  std::vector<pat::Jet> cleaned;
+  
+  for( typename std::vector<pat::Jet>::const_iterator iobj1 = unclean.begin(); iobj1!=unclean.end(); ++iobj1 ){
+
+    pat::Jet myobj = (*iobj1);
+    pat::Jet clean = RemoveJetOverlap(other, myobj);
+      
     cleaned.push_back(clean);
   }
 

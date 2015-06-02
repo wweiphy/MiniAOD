@@ -545,15 +545,15 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   if( fabs(iJet.eta()) > iMaxAbsEta ) return false;
 
   bool loose = (
-		iJet.neutralHadronEnergyFraction() < 0.99 &&
-		iJet.chargedEmEnergyFraction() < 0.99 &&
-		iJet.neutralEmEnergyFraction() < 0.99 &&
+		iJet.neutralHadronEnergy()/iJet.energy() < 0.99 &&
+		iJet.chargedEmEnergy()/iJet.energy() < 0.99 &&
+		iJet.neutralEmEnergy()/iJet.energy() < 0.99 &&
 		iJet.numberOfDaughters() > 1
 		);
 
   if( fabs(iJet.eta())<2.4 ){
     loose = ( loose &&
-	      iJet.chargedHadronEnergyFraction() > 0.0 &&
+	      iJet.chargedHadronEnergy()/iJet.energy() > 0.0 &&
 	      iJet.chargedMultiplicity() > 0
 	      );
   }
