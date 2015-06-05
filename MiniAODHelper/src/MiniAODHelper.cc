@@ -1062,6 +1062,8 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
     for(size_t hadronId = 0; hadronId < genCHadJetIndex.size(); ++hadronId) {
         // Skipping c hadrons that are coming from b hadrons
         if(genCHadBHadronId.at(hadronId) >= 0) continue;
+        // Skipping c hadrons coming for W-dcays
+        if(abs(genCHadFlavour.at(hadronId))==24) continue;
         // Index of a jet associated to the hadron
         const int jetIndex = genCHadJetIndex.at(hadronId);
         // Whether hadron radiated before top quark decay
