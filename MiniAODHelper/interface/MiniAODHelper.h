@@ -343,7 +343,8 @@ pat::Jet MiniAODHelper::RemoveJetOverlap( const std::vector<PATObj1>& other, con
 
 	      if( source1==source2 ){
 	        hasOverlaps = true;
-	        overlaps.push_back(source2);
+	        overlaps.push_back(source1);
+          break;
 	      }
       }
     }
