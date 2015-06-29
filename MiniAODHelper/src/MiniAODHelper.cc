@@ -163,14 +163,14 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
 
 
 std::vector<pat::Muon> 
-MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
+MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const float iMaxEta){
 
   CheckSetUp();
 
   std::vector<pat::Muon> selectedMuons;
 
   for( std::vector<pat::Muon>::const_iterator it = inputMuons.begin(), ed = inputMuons.end(); it != ed; ++it ){
-    if( isGoodMuon(*it,iMinPt,iMuonID,iconeSize,icorrType) ) selectedMuons.push_back(*it);
+    if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType) ) selectedMuons.push_back(*it);
   }
 
   return selectedMuons;
@@ -178,14 +178,14 @@ MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const 
 
 
 std::vector<pat::Electron> 
-MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const float iMinPt, const electronID::electronID iElectronID){
+MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const float iMinPt, const electronID::electronID iElectronID, const float iMaxEta){
 
   CheckSetUp();
 
   std::vector<pat::Electron> selectedElectrons;
 
   for( std::vector<pat::Electron>::const_iterator it = inputElectrons.begin(), ed = inputElectrons.end(); it != ed; ++it ){
-    if( isGoodElectron(*it,iMinPt,iElectronID) ) selectedElectrons.push_back(*it);
+    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID) ) selectedElectrons.push_back(*it);
   }
 
   return selectedElectrons;
@@ -353,15 +353,13 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 }
 
 bool 
-MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
+MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
   CheckVertexSetUp();
 
   double minMuonPt = iMinPt;
 
-  float maxLooseMuonAbsEta = 2.5;
-
-  float maxTightMuonAbsEta = 2.4;
+  double maxMuonEta = iMaxEta;
 
 
   // Be skeptical about this muon making it through
@@ -394,13 +392,32 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
   case muonID::muonCutBased:
   case muonID::muon2lss:
   case muonID::muonLoose:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxLooseMuonAbsEta));
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
     passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.200);
     isPFMuon         = iMuon.isPFMuon();
-    passesID         = (( iMuon.isGlobalMuon() || iMuon.isTrackerMuon() ) && isPFMuon);
+    
+    if( iMuon.globalTrack().isAvailable() ){
+      passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.) 
+			      && (iMuon.globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
+			      );
+    }
+    if( iMuon.muonBestTrack().isAvailable() ){
+      passesMuonBestTrackID = ( (fabs(iMuon.muonBestTrack()->dxy(vertex.position())) < 0.2)
+				&& (fabs(iMuon.muonBestTrack()->dz(vertex.position())) < 0.5)
+				);
+    }
+    if( iMuon.innerTrack().isAvailable() )
+      passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0);
+    if( iMuon.track().isAvailable() )
+      passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
+
+    passesTrackerID = ( passesGlobalTrackID && passesMuonBestTrackID && passesInnerTrackID && passesTrackID && (iMuon.numberOfMatchedStations() > 1) );
+
+    passesID        = (iMuon.isGlobalMuon() && isPFMuon && passesTrackerID);
+    
     break;
   case muonID::muonTight:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxTightMuonAbsEta));
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
     passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.12);
     isPFMuon         = iMuon.isPFMuon();
 
@@ -431,14 +448,13 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const muon
 
 
 bool 
-MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const electronID::electronID iElectronID){
+MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID){
 
   CheckVertexSetUp();
 
   double minElectronPt = iMinPt;
 
-  float maxLooseElectronAbsEta = 2.4;
-  float maxTightElectronAbsEta = 2.4;
+  float maxElectronEta = iMaxEta;
 
 
   // Be skeptical about this electron making it through
@@ -488,13 +504,13 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electronTightMvaBased:
   case electronID::electron2lss:
   case electronID::electronLoose:
-    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxLooseElectronAbsEta) && !inCrack);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.200);
     passesID         = ( passMVAId53x && no_exp_inner_trkr_hits && d04 && notConv && myTrigPresel );
     break;
   case electronID::electronTightMinusTrigPresel:
   case electronID::electronTight:
-    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxTightElectronAbsEta) && !inCrack);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.100);
     passesID         = ( id && no_exp_inner_trkr_hits && myTrigPresel );
     break;
@@ -504,7 +520,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     id = PassElectronPhys14Id( iElectron, iElectronID );
     passesIso = id;
     passesID = id;
-    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxTightElectronAbsEta) && !inCrack);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     break;
   }
 
@@ -584,7 +600,6 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   // Jet ID
   switch(iJetID){
-  case jetID::none:
   case jetID::jetPU:
   case jetID::jetMinimal:
   case jetID::jetLooseAOD:
@@ -592,6 +607,7 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   case jetID::jetTight:
     if( !loose ) return false;
     break;
+  case jetID::none:
   default:
     break;
   }
@@ -642,11 +658,11 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	{
 	case corrType::rhoEA:
 	  //based on R04 Phys14_25ns_v1
-	  if (abs(Eta) < 0.8) EffArea = 0.1546;
-	  else if (abs(Eta) < 1.3) EffArea = 0.1325;
-	  else if (abs(Eta) < 2.0) EffArea = 0.0913;
-	  else if (abs(Eta) < 2.2) EffArea = 0.1212;
-	  else EffArea = 0.2085;
+	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.1546;
+	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.1325;
+	  else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0913;
+	  else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1212;
+	  else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.2085;
 	  correction = useRho*EffArea;
 	  break;
 	case corrType::deltaBeta:
@@ -666,11 +682,11 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	{
 	case corrType::rhoEA:
 	  //effective area based on R03 Phys14_25ns_v1
-	  if (abs(Eta) < 0.8) EffArea = 0.0913;
-	  else if (abs(Eta) < 1.3) EffArea = 0.0765;
-	  else if (abs(Eta) < 2.0) EffArea = 0.0546;
-	  else if (abs(Eta) < 2.2) EffArea = 0.0728;
-	  else EffArea = 0.1177;
+	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
+	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
+	  else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
+	  else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
+	  else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1177;
 	  correction = useRho*EffArea;
 	  break;
 	case corrType::deltaBeta:
@@ -750,11 +766,11 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       switch(icorrType)
 	{
 	case corrType::rhoEA:
-	  if (abs(Eta) < 0.8) EffArea = 0.1013;
-	  else if (abs(Eta) < 1.3) EffArea = 0.0988;
-	  else if (abs(Eta) < 2.0) EffArea = 0.0572;
-	  else if (abs(Eta) < 2.2) EffArea = 0.0842;
-	  else EffArea = 0.1530;
+	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
+      	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
+      	  else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
+          else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
+          else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
 	  correction = useRho*EffArea;
 	  break;
 	case corrType::deltaBeta:
@@ -785,11 +801,11 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	{
 	case corrType::rhoEA:
 	  //effective area based on R03
-	  if (abs(Eta) < 0.8) EffArea = 0.1013;
-	  else if (abs(Eta) < 1.3) EffArea = 0.0988;
-	  else if (abs(Eta) < 2.0) EffArea = 0.0572;
-	  else if (abs(Eta) < 2.2) EffArea = 0.0842;
-	  else EffArea = 0.1530;
+	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
+      	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
+          else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
+          else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
+          else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
 	  break;
 	case corrType::deltaBeta: 
@@ -1024,6 +1040,7 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
     for(size_t hadronId = 0; hadronId < genBHadIndex.size(); ++hadronId) {
         // Flavour of the hadron's origin
         const int flavour = genBHadFlavour.at(hadronId);
+	if(std::abs(flavour)==24)continue;
         // Whether hadron radiated before top quark decay
         // const bool fromTopDecay = genBHadFromTopWeakDecay.at(hadronId);
         // Index of a jet associated to the hadron
@@ -1173,4 +1190,98 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
     }
 
     return additionalJetEventId;
+}
+
+
+
+
+int MiniAODHelper::GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles){
+
+
+    ///////////////////
+    /// Higgs Decay ///
+    ///////////////////
+
+    int Hdecay = -1;
+
+     if( mcparticles.isValid() ){
+
+
+  Hdecay=0;
+  
+       for( size_t k = 0; k < mcparticles->size(); k++ ){
+        const reco::Candidate & mcParticle = (*mcparticles)[k];
+
+        int status = mcParticle.status();
+        int pdgId  = mcParticle.pdgId();
+        int absId  = abs( pdgId );
+        int numdgt = mcParticle.numberOfDaughters();
+      
+
+	
+
+
+        if( absId!=25 ) continue;
+  	  if( !(status==62) ) continue;
+  	  if (!(numdgt>1))continue;
+	  
+	 
+	  
+	 
+	  
+        int d0=-99, d1=-99;
+      
+	    
+  	int ind0 = 0;
+  	int ind1 = 1;
+
+  	if( numdgt>2 ){
+  	  if( mcParticle.daughter(0)->pdgId()==pdgId ){
+  	    ind0 = 1;
+  	    ind1 = 2;
+  	  }
+  	  if( mcParticle.daughter(1)->pdgId()==pdgId ){
+  	    ind0 = 0;
+  	    ind1 = 2;
+  	  }
+  	}
+
+  	d0 = mcParticle.daughter(ind0)->pdgId();
+  	d1 = mcParticle.daughter(ind1)->pdgId();
+	
+	
+	
+
+  	if( d0==5 && d1==-5 ) Hdecay = 1;  //bb
+  	if( d0==24 && d1==-24) Hdecay = 2;   //WW
+  	if( d0==15 && d1==-15) Hdecay = 3;  //TauTau
+  	if( d0==21 && d1==21) Hdecay = 4;  //gg?
+  	if( d0==4 && d1==-4 ) Hdecay = 5;  //cc
+  	if( d0==23 && d1==23) Hdecay = 6;  //ZZ
+  	if( d0==22 && d1==23) Hdecay = 7;  //Zy
+  	if( d0==23 && d1==22) Hdecay = 7;  //Zy
+  	if( d0==22 && d1==22) Hdecay = 8;  //yy
+  	if( d0==21 && d1==22) Hdecay = 9; //gy
+  	if( d0==22 && d1==21) Hdecay = 9; //gy
+  	if( d0==3 && d1==-3) Hdecay = 10; //ss
+	
+	
+  	if( d0==13 && d1==-13) Hdecay = 11; //mumu
+	
+  	if( (Hdecay==0) && (d0==22 || d1==22)) Hdecay =12; //?y
+  	if( (Hdecay==0) && (d0==21 || d1==21)) Hdecay = 13; //?g
+  	if( (Hdecay==0) && (d0>100 || d1>100)) Hdecay = 14; //?Hadron
+	
+	
+     }
+   
+  }
+
+
+
+
+
+
+
+return Hdecay;
 }

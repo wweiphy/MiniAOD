@@ -111,6 +111,8 @@ class BDTvars{
 		double getBestHiggsMass2(TLorentzVector lepton, TLorentzVector &met, vecTLorentzVector jets, vdouble btag, double &minChi, double &dRbb, TLorentzVector &bjet1, TLorentzVector &bjet2, double &chi2lepW, double &chi2leptop, double &chi2hadW, double &chi2hadtop, double &mass_lepW, double &mass_leptop, double &mass_hadW, double &mass_hadtop, TLorentzVector &toplep, TLorentzVector &tophad);
 		double get_median_bb_mass(vvdouble jets, vdouble jetCSV);
 		double pt_E_ratio_jets(vvdouble jets);
+		
+		double JetDelta_EtaAvgEta(vvdouble jet_vect_TLV, vdouble jet_CSV, std::string JetorTag, std::string JetorTag_Avg );
 
 	
 	private:

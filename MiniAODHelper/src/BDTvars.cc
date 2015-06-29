@@ -343,6 +343,9 @@ void BDTvars::vect_of_tagged_TLVs(vvdouble jets, vdouble jetCSV, vecTLorentzVect
 	}
 }
 
+
+
+
 double BDTvars::get_jet_jet_etamax (vvdouble jets)
 {
 	vecTLorentzVector thejets;
@@ -351,29 +354,23 @@ double BDTvars::get_jet_jet_etamax (vvdouble jets)
 	int count=0;
 	double avgval=0.;
 	
-	for (int i=0; i<int(thejets.size()-1); i++)
-	{
-	  for (int j=i+1; j<int(thejets.size()); j++)
-		{
-				
-				avgval += thejets[i].Eta()-thejets[j].Eta();
+	for (int i=0; i<int(thejets.size()); i++){
+	
+				avgval += abs(thejets[i].Eta());
 				count++;
-		}
 	}
 	
 	avgval /= count;
 	
-	double imax = 0.;
-	double etamax=0.;
+	double deta = 0.;
+	double etamax=-1.;
 	
 	for (int k=0; k<int(thejets.size()); k++)
 	{
-		imax = abs(thejets[k].Eta()-avgval);
+		deta = abs(abs(thejets[k].Eta())-avgval);
 		
-		if(imax>etamax)
-		{
-			etamax = imax;
-		}
+		if(deta>etamax)etamax = deta;
+		
 	}
 
 	return etamax;
@@ -382,25 +379,25 @@ double BDTvars::get_jet_jet_etamax (vvdouble jets)
 
 double BDTvars::get_jet_tag_etamax (vvdouble jets, vdouble jetCSV)
 {
+
+
 	vecTLorentzVector thejets;
 	convert_jets_to_TLVs(jets, thejets);
 	
 	int count=0;
 	double avgval=0.;
 	
-	for (int i=0; i<int(thejets.size()-1); i++)
+	for (int i=0; i<int(thejets.size()); i++)
 	{
-	  for (int j=i+1; j<int(thejets.size()); j++)
-		{
 				
-				avgval += thejets[i].Eta()-thejets[j].Eta();
+				avgval += abs(thejets[i].Eta());
 				count++;
-		}
+				
 	}
 	
 	avgval /= count;
 	
-	double imax = 0.;
+	double deta = 0.;
 	double etamax=0.;
 	
 	
@@ -410,12 +407,12 @@ double BDTvars::get_jet_tag_etamax (vvdouble jets, vdouble jetCSV)
 	
 	for (int k=0; k<int(thetags.size()); k++)
 	{
-		imax = abs(thetags[k].Eta()-avgval);
+		 deta = abs(abs(thetags[k].Eta())-avgval);
 		
-		if(imax>etamax)
-		{
-			etamax = imax;
-		}
+		if(deta>etamax)etamax=deta;
+		
+		
+		
 	}
 
 	return etamax;
@@ -425,39 +422,51 @@ double BDTvars::get_jet_tag_etamax (vvdouble jets, vdouble jetCSV)
 double BDTvars::get_tag_tag_etamax (vvdouble jets, vdouble jetCSV)
 {
 
+//std::cout<<"tag_tag_etamax: ";
+
 	vecTLorentzVector thetags;
 	vect_of_tagged_TLVs(jets, jetCSV, thetags);
 		
 	int count=0;
 	double avgval=0.;
 	
-	for (int i=0; i<int(thetags.size()-1); i++)
+	for (int i=0; i<int(thetags.size()); i++)
 	{
-	  for (int j=i+1; j<int(thetags.size()); j++)
-		{
+	  
 				
-				avgval += thetags[i].Eta()-thetags[j].Eta();
+				avgval += abs(thetags[i].Eta());
 				count++;
-		}
+				
+				
+				//std::cout<<abs(thetags[i].Eta())<<" "<<avgval<<" | ";
+		
 	}
 	
 	avgval /= count;
 	
-	double imax = 0.;
+	
+	//cout<<avgval<<" ||| ";
+	
+	double deta = 0.;
 	double etamax=0.;
 	
 	
 	for (int k=0; k<int(thetags.size()); k++)
 	{
-		imax = abs(thetags[k].Eta()-avgval);
+		deta = abs(abs(thetags[k].Eta())-avgval);
 		
-		if(imax>etamax)
-		{
-			etamax = imax;
-		}
+		if(deta>etamax)etamax=deta;
+		
+		//std::cout<<deta<<" "<<etamax<<" | ";
+		
 	}
+	
+	
+	//std::cout<<" ||| "<<etamax<<"               "<<count<<endl;
 
 	return etamax;
+	
+	
 }
 
 
@@ -863,6 +872,73 @@ double BDTvars::pt_E_ratio_jets(vvdouble jets)
 }
 
 
+double BDTvars::JetDelta_EtaAvgEta(vvdouble jet_vect_TLV, vdouble jet_CSV, std::string JetorTag, std::string JetorTag_Avg )
+{
+
+//if(JetorTag == "Tag" && JetorTag_Avg =="Tag")std::cout<<"JetDelta_TagTag: ";
+	double sumJetEta = 0;
+	double sumTagEta = 0;
+	double cntJetEta = 0;
+	double cntTagEta = 0;
+	
+	
+	for( int iJet=0; iJet<int(jet_vect_TLV.size()); iJet++ ){
+	  TLorentzVector myJet;
+	  myJet.SetPxPyPzE( jet_vect_TLV[iJet][0], jet_vect_TLV[iJet][1], jet_vect_TLV[iJet][2], jet_vect_TLV[iJet][3] );
+	  double myCSV = jet_CSV[iJet];
+	  sumJetEta += abs(myJet.Eta());
+	  cntJetEta += 1.;
+	  
+	  
+	  
+	  
+
+	  if( myCSV>CSVMwp ){
+	    sumTagEta += abs(myJet.Eta());
+	    cntTagEta += 1.;
+	   // if(JetorTag == "Tag" && JetorTag_Avg == "Tag")std::cout<<abs(myJet.Eta())<<" "<<sumTagEta<<" | ";
+	  }
+  	}
+	
+	double aveJetEta = ( cntJetEta>0 ) ? sumJetEta/cntJetEta : -999;
+	double aveTagEta = ( cntTagEta>0 ) ? sumTagEta/cntTagEta : -999;
+
+	double maxDEta_jet_aveJetEta = -1;
+	double maxDEta_tag_aveJetEta = -1;
+	double maxDEta_tag_aveTagEta = -1;
+	double maxDEta_jet_aveTagEta = -1;
+	
+	//if(JetorTag == "Tag" && JetorTag_Avg == "Tag")std::cout<<aveTagEta<<" || ";
+
+	for( int iJet=0; iJet<int(jet_vect_TLV.size()); iJet++ ){
+	  TLorentzVector myJet;
+	  myJet.SetPxPyPzE( jet_vect_TLV[iJet][0], jet_vect_TLV[iJet][1], jet_vect_TLV[iJet][2], jet_vect_TLV[iJet][3] );
+
+	  double myCSV = jet_CSV[iJet];
+	  double myJetEta = abs(myJet.Eta());
+
+	  maxDEta_jet_aveJetEta = std::max( maxDEta_jet_aveJetEta, fabs(myJetEta - aveJetEta) );
+	  maxDEta_jet_aveTagEta = std::max( maxDEta_jet_aveTagEta, fabs(myJetEta - aveTagEta) );
+	  if( myCSV>CSVMwp ){
+	    maxDEta_tag_aveJetEta = std::max( maxDEta_tag_aveJetEta, fabs(myJetEta - aveJetEta) );
+	    maxDEta_tag_aveTagEta = std::max( maxDEta_tag_aveTagEta, fabs(myJetEta - aveTagEta) );
+	   // if(JetorTag == "Tag" && JetorTag_Avg == "Tag")std::cout<<fabs(myJetEta - aveTagEta)<<" "<<maxDEta_tag_aveTagEta<<" | ";
+	  }
+	}
+	
+	double returnVal = -1;
+	
+	if(JetorTag == "Jet" && JetorTag_Avg == "Jet")returnVal = maxDEta_jet_aveJetEta;
+	if(JetorTag == "Tag" && JetorTag_Avg == "Jet")returnVal = maxDEta_tag_aveJetEta;
+	if(JetorTag == "Tag" && JetorTag_Avg == "Tag")returnVal = maxDEta_tag_aveTagEta;
+	if(JetorTag == "Jet" && JetorTag_Avg == "Tag")returnVal = maxDEta_jet_aveTagEta;
+	
+	//if(JetorTag == "Tag" && JetorTag_Avg == "Tag")std::cout<<" ||| "<<returnVal<<"            "<<cntTagEta<<endl;
+	
+	return returnVal;
+	
+	
+}
 
 
 
