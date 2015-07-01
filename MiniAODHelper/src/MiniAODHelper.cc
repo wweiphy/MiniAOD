@@ -1015,7 +1015,8 @@ float MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> &
 }
 
 //// tt+X categorization -----------------------------
-//// tt+b:  additionalJetEventId = 51 or 52
+//// tt+b:  additionalJetEventId = 51
+//// tt+2b:  additionalJetEventId = 52
 //// tt+bb: additionalJetEventId = 53, 54 or 55
 //// tt+c:  additionalJetEventId = 41 or 42
 //// tt+cc: additionalJetEventId = 43, 44 or 45
@@ -1194,94 +1195,83 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
 
 
 
-
-int MiniAODHelper::GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles){
-
-
     ///////////////////
     /// Higgs Decay ///
     ///////////////////
 
-    int Hdecay = -1;
+int MiniAODHelper::GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles){
 
-     if( mcparticles.isValid() ){
+  int Hdecay = -1;
+    
+  if( mcparticles.isValid() ){
 
-
-  Hdecay=0;
+    Hdecay=0;
   
-       for( size_t k = 0; k < mcparticles->size(); k++ ){
-        const reco::Candidate & mcParticle = (*mcparticles)[k];
+    for( size_t k = 0; k < mcparticles->size(); k++ ){
+      const reco::Candidate & mcParticle = (*mcparticles)[k];
 
-        int status = mcParticle.status();
-        int pdgId  = mcParticle.pdgId();
-        int absId  = abs( pdgId );
-        int numdgt = mcParticle.numberOfDaughters();
+      int status = mcParticle.status();
+      int pdgId  = mcParticle.pdgId();
+      int absId  = abs( pdgId );
+      int numdgt = mcParticle.numberOfDaughters();
+
+      //// must be a Higgs and status 62(pythia 8) 
+      if( absId!=25 || status!=62  ) continue;
+      if (!(numdgt>1))continue;
+	  
+      int d0=-99, d1=-99;
       
+      int ind0 = 0;
+      int ind1 = 1;
 
+      if( numdgt>2 ){
+	if( mcParticle.daughter(0)->pdgId()==pdgId ){
+	  ind0 = 1;
+	  ind1 = 2;
+	}
+	if( mcParticle.daughter(1)->pdgId()==pdgId ){
+	  ind0 = 0;
+	  ind1 = 2;
+	}
+      }
+
+      d0 = mcParticle.daughter(ind0)->pdgId();
+      d1 = mcParticle.daughter(ind1)->pdgId();
+
+      d0 = abs(d0);
+      d1 = abs(d1);
+
+      if( d0==5 && d1==5 ) Hdecay = 1;  //bb
+      if( d0==24 && d1==24) Hdecay = 2;   //WW
+      if( d0==15 && d1==15) Hdecay = 3;  //TauTau
+      if( d0==21 && d1==21) Hdecay = 4;  //glueglue
+      if( d0==4 && d1==4 ) Hdecay = 5;  //cc
+      if( d0==23 && d1==23) Hdecay = 6;  //ZZ
+
+      if( d0==22 && d1==23) Hdecay = 7;  //Zy
+      if( d0==23 && d1==22) Hdecay = 7;  //Zy
+
+      if( d0==22 && d1==22) Hdecay = 8;  //yy
+
+      if( d0==21 && d1==22) Hdecay = 9; //gy
+      if( d0==22 && d1==21) Hdecay = 9; //gy
+      if( d0==3 && d1==3) Hdecay = 10; //ss
 	
-
-
-        if( absId!=25 ) continue;
-  	  if( !(status==62) ) continue;
-  	  if (!(numdgt>1))continue;
-	  
-	 
-	  
-	 
-	  
-        int d0=-99, d1=-99;
+      if( d0==13 && d1==13) Hdecay = 11; //mumu
       
-	    
-  	int ind0 = 0;
-  	int ind1 = 1;
+      if( (Hdecay==0) && (d0==22 || d1==22)) Hdecay =12; //?y
+      if( (Hdecay==0) && (d0==21 || d1==21)) Hdecay = 13; //?g
+      if( (Hdecay==0) && (d0>100 || d1>100)) Hdecay = 14; //?Hadron
+      
+      if( d0==1 && d1==1) Hdecay = 15; //uu
+      if( d0==2 && d1==2) Hdecay = 16; //dd
+      if( d0==6 && d1==6) Hdecay = 17; //tt
+      if( d0==11 && d1==11) Hdecay = 18; //ee
 
-  	if( numdgt>2 ){
-  	  if( mcParticle.daughter(0)->pdgId()==pdgId ){
-  	    ind0 = 1;
-  	    ind1 = 2;
-  	  }
-  	  if( mcParticle.daughter(1)->pdgId()==pdgId ){
-  	    ind0 = 0;
-  	    ind1 = 2;
-  	  }
-  	}
-
-  	d0 = mcParticle.daughter(ind0)->pdgId();
-  	d1 = mcParticle.daughter(ind1)->pdgId();
-	
-	
-	
-
-  	if( d0==5 && d1==-5 ) Hdecay = 1;  //bb
-  	if( d0==24 && d1==-24) Hdecay = 2;   //WW
-  	if( d0==15 && d1==-15) Hdecay = 3;  //TauTau
-  	if( d0==21 && d1==21) Hdecay = 4;  //gg?
-  	if( d0==4 && d1==-4 ) Hdecay = 5;  //cc
-  	if( d0==23 && d1==23) Hdecay = 6;  //ZZ
-  	if( d0==22 && d1==23) Hdecay = 7;  //Zy
-  	if( d0==23 && d1==22) Hdecay = 7;  //Zy
-  	if( d0==22 && d1==22) Hdecay = 8;  //yy
-  	if( d0==21 && d1==22) Hdecay = 9; //gy
-  	if( d0==22 && d1==21) Hdecay = 9; //gy
-  	if( d0==3 && d1==-3) Hdecay = 10; //ss
-	
-	
-  	if( d0==13 && d1==-13) Hdecay = 11; //mumu
-	
-  	if( (Hdecay==0) && (d0==22 || d1==22)) Hdecay =12; //?y
-  	if( (Hdecay==0) && (d0==21 || d1==21)) Hdecay = 13; //?g
-  	if( (Hdecay==0) && (d0>100 || d1>100)) Hdecay = 14; //?Hadron
-	
-	
-     }
-   
+    }
+    
   }
+  
 
-
-
-
-
-
-
-return Hdecay;
+  return Hdecay;
 }
