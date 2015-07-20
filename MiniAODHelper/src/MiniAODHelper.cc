@@ -14,9 +14,9 @@ MiniAODHelper::MiniAODHelper(){
 
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
-  CSVLwp = 0.423; // 10.1716% DUSG mistag efficiency
-  CSVMwp = 0.814; // 1.0623% DUSG mistag efficiency
-  CSVTwp = 0.941; // 0.1144% DUSG mistag efficiency
+  CSVLwp = 0.605;//CSVv2 0.423; // 10.1716% DUSG mistag efficiency
+  CSVMwp = 0.890;//CSVv2 0.814; // 1.0623% DUSG mistag efficiency
+  CSVTwp = 0.970;//CSVv2 0.941; // 0.1144% DUSG mistag efficiency
 
   samplename = "blank";
 
@@ -824,7 +824,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
   CheckSetUp();
 
-  float csvValue = iJet.bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags");
+  float csvValue = iJet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
 
   // CSV b-tagging requirement
   switch(iCSVworkingPoint){
@@ -877,85 +877,85 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
   switch(iElectronID){
   case electronID::electronPhys14L:
     if( isEB ){
-      pass = ( full5x5_sigmaIetaIeta < 0.010557 &&
-	       dEtaIn < 0.012442 &&
-	       dPhiIn < 0.072624 &&
-	       hOverE < 0.121476 &&
-	       ooEmooP < 0.221803 &&
-	       d0 < 0.022664 &&
-	       dZ < 0.173670 &&
+      pass = ( full5x5_sigmaIetaIeta < 0.010331 &&
+	       dEtaIn < 0.009277 &&
+	       dPhiIn < 0.094739 &&
+	       hOverE < 0.093068 &&
+	       ooEmooP < 0.189968 &&
+	       d0 < 0.035904 &&
+	       dZ < 0.075496 &&
 	       expectedMissingInnerHits <= 1 &&
 	       passConversionVeto &&
-	       relIso < 0.120026
+	       relIso < 0.130136
 	       );
     }
     else{
-      pass = ( full5x5_sigmaIetaIeta < 0.032602 &&
-	       dEtaIn < 0.010654 &&
-	       dPhiIn < 0.145129 &&
-	       hOverE < 0.131862 &&
-	       ooEmooP < 0.142283 &&
-	       d0 < 0.097358 &&
-	       dZ < 0.198444 &&
+      pass = ( full5x5_sigmaIetaIeta < 0.031838 &&
+	       dEtaIn < 0.009833 &&
+	       dPhiIn < 0.149934 &&
+	       hOverE < 0.115754 &&
+	       ooEmooP < 0.140662 &&
+	       d0 < 0.099266 &&
+	       dZ < 0.197897 &&
 	       expectedMissingInnerHits <= 1 &&
 	       passConversionVeto &&
-	       relIso < 0.162914
+	       relIso < 0.163368
 	       );
     }
     break;
   case electronID::electronPhys14M:
     if( isEB ){
-      pass = ( full5x5_sigmaIetaIeta < 0.010399 &&
-	       dEtaIn < 0.007641 &&
-	       dPhiIn < 0.032643 &&
-	       hOverE < 0.060662 &&
-	       ooEmooP < 0.153897 &&
-	       d0 < 0.011811 &&
-	       dZ < 0.070775 &&
+      pass = ( full5x5_sigmaIetaIeta < 0.009996 &&
+	       dEtaIn < 0.008925 &&
+	       dPhiIn < 0.035973 &&
+	       hOverE < 0.050537  &&
+	       ooEmooP < 0.091942 &&
+	       d0 < 0.012235 &&
+	       dZ < 0.042020 &&
 	       expectedMissingInnerHits <= 1 &&
 	       passConversionVeto &&
-	       relIso < 0.097213
+	       relIso < 0.107587
 	       );
     }
     else{
-      pass = ( full5x5_sigmaIetaIeta < 0.029524 &&
-	       dEtaIn < 0.009285 &&
-	       dPhiIn < 0.042447 &&
-	       hOverE < 0.104263 &&
-	       ooEmooP < 0.137468 &&
-	       d0 < 0.051682 &&
-	       dZ < 0.180720 &&
+      pass = ( full5x5_sigmaIetaIeta < 0.030135 &&
+	       dEtaIn < 0.007429 &&
+	       dPhiIn < 0.067879 &&
+	       hOverE < 0.086782 &&
+	       ooEmooP < 0.100683 &&
+	       d0 < 0.036719 &&
+	       dZ < 0.138142 &&
 	       expectedMissingInnerHits <= 1 &&
 	       passConversionVeto &&
-	       relIso < 0.116708
+	       relIso < 0.113254
 	       );
     }
     break;
   case electronID::electronPhys14T:
     if( isEB ){
-      pass = ( full5x5_sigmaIetaIeta < 0.010181 &&
-	       dEtaIn < 0.006574 &&
-	       dPhiIn < 0.022868 &&
-	       hOverE < 0.037553 &&
-	       ooEmooP < 0.131191 &&
-	       d0 < 0.009924 &&
-	       dZ < 0.015310 &&
+      pass = ( full5x5_sigmaIetaIeta < 0.009947 &&
+	       dEtaIn < 0.006046 &&
+	       dPhiIn < 0.028092 &&
+	       hOverE < 0.045772 &&
+	       ooEmooP < 0.020118 &&
+	       d0 < 0.008790 &&
+	       dZ < 0.021226 &&
 	       expectedMissingInnerHits <= 1 &&
 	       passConversionVeto &&
-	       relIso < 0.074355
+	       relIso < 0.069537
 	       );
     }
     else{
-      pass = ( full5x5_sigmaIetaIeta < 0.028766 &&
-	       dEtaIn < 0.005681 &&
-	       dPhiIn < 0.032046 &&
-	       hOverE < 0.081902 &&
-	       ooEmooP < 0.106055 &&
-	       d0 < 0.027261 &&
-	       dZ < 0.147154 &&
+      pass = ( full5x5_sigmaIetaIeta < 0.028237 &&
+	       dEtaIn < 0.007057 &&
+	       dPhiIn < 0.030159 &&
+	       hOverE < 0.067778 &&
+	       ooEmooP < 0.098919 &&
+	       d0 < 0.027984 &&
+	       dZ < 0.133431 &&
 	       expectedMissingInnerHits <= 1 &&
 	       passConversionVeto &&
-	       relIso < 0.090185
+	       relIso < 0.078265
 	       );
     }
     break;
@@ -1275,3 +1275,52 @@ int MiniAODHelper::GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >& m
 
   return Hdecay;
 }
+
+
+std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
+    const std::vector<pat::Jet> &inputJets, const std::vector<pat::Muon>& inputMuons, const std::vector<pat::Electron>& inputElectrons, const double deltaRCut)
+{
+	CheckSetUp();
+
+	
+	std::vector<pat::Jet> outputJets;
+
+	for( std::vector<pat::Jet>::const_iterator iJet = inputJets.begin(); iJet!=inputJets.end(); ++iJet ){
+
+	  bool isOverlap = false;
+	  
+	  TLorentzVector jet_p4;
+	  jet_p4.SetPxPyPzE(iJet->px(),iJet->py(),iJet->pz(),iJet->energy());
+	  
+	  for( std::vector<pat::Electron>::const_iterator iEle = inputElectrons.begin(); iEle != inputElectrons.end(); iEle++ ){ 
+	    TLorentzVector ele_p4;
+	    ele_p4.SetPxPyPzE(iEle->px(),iEle->py(),iEle->pz(),iEle->energy());
+	    double delta_tmp = jet_p4.DeltaR(ele_p4);
+	    if(delta_tmp < deltaRCut){
+	      isOverlap = true;
+	      break;
+	    } 
+	  }
+	  
+	  if( isOverlap ) continue;
+	  
+	  for( std::vector<pat::Muon>::const_iterator iMuon = inputMuons.begin(); iMuon != inputMuons.end(); iMuon++ ){ 
+	    TLorentzVector muon_p4;
+	    muon_p4.SetPxPyPzE(iMuon->px(),iMuon->py(),iMuon->pz(),iMuon->energy());
+	    double delta_tmp = jet_p4.DeltaR(muon_p4);
+	    if(delta_tmp < deltaRCut){
+	      isOverlap = true;
+	      break;
+	    } 
+	  }
+	  
+	  if( isOverlap ) continue;
+	  
+	  outputJets.push_back(*iJet);
+	  
+	}
+	
+	
+	return outputJets;
+}
+
