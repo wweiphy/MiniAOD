@@ -190,7 +190,7 @@ template <typename T> T MiniAODHelper::GetSortedByPt(const T& collection){
 // === Returned sorted input collection, by descending CSV === //
 template <typename T> T MiniAODHelper::GetSortedByCSV(const T& collection){
   T result = collection;
-  std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return a.bDiscriminator("combinedSecondaryVertexBJetTags") > b.bDiscriminator("combinedSecondaryVertexBJetTags");});
+  std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return a.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > b.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");});
   return result;
 }
 
