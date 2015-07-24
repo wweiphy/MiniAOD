@@ -1,5 +1,6 @@
 #include "MiniAOD/MiniAODHelper/interface/TopTagger.h"
 
+
 TopTagger::TopTagger(){
 }
 
@@ -50,12 +51,6 @@ TopTagger::TopTagger(MiniAODHelper* helper_, TopTag::Mode mode_, TopTag::SubjetA
         // Setup TMVA Reader
         TMVAReader = new TMVA::Reader("Silent");
         
-        /*
-        for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
-          TMVAReader->AddVariable(*itVarName,&TMVAVars[*itVarName]);
-        }
-*/
-
         for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
           TMVAReader->AddVariable(*itVarName,&TMVAVars[itVarName-TMVAVarNames.begin()]);
         }
@@ -122,33 +117,15 @@ void TopTagger::GetTMVAVarNames(std::string filePath_, bool verbose){
   }
 }
 
-/*
-void TopTagger::GetTMVAVars(std::string filePath_, bool verbose){
-  
-  TMVAVars.clear();
-  
-  GetTMVAVarNames(filePath_,verbose);
-
-  for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
-    TMVAVars[*itVarName] = -999;
-  }
-  
-  if(verbose){
-    for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
-      std::cout << "Variable " << itVarName-TMVAVarNames.begin() << ": " << *itVarName << ": " << TMVAVars[*itVarName] << std::endl;
-    }
-  }  
-}
-*/
 
 void TopTagger::GetTMVAVars(std::string filePath_, bool verbose){
   
-  TMVAVars.clear();
-  
   GetTMVAVarNames(filePath_,verbose);
-
-  for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
-    TMVAVars.push_back(-999);
+  
+  TMVAVars = new float[50];
+  
+  for(int i=0;i<50;i++){
+    TMVAVars[i] = -999;
   }
   
   if(verbose){
@@ -158,18 +135,10 @@ void TopTagger::GetTMVAVars(std::string filePath_, bool verbose){
   }  
 }
 
-/*
-void TopTagger::ResetTMVAVars(){
-  for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
-    TMVAVars[*itVarName] = -999;
-  }
-}
-*/
-
 
 void TopTagger::ResetTMVAVars(){
-  for(std::vector<float>::iterator itVar=TMVAVars.begin();itVar!=TMVAVars.end();++itVar){
-    *itVar = -999;
+  for(int i=0;i<50;i++){
+    TMVAVars[i] = -999;
   }
 }
 
@@ -268,27 +237,6 @@ float TopTagger::GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbo
       {
         ResetTMVAVars();
 
-/*
-        for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
-          if(*itVarName=="TopJet_Top_M")                TMVAVars[*itVarName] = topjet.topjet.mass();                                                                                                         
-          else if(*itVarName=="TopJet_PrunedMass")      TMVAVars[*itVarName] = topjet.prunedMass;                                                                                                            
-          else if(*itVarName=="TopJet_UnfilteredMass")  TMVAVars[*itVarName] = topjet.unfilteredMass;                                                                                                        
-          else if(*itVarName=="TopJet_fRec")            TMVAVars[*itVarName] = topjet.fRec;                                                                                                                  
-          else if(*itVarName=="TopJet_DRoptRoptCalc")   TMVAVars[*itVarName] = topjet.Ropt-topjet.RoptCalc;                                                                                                  
-          else if(*itVarName=="TopJet_Tau21Filtered")   TMVAVars[*itVarName] = topjet.tau2Filtered/topjet.tau1Filtered;                                                                                      
-          else if(*itVarName=="TopJet_Tau32Filtered")   TMVAVars[*itVarName] = topjet.tau3Filtered/topjet.tau2Filtered;                                                                                      
-          else if(*itVarName=="TopJet_WM" || *itVarName=="TopJet_Wbtag_M")                    TMVAVars[*itVarName] = (subjets[1].p4()+subjets[2].p4()).M();                                              
-          else if(*itVarName=="TopJet_BW1M" || *itVarName=="TopJet_BW1btag_M")                TMVAVars[*itVarName] = (subjets[0].p4()+subjets[1].p4()).M();                                              
-          else if(*itVarName=="TopJet_BW2M" || *itVarName=="TopJet_BW2btag_M")                TMVAVars[*itVarName] = (subjets[0].p4()+subjets[2].p4()).M();                                              
-          else if(*itVarName=="TopJet_BCSV" || *itVarName=="TopJet_Bbtag_CSV")                TMVAVars[*itVarName] = fmax(subjets[0].bDiscriminator(btagger),-.1);                                       
-          else if(*itVarName=="TopJet_W1CSV" || *itVarName=="TopJet_W1btag_CSV")              TMVAVars[*itVarName] = fmax(subjets[1].bDiscriminator(btagger),-.1);                                       
-          else if(*itVarName=="TopJet_W2CSV" || *itVarName=="TopJet_W2btag_CSV")              TMVAVars[*itVarName] = fmax(subjets[2].bDiscriminator(btagger),-.1);                                       
-          else if(*itVarName=="TopJet_MRatio_WTop" || *itVarName=="TopJet_MRatio_Wbtag_Top")  TMVAVars[*itVarName] = (subjets[1].p4()+subjets[2].p4()).M()/topjet.topjet.mass();                         
-          else if(*itVarName=="TopJet_Atan_BW1W2btag" || *itVarName=="TopJet_Atan_BW1W2btag") TMVAVars[*itVarName] = atan((subjets[0].p4()+subjets[1].p4()).M()/(subjets[0].p4()+subjets[2].p4()).M());
-          else std::cout << "Error! No matching Top Tagger Input Variable found!" << std:: endl;
-        }
-*/
-
         for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
           int iVar = itVarName-TMVAVarNames.begin();
         
@@ -309,14 +257,7 @@ float TopTagger::GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbo
           else if(*itVarName=="TopJet_Atan_BW1W2btag" || *itVarName=="TopJet_Atan_BW1W2btag") TMVAVars[iVar] = atan((subjets[0].p4()+subjets[1].p4()).M()/(subjets[0].p4()+subjets[2].p4()).M());
           else std::cout << "Error! No matching Top Tagger Input Variable found!" << std:: endl;
         }
-/*        
-        if(verbose){
-          std::cout << "Top Tagger Variables:" << std::endl;
-          for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
-            std::cout << "Variable " << itVarName-TMVAVarNames.begin() << ": " << *itVarName << ": " << TMVAVars[*itVarName] << std::endl;
-          }
-        }
-*/        
+
         if(verbose){
           std::cout << "Top Tagger Variables:" << std::endl;
           for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){

@@ -1,5 +1,5 @@
-#ifndef MINIAOD_BOOSTEDANALYZER_TOPTAGGER_H
-#define MINIAOD_BOOSTEDANALYZER_TOPTAGGER_H
+#ifndef MINIAOD_MINIAODHELPER_TOPTAGGER_H
+#define MINIAOD_MINIAODHELPER_TOPTAGGER_H
 
 #include <map>
 
@@ -34,7 +34,7 @@ class TopTagger{
     // Sorting function for Top Tagger output
     boosted::HTTTopJetCollection GetSortedByTopTaggerOutput(const boosted::HTTTopJetCollection& topJets, bool verbose = false);
 
-    // Find a hadronic top candidate in
+    // Find a hadronic top candidate in Top jet collection
     float GetTopHad(boosted::HTTTopJetCollection& topJets, boosted::HTTTopJet& topHadCand, bool verbose = false);
 
   private:
@@ -51,11 +51,10 @@ class TopTagger{
     // b-tagger name
     const char* btagger;
     
-    // MVA Top Taggers
-    // Input file containing weights or Likelihood histograms
+    // Likelihood Top Tagger
+    // Input file containing Likelihood histograms
     TFile* file;
 
-    // Likelihood Top Tagger
     // Histograms for Likelihood Top Tagger
     TH1F* mtop_top_histo;
     TH1F* mtop_nottop_histo;
@@ -67,8 +66,7 @@ class TopTagger{
     // TMVA Top Tagger
     // Variables and TMVA Reader for TMVA Top Tagger
     std::vector<std::string> TMVAVarNames;
-    float TMVAVars;
-    //std::map<std::string,float> TMVAVars;
+    float* TMVAVars;
     TMVA::Reader* TMVAReader;
 
     // CSV definition for subjets: subjets[0] = b, subjets[1] = W1, subjets[2] = W2
