@@ -849,8 +849,8 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
   double pfIsoNeutralPhoton = iElectron.pfIsolationVariables().sumPhotonEt;
   double pfIsoSumPUPt = iElectron.pfIsolationVariables().sumPUPt;
 
-  double relIso = (pfIsoCharged + std::max( pfIsoNeutralHadron + pfIsoNeutralPhoton - 0.5*pfIsoSumPUPt, 0.0 ))/iElectron.pt();
-
+  // double relIso = (pfIsoCharged + std::max( pfIsoNeutralHadron + pfIsoNeutralPhoton - 0.5*pfIsoSumPUPt, 0.0 ))/iElectron.pt();
+  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
 
   double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();
   double dEtaIn = fabs( iElectron.deltaEtaSuperClusterTrackAtVtx() );
