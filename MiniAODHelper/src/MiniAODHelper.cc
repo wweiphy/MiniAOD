@@ -844,10 +844,10 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
 
   bool isEB = ( absSCeta < 1.479 );
 
-  double pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
-  double pfIsoNeutralHadron = iElectron.pfIsolationVariables().sumNeutralHadronEt;
-  double pfIsoNeutralPhoton = iElectron.pfIsolationVariables().sumPhotonEt;
-  double pfIsoSumPUPt = iElectron.pfIsolationVariables().sumPUPt;
+  // double pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
+  // double pfIsoNeutralHadron = iElectron.pfIsolationVariables().sumNeutralHadronEt;
+  // double pfIsoNeutralPhoton = iElectron.pfIsolationVariables().sumPhotonEt;
+  // double pfIsoSumPUPt = iElectron.pfIsolationVariables().sumPUPt;
 
   // double relIso = (pfIsoCharged + std::max( pfIsoNeutralHadron + pfIsoNeutralPhoton - 0.5*pfIsoSumPUPt, 0.0 ))/iElectron.pt();
   double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
