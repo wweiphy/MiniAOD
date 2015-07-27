@@ -145,14 +145,9 @@ void TopTagger::ResetTMVAVars(){
 
 float TopTagger::GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbose){
   
-  float failReturn = -1.1;
-  if(mode==TopTag::HEP){
-    failReturn = 0;
-  }
-  
-  if(topjet.nonW.pt()==0.) return failReturn;
-  if(topjet.W1.pt()==0.) return failReturn;
-  if(topjet.W2.pt()==0.) return failReturn;
+  if(topjet.nonW.pt()==0.) return -1.1;
+  if(topjet.W1.pt()==0.) return -1.1;
+  if(topjet.W2.pt()==0.) return -1.1;
   
   std::vector<pat::Jet> subjets;
   subjets.push_back(topjet.nonW);
@@ -184,25 +179,33 @@ float TopTagger::GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbo
         float mT = 172.3;
         float mW = 80.4;
 
-        float fW = 0.15;
-
-        float Rmin = (1-fW)*mW/mT;
-        float Rmax = (1+fW)*mW/mT;
-
-        if(subjetAssign == TopTag::Wmass){
+        if(subjetAssign == TopTag::Pt){
           float y1 = 1+pow(m13/m12,2);
           float y2 = 1+pow(m12/m13,2);
-          float x = 1-pow(m23/m123,2);  
-
-          if(((0.2<atan(m23/m123)) && (atan(m23/m123)<1.3)) && ((Rmin<m23/m123) && (m23/m123<Rmax))) return 1;
-          if(((x>pow(Rmin,2)*y1) && (x<pow(Rmax,2)*y1)) && (m23/m123>0.35)) return 1;
-          if(((x>pow(Rmin,2)*y2) && (x<pow(Rmax,2)*y2)) && (m23/m123>0.35)) return 1;
+          float x = 1-pow(m23/m123,2);
+          
+          float fw1 = fabs((m23/m123*mT/mW)-1);
+          float fw2 = fabs((sqrt(x/y1)*mT/mW)-1);
+          float fw3 = fabs((sqrt(x/y2)*mT/mW)-1);
+            
+          float fw = 999;
+          
+          if((0.2<atan(m23/m123)) && (atan(m23/m123)<1.3)) fw = fmin(fw,fw1);
+          if(m23/m123>0.35){
+            fw = fmin(fw,fw2);
+            fw = fmin(fw,fw3);
+          }
+          
+          if(fw<999) return 1-fw;
+          
         }
         else if(subjetAssign == TopTag::CSV){
-          if(Rmin<m23/m123 && m23/m123<Rmax && 0.2<m12/m13 && 0.2<m13/m12 ) return 1;
+          float fw = fabs((m23/m123*mT/mW)-1);
+          
+          if(0.2<m12/m13 && 0.2<m13/m12) return 1-fw;
         }
 
-        return 0;
+        return -1.1;
       }
       break;
 

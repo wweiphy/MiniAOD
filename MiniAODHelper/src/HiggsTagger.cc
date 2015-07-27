@@ -104,7 +104,7 @@ float HiggsTagger::GetHiggsTaggerOutput(const boosted::SubFilterJet& higgsJet, b
   
   float failReturn = -1.1;
   if(mode == HiggsTag::SecondCSV){
-    failReturn = 0.1;
+    failReturn = -.1;
   }
   
   if(higgsJet.filterjets.size()<2) return failReturn;
