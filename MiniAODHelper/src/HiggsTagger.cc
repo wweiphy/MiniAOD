@@ -9,7 +9,7 @@ HiggsTagger::HiggsTagger(MiniAODHelper* helper_, HiggsTag::Mode mode_, std::stri
   
   char* CMSSWPath = getenv("CMSSW_BASE");
   std::string filePath = CMSSWPath;
-  filePath = filePath+"/src/BoostedTTH/BoostedAnalyzer/data/toptagger/"+filePath_;
+  filePath = filePath+"/src/MiniAOD/MiniAODHelper/data/higgstagger/"+filePath_;
   
   switch(mode){
     case HiggsTag::SecondCSV:

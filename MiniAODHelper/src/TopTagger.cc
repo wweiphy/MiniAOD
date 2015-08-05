@@ -9,7 +9,7 @@ TopTagger::TopTagger(MiniAODHelper* helper_, TopTag::Mode mode_, TopTag::SubjetA
   
   char* CMSSWPath = getenv("CMSSW_BASE");
   std::string filePath = CMSSWPath;
-  filePath = filePath+"/src/BoostedTTH/BoostedAnalyzer/data/toptagger/"+filePath_;
+  filePath = filePath+"/src/MiniAOD/MiniAODHelper/data/toptagger/"+filePath_;
   
   switch(mode){
     case TopTag::HEP:
