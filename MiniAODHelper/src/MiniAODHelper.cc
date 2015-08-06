@@ -771,6 +771,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       	  else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
           else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
           else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea;
 	  break;
 	case corrType::deltaBeta:
@@ -806,6 +807,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
           else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
           else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
           else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
 	  break;
 	case corrType::deltaBeta: 
