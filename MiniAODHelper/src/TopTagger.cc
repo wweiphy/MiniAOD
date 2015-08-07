@@ -1,11 +1,6 @@
 #include "MiniAOD/MiniAODHelper/interface/TopTagger.h"
 
-
-TopTagger::TopTagger(){
-}
-
-
-TopTagger::TopTagger(MiniAODHelper* helper_, TopTag::Mode mode_, TopTag::SubjetAssign subjetAssign_, std::string filePath_):helper(helper_),mode(mode_),subjetAssign(subjetAssign_),btagger("pfCombinedInclusiveSecondaryVertexV2BJetTags"){
+TopTagger::TopTagger(TopTag::Mode mode_, TopTag::SubjetAssign subjetAssign_, std::string filePath_):helper(new MiniAODHelper()),mode(mode_),subjetAssign(subjetAssign_),btagger("pfCombinedInclusiveSecondaryVertexV2BJetTags"){
   
   char* CMSSWPath = getenv("CMSSW_BASE");
   std::string filePath = CMSSWPath;

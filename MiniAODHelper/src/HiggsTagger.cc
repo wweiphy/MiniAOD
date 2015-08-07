@@ -1,11 +1,6 @@
 #include "MiniAOD/MiniAODHelper/interface/HiggsTagger.h"
 
-
-HiggsTagger::HiggsTagger(){
-}
-
-
-HiggsTagger::HiggsTagger(MiniAODHelper* helper_, HiggsTag::Mode mode_, std::string filePath_):helper(helper_),mode(mode_),btagger("pfCombinedInclusiveSecondaryVertexV2BJetTags"){
+HiggsTagger::HiggsTagger(HiggsTag::Mode mode_, std::string filePath_):helper(new MiniAODHelper()),mode(mode_),btagger("pfCombinedInclusiveSecondaryVertexV2BJetTags"){
   
   char* CMSSWPath = getenv("CMSSW_BASE");
   std::string filePath = CMSSWPath;
