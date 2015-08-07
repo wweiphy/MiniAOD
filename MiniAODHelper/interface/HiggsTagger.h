@@ -20,7 +20,7 @@ class HiggsTagger{
   public:
     
     // Constructor & Destructor
-    HiggsTagger(HiggsTag::Mode mode_=HiggsTag::SecondCSV, std::string filePath_ = "");
+    HiggsTagger(HiggsTag::Mode mode_, std::string filePath_ = "");
     ~HiggsTagger();
     
     // Return the Output of the Top Tagger

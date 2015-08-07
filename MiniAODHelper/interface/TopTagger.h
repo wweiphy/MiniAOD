@@ -21,7 +21,7 @@ class TopTagger{
   public:
 
     // Constructor & Destructor
-    TopTagger(TopTag::Mode mode_=TopTag::Likelihood, TopTag::SubjetAssign subjetAssign_=TopTag::CSV, std::string filePath_ = "toplikelihoodtaggerhistos.root");
+    TopTagger(TopTag::Mode mode_, TopTag::SubjetAssign subjetAssign_, std::string filePath_ = "");
     ~TopTagger();
     
     // Return the Output of the Top Tagger
