@@ -821,10 +821,26 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 }
 
 
+float MiniAODHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername){
+  
+  float defaultFailure = -.1;
+  
+  float bTagVal = jet.bDiscriminator(taggername);
+
+  if(isnan(bTagVal)) return defaultFailure;
+  
+  if(bTagVal > 1.) return 1.;
+  if(bTagVal < 0.) return defaultFailure;
+  
+  return bTagVal;
+}
+
+
+
 bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
   CheckSetUp();
 
-  float csvValue = iJet.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");
+  float csvValue = GetJetCSV(iJet,"pfCombinedInclusiveSecondaryVertexV2BJetTags");
 
   // CSV b-tagging requirement
   switch(iCSVworkingPoint){
