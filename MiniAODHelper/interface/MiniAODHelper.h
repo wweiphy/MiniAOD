@@ -128,6 +128,7 @@ class MiniAODHelper{
   float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
   float GetElectronRelIso(const pat::Electron&) const;
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType) const;
+  static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags"); 
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
   void addVetos(const reco::Candidate &cand);
@@ -190,7 +191,7 @@ template <typename T> T MiniAODHelper::GetSortedByPt(const T& collection){
 // === Returned sorted input collection, by descending CSV === //
 template <typename T> T MiniAODHelper::GetSortedByCSV(const T& collection){
   T result = collection;
-  std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return a.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags") > b.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags");});
+  std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return GetJetCSV(a,"pfCombinedInclusiveSecondaryVertexV2BJetTags") > GetJetCSV(b,"pfCombinedInclusiveSecondaryVertexV2BJetTags");});
   return result;
 }
 
