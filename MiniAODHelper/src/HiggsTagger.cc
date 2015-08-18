@@ -10,6 +10,9 @@ HiggsTagger::HiggsTagger(HiggsTag::Mode mode_, std::string filePath_):helper(new
     case HiggsTag::SecondCSV:
       break;
       
+    case HiggsTag::DoubleCSV:
+      break;
+      
     case HiggsTag::TMVA:
       {  
         // Get absolute path for TMVA weights
@@ -95,45 +98,51 @@ void HiggsTagger::ResetTMVAVars(){
 }
 
 
-float HiggsTagger::GetHiggsTaggerOutput(const boosted::SubFilterJet& higgsJet, bool verbose){
+float HiggsTagger::GetHiggsTaggerOutput(const boosted::BoostedJet& boostedJet, bool verbose){
   
   float failReturn = -1.1;
   if(mode == HiggsTag::SecondCSV){
     failReturn = -.1;
   }
   
-  if(higgsJet.filterjets.size()<2) return failReturn;
+  if(boostedJet.filterjets.size()<2) return failReturn;
   
-  std::vector<pat::Jet> filterjets = higgsJet.filterjets;
+  std::vector<pat::Jet> filterjets = boostedJet.filterjets;
   filterjets = helper->GetSortedByCSV(filterjets);
   
   switch(mode){
     
     case HiggsTag::SecondCSV:
       {
-        return fmax(filterjets[1].bDiscriminator(btagger),-.1);
+        return MiniAODHelper::GetJetCSV(filterjets[1],btagger);
       }
       break;
       
+    case HiggsTag::DoubleCSV:
+      {
+        return fmax(boostedJet.fatjet.bDiscriminator("pfBoostedDoubleSecondaryVertexCA15BJetTagsbtagger"),-1.1);
+      }
+      break;
+       
     case HiggsTag::TMVA:
       {
         ResetTMVAVars();
 
         double M2 = (filterjets[0].p4()+filterjets[1].p4()).M();
         double M3 = M2;
-        if(higgsJet.filterjets.size()>=3)
+        if(boostedJet.filterjets.size()>=3)
           M3 = (filterjets[0].p4()+filterjets[1].p4()+filterjets[2].p4()).M();
 
         for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
           int iVar = itVarName-TMVAVarNames.begin();
 
-          if(*itVarName=="HiggsJet_Pt")                           TMVAVars[iVar] = higgsJet.fatjet.pt();                                                                                                               
+          if(*itVarName=="HiggsJet_Pt")                           TMVAVars[iVar] = boostedJet.fatjet.pt();                                                                                                               
           else if(*itVarName=="HiggsJet_M2")                      TMVAVars[iVar] = M2;                                                                                                                                 
           else if(*itVarName=="HiggsJet_M3")                      TMVAVars[iVar] = M3;                                                                                                                                 
-          else if(*itVarName=="HiggsJet_CSV1")                    TMVAVars[iVar] = filterjets[0].bDiscriminator(btagger);                                                                                              
-          else if(*itVarName=="HiggsJet_CSV2")                    TMVAVars[iVar] = filterjets[1].bDiscriminator(btagger);                                                                                              
-          else if(*itVarName=="HiggsJet_NSubjettiness_12_Ratio")  TMVAVars[iVar] = higgsJet.subjettiness2/higgsJet.subjettiness1;                                                                                      
-          else if(*itVarName=="HiggsJet_NSubjettiness_23_Ratio")  TMVAVars[iVar] = higgsJet.subjettiness3/higgsJet.subjettiness2;                                                                                      
+          else if(*itVarName=="HiggsJet_CSV1")                    TMVAVars[iVar] = MiniAODHelper::GetJetCSV(filterjets[0],btagger);                                                                                              
+          else if(*itVarName=="HiggsJet_CSV2")                    TMVAVars[iVar] = MiniAODHelper::GetJetCSV(filterjets[1],btagger);                                                                                              
+          else if(*itVarName=="HiggsJet_NSubjettiness_12_Ratio")  TMVAVars[iVar] = boostedJet.tau2Filtered/boostedJet.tau1Filtered;                                                                                      
+          else if(*itVarName=="HiggsJet_NSubjettiness_23_Ratio")  TMVAVars[iVar] = boostedJet.tau3Filtered/boostedJet.tau2Filtered;                                                                                      
           else std::cout << "Error! No matching Top Tagger Input Variable found!" << std:: endl;
         }
 
@@ -160,9 +169,9 @@ float HiggsTagger::GetHiggsTaggerOutput(const boosted::SubFilterJet& higgsJet, b
 }    
 
 
-boosted::SubFilterJetCollection HiggsTagger::GetSortedByHiggsTaggerOutput(const boosted::SubFilterJetCollection& higgsJets, bool verbose){
+boosted::BoostedJetCollection HiggsTagger::GetSortedByHiggsTaggerOutput(const boosted::BoostedJetCollection& boostedJets, bool verbose){
   
-  boosted::SubFilterJetCollection result = higgsJets;
+  boosted::BoostedJetCollection result = boostedJets;
   
   HiggsTaggerOutputComparison higgsTagComp(this);
   std::sort(result.begin(), result.end(),higgsTagComp);
@@ -171,11 +180,11 @@ boosted::SubFilterJetCollection HiggsTagger::GetSortedByHiggsTaggerOutput(const 
 }
 
 
-float HiggsTagger::GetHiggsCand(boosted::SubFilterJetCollection& higgsJets, boosted::SubFilterJet& higgsCand, bool verbose){
+float HiggsTagger::GetHiggsCand(boosted::BoostedJetCollection& boostedJets, boosted::BoostedJet& higgsCand, bool verbose){
   
   float maxHiggsTag=-9999;
   
-  for(boosted::SubFilterJetCollection::iterator itHiggsJet = higgsJets.begin() ; itHiggsJet != higgsJets.end(); ++itHiggsJet){
+  for(boosted::BoostedJetCollection::iterator itHiggsJet = boostedJets.begin() ; itHiggsJet != boostedJets.end(); ++itHiggsJet){
     
     float higgsTag = GetHiggsTaggerOutput(*itHiggsJet,verbose);
     

@@ -8,11 +8,11 @@
 #include "TMVA/Reader.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "MiniAOD/BoostedObjects/interface/SubFilterJet.h"
+#include "MiniAOD/BoostedObjects/interface/BoostedJet.h"
 #include "MiniAOD/MiniAODHelper/interface/MiniAODHelper.h"
 
 namespace HiggsTag{
-  enum Mode{ SecondCSV, Likelihood, TMVA };
+  enum Mode{ SecondCSV, DoubleCSV, TMVA };
 }
 
 class HiggsTagger{
@@ -24,16 +24,16 @@ class HiggsTagger{
     ~HiggsTagger();
     
     // Return the Output of the Top Tagger
-    float GetHiggsTaggerOutput(const boosted::SubFilterJet& higgsJet, bool verbose = false);
+    float GetHiggsTaggerOutput(const boosted::BoostedJet& boostedJet, bool verbose = false);
     
     // Comparison function for Higgs Tagger output
-    bool FirstHasHigherHiggsTaggerOutput(boosted::SubFilterJet jet1, boosted::SubFilterJet jet2);
+    bool FirstHasHigherHiggsTaggerOutput(boosted::BoostedJet jet1, boosted::BoostedJet jet2);
     
     // Sorting function for Higgs Tagger output
-    boosted::SubFilterJetCollection GetSortedByHiggsTaggerOutput(const boosted::SubFilterJetCollection& higgsJets, bool verbose = false);
+    boosted::BoostedJetCollection GetSortedByHiggsTaggerOutput(const boosted::BoostedJetCollection& boostedJets, bool verbose = false);
     
     // Find a Higgs candidate in Higgs jet collection
-    float GetHiggsCand(boosted::SubFilterJetCollection& higgsJets, boosted::SubFilterJet& higgsCand, bool verbose = false);
+    float GetHiggsCand(boosted::BoostedJetCollection& boostedJets, boosted::BoostedJet& higgsCand, bool verbose = false);
 
   private:
     
@@ -69,7 +69,7 @@ struct HiggsTaggerOutputComparison{
 
   HiggsTaggerOutputComparison(HiggsTagger* higgsTagger_): higgsTagger(higgsTagger_){};
 
-  bool operator()(boosted::SubFilterJet jet1, boosted::SubFilterJet jet2){
+  bool operator()(boosted::BoostedJet jet1, boosted::BoostedJet jet2){
     return higgsTagger->GetHiggsTaggerOutput(jet1) > higgsTagger->GetHiggsTaggerOutput(jet2);
   };
 };
