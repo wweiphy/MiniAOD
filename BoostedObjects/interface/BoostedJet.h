@@ -1,5 +1,5 @@
-#ifndef MINIAOD_BOOSTEDOBJECTS_HTTTOPJET_h
-#define MINIAOD_BOOSTEDOBJECTS_HTTTOPJET_h
+#ifndef MINIAOD_BOOSTEDOBJECTS_BOOSTEDJET_H
+#define MINIAOD_BOOSTEDOBJECTS_BOOSTEDJET_H
 
 #include <vector>
 
@@ -7,11 +7,11 @@
 
 namespace boosted {
 
-  class HTTTopJet {
+  class BoostedJet {
     
     public:
     
-      HTTTopJet() :
+      BoostedJet() :
 		    fatjet(pat::Jet()),
         topjet(pat::Jet()),
 		    nonW(pat::Jet()),
@@ -50,7 +50,10 @@ namespace boosted {
         return topjet.p4();
       }
       
+      // Fatjet
       pat::Jet fatjet;
+      
+      // HTT V2 Information
       pat::Jet topjet;
 	    pat::Jet nonW;
 	    pat::Jet W1;
@@ -81,9 +84,13 @@ namespace boosted {
       double qWeight;
       double qEpsilon;
       double qSigmaM;
+      
+      // Subjet Filterjet Information
+      std::vector<pat::Jet> subjets;
+      std::vector<pat::Jet> filterjets;
   };
 
-  typedef std::vector<HTTTopJet> HTTTopJetCollection;
+  typedef std::vector<BoostedJet> BoostedJetCollection;
   
 }
 
