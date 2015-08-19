@@ -120,7 +120,7 @@ float HiggsTagger::GetHiggsTaggerOutput(const boosted::BoostedJet& boostedJet, b
       
     case HiggsTag::DoubleCSV:
       {
-        return fmax(boostedJet.fatjet.bDiscriminator("pfBoostedDoubleSecondaryVertexCA15BJetTagsbtagger"),-1.1);
+        return fmax(boostedJet.fatjet.bDiscriminator("pfBoostedDoubleSecondaryVertexCA15BJetTags"),-1.1);
       }
       break;
        
