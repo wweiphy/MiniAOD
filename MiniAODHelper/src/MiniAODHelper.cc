@@ -11,7 +11,7 @@ MiniAODHelper::MiniAODHelper(){
   rhoIsSet = false;
   jetcorrectorIsSet = false;
   factorizedjetcorrectorIsSet = false;
-
+  
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
   CSVLwp = 0.605;//CSVv2 0.423; // 10.1716% DUSG mistag efficiency
@@ -352,6 +352,47 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
   return outputJets;
 }
 
+
+std::vector<boosted::HTTTopJet> 
+MiniAODHelper::GetSelectedTopJets(const std::vector<boosted::HTTTopJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+
+  CheckSetUp();
+
+  std::vector<boosted::HTTTopJet> selectedJets;
+
+  for( std::vector<boosted::HTTTopJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
+    if( isGoodTopJet(*it, iMinFatPt, iMaxAbsFatEta, iMinSubPt, iMaxAbsSubEta, iJetID) ) selectedJets.push_back(*it);
+  }
+
+  return selectedJets;
+}
+
+
+std::vector<boosted::SubFilterJet> 
+MiniAODHelper::GetSelectedHiggsJets(const std::vector<boosted::SubFilterJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+
+  CheckSetUp();
+
+  std::vector<boosted::SubFilterJet> selectedJets;
+
+  for( std::vector<boosted::SubFilterJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
+    
+    boosted::SubFilterJet higgsJet = *it;
+    std::vector<pat::Jet> filterjets;
+    
+    for( std::vector<pat::Jet>::const_iterator itFilt = higgsJet.filterjets.begin(), edFilt = higgsJet.filterjets.end(); itFilt != edFilt; ++itFilt ){
+      if( isGoodHiggsJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
+    }
+    
+    higgsJet.filterjets = filterjets;
+      
+    if( isGoodHiggsJet(higgsJet, iMinFatPt, iMaxAbsFatEta, iMinSubPt, iMaxAbsSubEta, iJetID) ) selectedJets.push_back(higgsJet);
+  }
+
+  return selectedJets;
+}
+
+
 bool 
 MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
@@ -614,6 +655,101 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   if( !PassesCSV(iJet, iCSVworkingPoint) ) return false;
 
+  return true;
+}
+
+
+bool 
+MiniAODHelper::isGoodTopJet(const boosted::HTTTopJet& iJet, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+
+  CheckVertexSetUp();
+  
+  // Fatjet requirements
+  // Transverse momentum requirement
+  if( iJet.fatjet.pt() < iMinFatPt ) return false;
+
+  // Absolute eta requirement
+  if( fabs(iJet.fatjet.eta()) > iMaxAbsFatEta ) return false;
+  
+  // Subjets requirements
+  // Transverse momentum requirement
+  if( iJet.nonW.pt() < iMinSubPt ) return false;
+  if( iJet.W1.pt() < iMinSubPt ) return false;
+  if( iJet.W2.pt() < iMinSubPt ) return false;
+
+  // Absolute eta requirement
+  if( fabs(iJet.nonW.eta()) > iMaxAbsSubEta ) return false;
+  if( fabs(iJet.W1.eta()) > iMaxAbsSubEta ) return false;
+  if( fabs(iJet.W2.eta()) > iMaxAbsSubEta ) return false;
+  
+  
+  bool loose = (
+	  iJet.nonW.neutralHadronEnergyFraction() < 0.99 &&
+	  iJet.nonW.chargedEmEnergyFraction() < 0.99 &&
+	  iJet.nonW.neutralEmEnergyFraction() < 0.99 &&
+	  iJet.nonW.numberOfDaughters() > 1 &&
+		iJet.W1.neutralHadronEnergyFraction() < 0.99 &&
+	  iJet.W1.chargedEmEnergyFraction() < 0.99 &&
+	  iJet.W1.neutralEmEnergyFraction() < 0.99 &&
+	  iJet.W1.numberOfDaughters() > 1 &&
+		iJet.W2.neutralHadronEnergyFraction() < 0.99 &&
+	  iJet.W2.chargedEmEnergyFraction() < 0.99 &&
+	  iJet.W2.neutralEmEnergyFraction() < 0.99 &&
+	  iJet.W2.numberOfDaughters() > 1
+		);
+  
+  if( fabs(iJet.nonW.eta())<2.4 ){
+    loose = ( loose &&
+	      iJet.nonW.chargedHadronEnergyFraction() > 0.0 &&
+	      iJet.nonW.chargedMultiplicity() > 0
+	      );
+  }
+  if( fabs(iJet.W1.eta())<2.4 ){
+    loose = ( loose &&
+	      iJet.W1.chargedHadronEnergyFraction() > 0.0 &&
+	      iJet.W1.chargedMultiplicity() > 0
+	      );
+  }
+  if( fabs(iJet.W2.eta())<2.4 ){
+    loose = ( loose &&
+	      iJet.W2.chargedHadronEnergyFraction() > 0.0 &&
+	      iJet.W2.chargedMultiplicity() > 0
+	      );
+  }
+  
+  // Jet ID
+  switch(iJetID){
+  case jetID::jetPU:
+  case jetID::jetMinimal:
+  case jetID::jetLooseAOD:
+  case jetID::jetLoose:
+  case jetID::jetTight:
+    if( !loose ) return false;
+    break;
+  case jetID::none:
+  default:
+    break;
+  }
+  
+  return true;
+}
+
+
+bool 
+MiniAODHelper::isGoodHiggsJet(const boosted::SubFilterJet& iJet, const float iMinFatPt, const float iMaxAbsFatEta){
+
+  CheckVertexSetUp();
+  
+  // Fatjet requirements
+  // Transverse momentum requirement
+  if( iJet.fatjet.pt() < iMinFatPt ) return false;
+
+  // Absolute eta requirement
+  if( fabs(iJet.fatjet.eta()) > iMaxAbsFatEta ) return false;
+  
+  // Filterjets requirements
+  if( iJet.filterjets.size() < 2 ) return false;
+  
   return true;
 }
 
