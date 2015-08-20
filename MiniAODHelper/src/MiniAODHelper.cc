@@ -381,12 +381,12 @@ MiniAODHelper::GetSelectedHiggsJets(const std::vector<boosted::SubFilterJet>& in
     std::vector<pat::Jet> filterjets;
     
     for( std::vector<pat::Jet>::const_iterator itFilt = higgsJet.filterjets.begin(), edFilt = higgsJet.filterjets.end(); itFilt != edFilt; ++itFilt ){
-      if( isGoodHiggsJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
+      if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
     }
     
     higgsJet.filterjets = filterjets;
       
-    if( isGoodHiggsJet(higgsJet, iMinFatPt, iMaxAbsFatEta, iMinSubPt, iMaxAbsSubEta, iJetID) ) selectedJets.push_back(higgsJet);
+    if( isGoodHiggsJet(higgsJet, iMinFatPt, iMaxAbsFatEta) ) selectedJets.push_back(higgsJet);
   }
 
   return selectedJets;
@@ -681,55 +681,6 @@ MiniAODHelper::isGoodTopJet(const boosted::HTTTopJet& iJet, const float iMinFatP
   if( fabs(iJet.nonW.eta()) > iMaxAbsSubEta ) return false;
   if( fabs(iJet.W1.eta()) > iMaxAbsSubEta ) return false;
   if( fabs(iJet.W2.eta()) > iMaxAbsSubEta ) return false;
-  
-  
-  bool loose = (
-	  iJet.nonW.neutralHadronEnergyFraction() < 0.99 &&
-	  iJet.nonW.chargedEmEnergyFraction() < 0.99 &&
-	  iJet.nonW.neutralEmEnergyFraction() < 0.99 &&
-	  iJet.nonW.numberOfDaughters() > 1 &&
-		iJet.W1.neutralHadronEnergyFraction() < 0.99 &&
-	  iJet.W1.chargedEmEnergyFraction() < 0.99 &&
-	  iJet.W1.neutralEmEnergyFraction() < 0.99 &&
-	  iJet.W1.numberOfDaughters() > 1 &&
-		iJet.W2.neutralHadronEnergyFraction() < 0.99 &&
-	  iJet.W2.chargedEmEnergyFraction() < 0.99 &&
-	  iJet.W2.neutralEmEnergyFraction() < 0.99 &&
-	  iJet.W2.numberOfDaughters() > 1
-		);
-  
-  if( fabs(iJet.nonW.eta())<2.4 ){
-    loose = ( loose &&
-	      iJet.nonW.chargedHadronEnergyFraction() > 0.0 &&
-	      iJet.nonW.chargedMultiplicity() > 0
-	      );
-  }
-  if( fabs(iJet.W1.eta())<2.4 ){
-    loose = ( loose &&
-	      iJet.W1.chargedHadronEnergyFraction() > 0.0 &&
-	      iJet.W1.chargedMultiplicity() > 0
-	      );
-  }
-  if( fabs(iJet.W2.eta())<2.4 ){
-    loose = ( loose &&
-	      iJet.W2.chargedHadronEnergyFraction() > 0.0 &&
-	      iJet.W2.chargedMultiplicity() > 0
-	      );
-  }
-  
-  // Jet ID
-  switch(iJetID){
-  case jetID::jetPU:
-  case jetID::jetMinimal:
-  case jetID::jetLooseAOD:
-  case jetID::jetLoose:
-  case jetID::jetTight:
-    if( !loose ) return false;
-    break;
-  case jetID::none:
-  default:
-    break;
-  }
   
   return true;
 }

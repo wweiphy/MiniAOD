@@ -122,7 +122,7 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   std::vector<boosted::HTTTopJet> GetSelectedTopJets(const std::vector<boosted::HTTTopJet>&, const float, const float, const float, const float, const jetID::jetID);
-  std::vector<boosted::SubFilterJet> GetSelectedHiggsJets(const std::vector<boosted::SubFilterJet>&, const float, const float, const float, const float, const jetID::jetID){
+  std::vector<boosted::SubFilterJet> GetSelectedHiggsJets(const std::vector<boosted::SubFilterJet>&, const float, const float, const float, const float, const jetID::jetID);
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
   bool isGoodElectron(const pat::Electron&, const float, const float, const electronID::electronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
