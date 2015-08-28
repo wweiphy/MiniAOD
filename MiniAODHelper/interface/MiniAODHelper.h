@@ -137,6 +137,7 @@ class MiniAODHelper{
   int ttHFCategorization(const std::vector<reco::GenJet>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<reco::GenParticle>&, const std::vector<std::vector<int> >&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const double, const double);
   int GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >&);
   std::vector<pat::Jet> GetDeltaRCleanedJets(const std::vector<pat::Jet>&, const std::vector<pat::Muon>&, const std::vector<pat::Electron>&, const double);
+  double getJERfactor( const int, const double, const double, const double );
 
   template <typename T> T GetSortedByPt(const T&);
   template <typename T> T GetSortedByCSV(const T&);

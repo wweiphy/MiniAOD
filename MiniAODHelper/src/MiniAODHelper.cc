@@ -278,8 +278,9 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
     else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
 
     jet.scaleEnergy( scale );
-
+     
     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+
       jecUnc_->setJetEta(jet.eta());
       jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
       double unc = 1;
@@ -292,14 +293,35 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 	unc = jecUnc_->getUncertainty(false);
 	jes = 1 - unc;
       }
-
+      
       jet.scaleEnergy( jes );
     }
 
+    /// JER
+    double jerSF = 1.;
+    if( jet.genJet() ){
+      if( iSysType == sysType::JERup ){
+	jerSF = getJERfactor(1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+      }
+      else if( iSysType == sysType::JERdown ){
+	jerSF = getJERfactor(-1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+      }
+      else {
+	jerSF = getJERfactor(0, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+      }
+      // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
+    }
+    // else     std::cout << "    ==> can't find genJet" << std::endl;
+
+    jet.scaleEnergy( jerSF );
+
+
     outputJets.push_back(jet);
+
   }
 
   return outputJets;
+
 }
 
 
@@ -1342,3 +1364,56 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 	return outputJets;
 }
 
+
+/// JER function
+double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA, const double genjetPT, const double recojetPT){
+
+  // CheckSetUp();
+  // string samplename = GetSampleName();
+  double factor = 1.;
+    
+  double scale_JER = 1., scale_JERup = 1., scale_JERdown = 1.;
+
+  //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
+  if( jetAbsETA<0.5 ){ 
+    scale_JER = 1.079; scale_JERup = 1.052 + sqrt( 0.012*0.012 + 0.062*0.062 ); scale_JERdown = 1.052 - sqrt( 0.012*0.012 + 0.061*0.061 );
+  }
+  else if( jetAbsETA<1.1 ){ 
+    scale_JER = 1.099; scale_JERup = 1.057 + sqrt( 0.012*0.012 + 0.056*0.056 ); scale_JERdown = 1.057 - sqrt( 0.012*0.012 + 0.055*0.055 );
+  }
+  else if( jetAbsETA<1.7 ){ 
+    scale_JER = 1.121; scale_JERup = 1.096 + sqrt( 0.017*0.017 + 0.063*0.063 ); scale_JERdown = 1.096 - sqrt( 0.017*0.017 + 0.062*0.062 );
+  }
+  else if( jetAbsETA<2.3 ){ 
+    scale_JER = 1.208; scale_JERup = 1.134 + sqrt( 0.035*0.035 + 0.087*0.087 ); scale_JERdown = 1.134 - sqrt( 0.035*0.035 + 0.085*0.085 );
+  }
+  else if( jetAbsETA<2.8 ){ 
+    scale_JER = 1.254; scale_JERup = 1.134 + sqrt( 0.035*0.035 + 0.087*0.087 ); scale_JERdown = 1.134 - sqrt( 0.035*0.035 + 0.085*0.085 );
+  }
+  else if( jetAbsETA<3.2 ){ 
+    scale_JER = 1.395; scale_JERup = 1.134 + sqrt( 0.035*0.035 + 0.087*0.087 ); scale_JERdown = 1.134 - sqrt( 0.035*0.035 + 0.085*0.085 );
+  }
+  else if( jetAbsETA<5.0 ){ 
+    scale_JER = 1.056; scale_JERup = 1.288 + sqrt( 0.127*0.127 + 0.155*0.155 ); scale_JERdown = 1.288 - sqrt( 0.127*0.127 + 0.153*0.153 );
+  }
+
+  double jetPt_JER = recojetPT;
+  double jetPt_JERup = recojetPT;
+  double jetPt_JERdown = recojetPT;
+
+  double diff_recojet_genjet = recojetPT - genjetPT;
+
+  if( genjetPT>10. ){
+    jetPt_JER = std::max( 0., genjetPT + scale_JER * ( diff_recojet_genjet ) );
+    jetPt_JERup = std::max( 0., genjetPT + scale_JERup * ( diff_recojet_genjet ) );
+    jetPt_JERdown = std::max( 0., genjetPT + scale_JERdown * ( diff_recojet_genjet ) );
+  }
+
+  if( returnType==1 )       factor = jetPt_JERup/recojetPT;
+  else if( returnType==-1 ) factor = jetPt_JERdown/recojetPT;
+  else                      factor = jetPt_JER/recojetPT;
+
+  if( !(genjetPT>10.) ) factor = 1.;
+
+  return factor;
+}
