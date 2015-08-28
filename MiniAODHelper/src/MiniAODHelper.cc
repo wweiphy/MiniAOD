@@ -1376,25 +1376,25 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
 
   //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
   if( jetAbsETA<0.5 ){ 
-    scale_JER = 1.079; scale_JERup = 1.052 + sqrt( 0.012*0.012 + 0.062*0.062 ); scale_JERdown = 1.052 - sqrt( 0.012*0.012 + 0.061*0.061 );
+    scale_JER = 1.079; scale_JERup = 1.105; scale_JERdown = 1.053;
   }
   else if( jetAbsETA<1.1 ){ 
-    scale_JER = 1.099; scale_JERup = 1.057 + sqrt( 0.012*0.012 + 0.056*0.056 ); scale_JERdown = 1.057 - sqrt( 0.012*0.012 + 0.055*0.055 );
+    scale_JER = 1.099; scale_JERup = 1.127; scale_JERdown = 1.071;
   }
   else if( jetAbsETA<1.7 ){ 
-    scale_JER = 1.121; scale_JERup = 1.096 + sqrt( 0.017*0.017 + 0.063*0.063 ); scale_JERdown = 1.096 - sqrt( 0.017*0.017 + 0.062*0.062 );
+    scale_JER = 1.121; scale_JERup = 1.150; scale_JERdown = 1.092;
   }
   else if( jetAbsETA<2.3 ){ 
-    scale_JER = 1.208; scale_JERup = 1.134 + sqrt( 0.035*0.035 + 0.087*0.087 ); scale_JERdown = 1.134 - sqrt( 0.035*0.035 + 0.085*0.085 );
+    scale_JER = 1.208; scale_JERup = 1.254; scale_JERdown = 1.162;
   }
   else if( jetAbsETA<2.8 ){ 
-    scale_JER = 1.254; scale_JERup = 1.134 + sqrt( 0.035*0.035 + 0.087*0.087 ); scale_JERdown = 1.134 - sqrt( 0.035*0.035 + 0.085*0.085 );
+    scale_JER = 1.254; scale_JERup = 1.316; scale_JERdown = 1.192;
   }
   else if( jetAbsETA<3.2 ){ 
-    scale_JER = 1.395; scale_JERup = 1.134 + sqrt( 0.035*0.035 + 0.087*0.087 ); scale_JERdown = 1.134 - sqrt( 0.035*0.035 + 0.085*0.085 );
+    scale_JER = 1.395; scale_JERup = 1.458; scale_JERdown = 1.332;
   }
   else if( jetAbsETA<5.0 ){ 
-    scale_JER = 1.056; scale_JERup = 1.288 + sqrt( 0.127*0.127 + 0.155*0.155 ); scale_JERdown = 1.288 - sqrt( 0.127*0.127 + 0.153*0.153 );
+    scale_JER = 1.056; scale_JERup = 1.247; scale_JERdown = 0.865;
   }
 
   double jetPt_JER = recojetPT;
