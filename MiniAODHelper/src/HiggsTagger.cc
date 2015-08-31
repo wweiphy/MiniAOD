@@ -111,7 +111,7 @@ float HiggsTagger::GetHiggsTaggerOutput(const boosted::SubFilterJet& higgsJet, b
     
     case HiggsTag::SecondCSV:
       {
-        return fmax(filterjets[1].bDiscriminator(btagger),-.1);
+        return MiniAODHelper::GetJetCSV(filterjets[1],btagger);
       }
       break;
       
@@ -130,8 +130,8 @@ float HiggsTagger::GetHiggsTaggerOutput(const boosted::SubFilterJet& higgsJet, b
           if(*itVarName=="HiggsJet_Pt")                           TMVAVars[iVar] = higgsJet.fatjet.pt();                                                                                                               
           else if(*itVarName=="HiggsJet_M2")                      TMVAVars[iVar] = M2;                                                                                                                                 
           else if(*itVarName=="HiggsJet_M3")                      TMVAVars[iVar] = M3;                                                                                                                                 
-          else if(*itVarName=="HiggsJet_CSV1")                    TMVAVars[iVar] = filterjets[0].bDiscriminator(btagger);                                                                                              
-          else if(*itVarName=="HiggsJet_CSV2")                    TMVAVars[iVar] = filterjets[1].bDiscriminator(btagger);                                                                                              
+          else if(*itVarName=="HiggsJet_CSV1")                    TMVAVars[iVar] = MiniAODHelper::GetJetCSV(filterjets[0],btagger);                                                                                              
+          else if(*itVarName=="HiggsJet_CSV2")                    TMVAVars[iVar] = MiniAODHelper::GetJetCSV(filterjets[1],btagger);                                                                                              
           else if(*itVarName=="HiggsJet_NSubjettiness_12_Ratio")  TMVAVars[iVar] = higgsJet.subjettiness2/higgsJet.subjettiness1;                                                                                      
           else if(*itVarName=="HiggsJet_NSubjettiness_23_Ratio")  TMVAVars[iVar] = higgsJet.subjettiness3/higgsJet.subjettiness2;                                                                                      
           else std::cout << "Error! No matching Top Tagger Input Variable found!" << std:: endl;

@@ -248,9 +248,9 @@ float TopTagger::GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbo
           else if(*itVarName=="TopJet_WM" || *itVarName=="TopJet_Wbtag_M")                    TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M();                                              
           else if(*itVarName=="TopJet_BW1M" || *itVarName=="TopJet_BW1btag_M")                TMVAVars[iVar] = (subjets[0].p4()+subjets[1].p4()).M();                                              
           else if(*itVarName=="TopJet_BW2M" || *itVarName=="TopJet_BW2btag_M")                TMVAVars[iVar] = (subjets[0].p4()+subjets[2].p4()).M();                                              
-          else if(*itVarName=="TopJet_BCSV" || *itVarName=="TopJet_Bbtag_CSV")                TMVAVars[iVar] = fmax(subjets[0].bDiscriminator(btagger),-.1);                                       
-          else if(*itVarName=="TopJet_W1CSV" || *itVarName=="TopJet_W1btag_CSV")              TMVAVars[iVar] = fmax(subjets[1].bDiscriminator(btagger),-.1);                                       
-          else if(*itVarName=="TopJet_W2CSV" || *itVarName=="TopJet_W2btag_CSV")              TMVAVars[iVar] = fmax(subjets[2].bDiscriminator(btagger),-.1);                                       
+          else if(*itVarName=="TopJet_BCSV" || *itVarName=="TopJet_Bbtag_CSV")                TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[0],btagger);                                       
+          else if(*itVarName=="TopJet_W1CSV" || *itVarName=="TopJet_W1btag_CSV")              TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[1],btagger);                                       
+          else if(*itVarName=="TopJet_W2CSV" || *itVarName=="TopJet_W2btag_CSV")              TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[2],btagger);                                       
           else if(*itVarName=="TopJet_MRatio_WTop" || *itVarName=="TopJet_MRatio_Wbtag_Top")  TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M()/topjet.topjet.mass();                         
           else if(*itVarName=="TopJet_Atan_BW1W2btag" || *itVarName=="TopJet_Atan_BW1W2btag") TMVAVars[iVar] = atan((subjets[0].p4()+subjets[1].p4()).M()/(subjets[0].p4()+subjets[2].p4()).M());
           else std::cout << "Error! No matching Top Tagger Input Variable found!" << std:: endl;
