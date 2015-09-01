@@ -47,8 +47,7 @@
 #include "DataFormats/PatCandidates/interface/Isolation.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Particle.h"
-#include "MiniAOD/BoostedObjects/interface/SubFilterJet.h"
-#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
+#include "MiniAOD/BoostedObjects/interface/BoostedJet.h"
 
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
@@ -121,14 +120,11 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetUncorrectedJets(edm::Handle<pat::JetCollection>);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
-  std::vector<boosted::HTTTopJet> GetSelectedTopJets(const std::vector<boosted::HTTTopJet>&, const float, const float, const float, const float, const jetID::jetID);
-  std::vector<boosted::SubFilterJet> GetSelectedHiggsJets(const std::vector<boosted::SubFilterJet>&, const float, const float, const float, const float, const jetID::jetID);
+  std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID);
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
   bool isGoodElectron(const pat::Electron&, const float, const float, const electronID::electronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
-  bool isGoodTopJet(const boosted::HTTTopJet&, const float, const float, const float, const float, const jetID::jetID);
-  bool isGoodHiggsJet(const boosted::SubFilterJet&, const float, const float);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
