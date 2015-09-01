@@ -11,7 +11,7 @@ MiniAODHelper::MiniAODHelper(){
   rhoIsSet = false;
   jetcorrectorIsSet = false;
   factorizedjetcorrectorIsSet = false;
-
+  
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
   CSVLwp = 0.605;//CSVv2 0.423; // 10.1716% DUSG mistag efficiency
@@ -278,8 +278,9 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
     else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
 
     jet.scaleEnergy( scale );
-
+     
     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+
       jecUnc_->setJetEta(jet.eta());
       jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
       double unc = 1;
@@ -292,14 +293,35 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 	unc = jecUnc_->getUncertainty(false);
 	jes = 1 - unc;
       }
-
+      
       jet.scaleEnergy( jes );
     }
 
+    /// JER
+    double jerSF = 1.;
+    if( jet.genJet() ){
+      if( iSysType == sysType::JERup ){
+	jerSF = getJERfactor(1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+      }
+      else if( iSysType == sysType::JERdown ){
+	jerSF = getJERfactor(-1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+      }
+      else {
+	jerSF = getJERfactor(0, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+      }
+      // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
+    }
+    // else     std::cout << "    ==> can't find genJet" << std::endl;
+
+    jet.scaleEnergy( jerSF );
+
+
     outputJets.push_back(jet);
+
   }
 
   return outputJets;
+
 }
 
 
@@ -351,6 +373,47 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 
   return outputJets;
 }
+
+
+std::vector<boosted::HTTTopJet> 
+MiniAODHelper::GetSelectedTopJets(const std::vector<boosted::HTTTopJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+
+  CheckSetUp();
+
+  std::vector<boosted::HTTTopJet> selectedJets;
+
+  for( std::vector<boosted::HTTTopJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
+    if( isGoodTopJet(*it, iMinFatPt, iMaxAbsFatEta, iMinSubPt, iMaxAbsSubEta, iJetID) ) selectedJets.push_back(*it);
+  }
+
+  return selectedJets;
+}
+
+
+std::vector<boosted::SubFilterJet> 
+MiniAODHelper::GetSelectedHiggsJets(const std::vector<boosted::SubFilterJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+
+  CheckSetUp();
+
+  std::vector<boosted::SubFilterJet> selectedJets;
+
+  for( std::vector<boosted::SubFilterJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
+    
+    boosted::SubFilterJet higgsJet = *it;
+    std::vector<pat::Jet> filterjets;
+    
+    for( std::vector<pat::Jet>::const_iterator itFilt = higgsJet.filterjets.begin(), edFilt = higgsJet.filterjets.end(); itFilt != edFilt; ++itFilt ){
+      if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
+    }
+    
+    higgsJet.filterjets = filterjets;
+      
+    if( isGoodHiggsJet(higgsJet, iMinFatPt, iMaxAbsFatEta) ) selectedJets.push_back(higgsJet);
+  }
+
+  return selectedJets;
+}
+
 
 bool 
 MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
@@ -614,6 +677,52 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   if( !PassesCSV(iJet, iCSVworkingPoint) ) return false;
 
+  return true;
+}
+
+
+bool 
+MiniAODHelper::isGoodTopJet(const boosted::HTTTopJet& iJet, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+
+  CheckVertexSetUp();
+  
+  // Fatjet requirements
+  // Transverse momentum requirement
+  if( iJet.fatjet.pt() < iMinFatPt ) return false;
+
+  // Absolute eta requirement
+  if( fabs(iJet.fatjet.eta()) > iMaxAbsFatEta ) return false;
+  
+  // Subjets requirements
+  // Transverse momentum requirement
+  if( iJet.nonW.pt() < iMinSubPt ) return false;
+  if( iJet.W1.pt() < iMinSubPt ) return false;
+  if( iJet.W2.pt() < iMinSubPt ) return false;
+
+  // Absolute eta requirement
+  if( fabs(iJet.nonW.eta()) > iMaxAbsSubEta ) return false;
+  if( fabs(iJet.W1.eta()) > iMaxAbsSubEta ) return false;
+  if( fabs(iJet.W2.eta()) > iMaxAbsSubEta ) return false;
+  
+  return true;
+}
+
+
+bool 
+MiniAODHelper::isGoodHiggsJet(const boosted::SubFilterJet& iJet, const float iMinFatPt, const float iMaxAbsFatEta){
+
+  CheckVertexSetUp();
+  
+  // Fatjet requirements
+  // Transverse momentum requirement
+  if( iJet.fatjet.pt() < iMinFatPt ) return false;
+
+  // Absolute eta requirement
+  if( fabs(iJet.fatjet.eta()) > iMaxAbsFatEta ) return false;
+  
+  // Filterjets requirements
+  if( iJet.filterjets.size() < 2 ) return false;
+  
   return true;
 }
 
@@ -1342,3 +1451,56 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 	return outputJets;
 }
 
+
+/// JER function
+double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA, const double genjetPT, const double recojetPT){
+
+  // CheckSetUp();
+  // string samplename = GetSampleName();
+  double factor = 1.;
+    
+  double scale_JER = 1., scale_JERup = 1., scale_JERdown = 1.;
+
+  //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
+  if( jetAbsETA<0.5 ){ 
+    scale_JER = 1.079; scale_JERup = 1.105; scale_JERdown = 1.053;
+  }
+  else if( jetAbsETA<1.1 ){ 
+    scale_JER = 1.099; scale_JERup = 1.127; scale_JERdown = 1.071;
+  }
+  else if( jetAbsETA<1.7 ){ 
+    scale_JER = 1.121; scale_JERup = 1.150; scale_JERdown = 1.092;
+  }
+  else if( jetAbsETA<2.3 ){ 
+    scale_JER = 1.208; scale_JERup = 1.254; scale_JERdown = 1.162;
+  }
+  else if( jetAbsETA<2.8 ){ 
+    scale_JER = 1.254; scale_JERup = 1.316; scale_JERdown = 1.192;
+  }
+  else if( jetAbsETA<3.2 ){ 
+    scale_JER = 1.395; scale_JERup = 1.458; scale_JERdown = 1.332;
+  }
+  else if( jetAbsETA<5.0 ){ 
+    scale_JER = 1.056; scale_JERup = 1.247; scale_JERdown = 0.865;
+  }
+
+  double jetPt_JER = recojetPT;
+  double jetPt_JERup = recojetPT;
+  double jetPt_JERdown = recojetPT;
+
+  double diff_recojet_genjet = recojetPT - genjetPT;
+
+  if( genjetPT>10. ){
+    jetPt_JER = std::max( 0., genjetPT + scale_JER * ( diff_recojet_genjet ) );
+    jetPt_JERup = std::max( 0., genjetPT + scale_JERup * ( diff_recojet_genjet ) );
+    jetPt_JERdown = std::max( 0., genjetPT + scale_JERdown * ( diff_recojet_genjet ) );
+  }
+
+  if( returnType==1 )       factor = jetPt_JERup/recojetPT;
+  else if( returnType==-1 ) factor = jetPt_JERdown/recojetPT;
+  else                      factor = jetPt_JER/recojetPT;
+
+  if( !(genjetPT>10.) ) factor = 1.;
+
+  return factor;
+}

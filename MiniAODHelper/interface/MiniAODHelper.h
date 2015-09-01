@@ -47,6 +47,9 @@
 #include "DataFormats/PatCandidates/interface/Isolation.h"
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/PatCandidates/interface/Particle.h"
+#include "MiniAOD/BoostedObjects/interface/SubFilterJet.h"
+#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
+
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
 #include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
@@ -118,11 +121,14 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetUncorrectedJets(edm::Handle<pat::JetCollection>);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
-
+  std::vector<boosted::HTTTopJet> GetSelectedTopJets(const std::vector<boosted::HTTTopJet>&, const float, const float, const float, const float, const jetID::jetID);
+  std::vector<boosted::SubFilterJet> GetSelectedHiggsJets(const std::vector<boosted::SubFilterJet>&, const float, const float, const float, const float, const jetID::jetID);
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
   bool isGoodElectron(const pat::Electron&, const float, const float, const electronID::electronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
+  bool isGoodTopJet(const boosted::HTTTopJet&, const float, const float, const float, const float, const jetID::jetID);
+  bool isGoodHiggsJet(const boosted::SubFilterJet&, const float, const float);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
@@ -137,6 +143,7 @@ class MiniAODHelper{
   int ttHFCategorization(const std::vector<reco::GenJet>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<reco::GenParticle>&, const std::vector<std::vector<int> >&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const double, const double);
   int GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >&);
   std::vector<pat::Jet> GetDeltaRCleanedJets(const std::vector<pat::Jet>&, const std::vector<pat::Muon>&, const std::vector<pat::Electron>&, const double);
+  double getJERfactor( const int, const double, const double, const double );
 
   template <typename T> T GetSortedByPt(const T&);
   template <typename T> T GetSortedByCSV(const T&);
@@ -154,6 +161,7 @@ class MiniAODHelper{
   bool rhoIsSet;
   bool jetcorrectorIsSet;
   bool factorizedjetcorrectorIsSet;
+  
   string era;
   int sampleNumber;
   bool isData;
@@ -172,12 +180,12 @@ class MiniAODHelper{
   const JetCorrector* corrector;
   FactorizedJetCorrector* useJetCorrector;
   JetCorrectionUncertainty *jecUnc_;
-
+  
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
 
   inline void CheckSetUp() const { if(!isSetUp){ ThrowFatalError("MiniAODHelper not yet set up."); } };
   inline void CheckVertexSetUp() const { if(!vertexIsSet){ ThrowFatalError("Vertex is not set."); } };
-
+  
 }; // End of class prototype
 
 
