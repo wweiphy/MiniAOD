@@ -35,6 +35,9 @@ class TopTagger{
 
     // Find a hadronic top candidate in Top jet collection
     float GetTopHad(boosted::BoostedJetCollection& jets, boosted::BoostedJet& topHadCand, bool verbose = false);
+    
+    // Return subjet assignment
+    TopTag::SubjetAssign GetSubjetAssignment();
 
   private:
 
@@ -78,7 +81,7 @@ class TopTagger{
     void GetTMVAVars(std::string filePath_, bool verbose = false);
 
     // Clear the values of the TMVA input variables
-    void ResetTMVAVars();  
+    void ResetTMVAVars();
 };
 
 

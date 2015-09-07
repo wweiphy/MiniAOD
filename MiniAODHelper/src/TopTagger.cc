@@ -306,3 +306,7 @@ float TopTagger::GetTopHad(boosted::BoostedJetCollection& boostedjets, boosted::
   
   return maxTopTag;
 }
+
+TopTag::SubjetAssign TopTagger::GetSubjetAssignment(){
+  return subjetAssign;
+}

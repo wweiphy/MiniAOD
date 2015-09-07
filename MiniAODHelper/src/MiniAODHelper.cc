@@ -387,7 +387,7 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
     boosted::BoostedJet boostedJet = *it;
     
     // Select Fat Jet
-    if( ! isGoodJet(it->fatjet, iMinSubPt, iMaxAbsSubEta, jetID::none, '-')) continue;
+    if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
     
     // Select Top Jet Part
     if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
@@ -395,6 +395,7 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
         isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
       )
     {
+      boostedJet.topjet = pat::Jet();
       boostedJet.nonW = pat::Jet();
       boostedJet.W1 = pat::Jet();
       boostedJet.W2 = pat::Jet(); 
@@ -649,22 +650,25 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   // Absolute eta requirement
   if( fabs(iJet.eta()) > iMaxAbsEta ) return false;
-
-  bool loose = (
-		iJet.neutralHadronEnergyFraction() < 0.99 &&
-		iJet.chargedEmEnergyFraction() < 0.99 &&
-		iJet.neutralEmEnergyFraction() < 0.99 &&
-		iJet.numberOfDaughters() > 1
-		);
-
-  if( fabs(iJet.eta())<2.4 ){
-    loose = ( loose &&
-	      iJet.chargedHadronEnergyFraction() > 0.0 &&
-	      iJet.chargedMultiplicity() > 0
-	      );
-  }
-
+  
   // Jet ID
+  bool loose = false;
+  
+  if(iJetID!=jetID::none){
+    loose = ( iJet.neutralHadronEnergyFraction() < 0.99 &&
+		          iJet.chargedEmEnergyFraction() < 0.99 &&
+		          iJet.neutralEmEnergyFraction() < 0.99 &&
+		          iJet.numberOfDaughters() > 1
+		        );
+
+    if( fabs(iJet.eta())<2.4 ){
+      loose = ( loose &&
+	              iJet.chargedHadronEnergyFraction() > 0.0 &&
+	              iJet.chargedMultiplicity() > 0
+	            );
+    }
+  }
+  
   switch(iJetID){
   case jetID::jetPU:
   case jetID::jetMinimal:

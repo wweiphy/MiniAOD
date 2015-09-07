@@ -7,6 +7,8 @@
 
 namespace boosted {
 
+  enum JetType{ Top, Higgs, NA };
+  
   class BoostedJet {
     
     public:

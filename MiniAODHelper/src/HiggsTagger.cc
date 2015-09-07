@@ -100,12 +100,9 @@ void HiggsTagger::ResetTMVAVars(){
 
 float HiggsTagger::GetHiggsTaggerOutput(const boosted::BoostedJet& boostedJet, bool verbose){
   
-  float failReturn = -1.1;
   if(mode == HiggsTag::SecondCSV){
-    failReturn = -.1;
+    if(boostedJet.filterjets.size()<2) return -.1;
   }
-  
-  if(boostedJet.filterjets.size()<2) return failReturn;
   
   std::vector<pat::Jet> filterjets = boostedJet.filterjets;
   filterjets = helper->GetSortedByCSV(filterjets);
