@@ -638,9 +638,9 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
 
 bool 
 MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint){
-
+  
   CheckVertexSetUp();
-
+  
   // Transverse momentum requirement
   if( iJet.pt() < iMinPt ) return false;
 
@@ -654,11 +654,14 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 		iJet.numberOfDaughters() > 1
 		);
 
-  bool goodForMETCorrection = (
-                iJet.correctedJet("Uncorrected").pt()>10.0 &&   
+  bool goodForMETCorrection=false;
+  if(iJetID==jetID::jetMETcorrection){ //only check this if asked, otherwise there could be problems
+    goodForMETCorrection = (
+                iJet.correctedJet(0).pt()>10.0 &&   
 		(( !iJet.isPFJet() && iJet.emEnergyFraction()<0.9 ) || 
 		( iJet.isPFJet() && (iJet.neutralEmEnergyFraction() + iJet.chargedEmEnergyFraction())<0.9 ))
 		);
+  }
 
   if( fabs(iJet.eta())<2.4 ){
     loose = ( loose &&
