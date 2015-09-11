@@ -656,7 +656,7 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   bool goodForMETCorrection = (
                 iJet.correctedJet("Uncorrected").pt()>10.0 &&   
-		(( iJet.isPFJet() && iJet.emEnergyFraction()<0.9 ) || 
+		(( !iJet.isPFJet() && iJet.emEnergyFraction()<0.9 ) || 
 		( iJet.isPFJet() && (iJet.neutralEmEnergyFraction() + iJet.chargedEmEnergyFraction())<0.9 ))
 		);
 
