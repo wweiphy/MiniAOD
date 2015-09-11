@@ -1512,3 +1512,42 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
 
   return factor;
 }
+
+std::vector<pat::MET> MiniAODHelper::CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs){
+  // this function takes two jet collections and replaces their contribution to the Type1 correction of the MET
+
+  std::vector<pat::MET> outputMets;
+
+  for(std::vector<pat::MET>::const_iterator oldMET=pfMETs.begin();oldMET!=pfMETs.end();++oldMET){
+    pat::MET outMET=*oldMET; 
+
+    if(oldMET-pfMETs.begin() == 0){
+    //get old MET p4
+    TLorentzVector oldMETVec;
+    oldMETVec.SetPxPyPzE(oldMET->p4().Px(),oldMET->p4().Py(),oldMET->p4().Pz(),oldMET->p4().E());
+    // add the pT vector of the old jets with the initial correction to the MET vector
+    for(std::vector<pat::Jet>::const_iterator itJet=oldJetsForMET.begin();itJet!=oldJetsForMET.end();++itJet){
+      TLorentzVector oldJETVec;
+      oldJETVec.SetPtEtaPhiE(itJet->pt(),itJet->eta(),itJet->phi(),itJet->energy());
+      TLorentzVector PToldJETVec;
+      PToldJETVec.SetPxPyPzE(oldJETVec.Px(),oldJETVec.Py(),0.0,oldJETVec.Et());
+      oldMETVec+=PToldJETVec;
+    }
+    // now subtract the pT vectors of the clean recorrected jets
+    for(std::vector<pat::Jet>::const_iterator itJet=newJetsForMET.begin();itJet!=newJetsForMET.end();++itJet){
+      TLorentzVector newJETVec;
+      newJETVec.SetPtEtaPhiE(itJet->pt(),itJet->eta(),itJet->phi(),itJet->energy());
+      TLorentzVector PTnewJETVec;
+      PTnewJETVec.SetPxPyPzE(newJETVec.Px(),newJETVec.Py(),0.0,newJETVec.Et());
+      oldMETVec-=PTnewJETVec;
+    }
+    outMET.setP4(reco::Candidate::LorentzVector(oldMETVec.Px(),oldMETVec.Py(),oldMETVec.Pz(),oldMETVec.E()));
+    }
+    
+    outputMets.push_back(outMET);
+  }
+
+  return outputMets;
+
+}
+

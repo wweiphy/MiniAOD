@@ -144,6 +144,7 @@ class MiniAODHelper{
   int GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >&);
   std::vector<pat::Jet> GetDeltaRCleanedJets(const std::vector<pat::Jet>&, const std::vector<pat::Muon>&, const std::vector<pat::Electron>&, const double);
   double getJERfactor( const int, const double, const double, const double );
+  std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
 
   template <typename T> T GetSortedByPt(const T&);
   template <typename T> T GetSortedByCSV(const T&);
