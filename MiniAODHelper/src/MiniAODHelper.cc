@@ -638,9 +638,9 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
 
 bool 
 MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint){
-
+  
   CheckVertexSetUp();
-
+  
   // Transverse momentum requirement
   if( iJet.pt() < iMinPt ) return false;
 
@@ -654,6 +654,15 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 		iJet.numberOfDaughters() > 1
 		);
 
+  bool goodForMETCorrection=false;
+  if(iJetID==jetID::jetMETcorrection){ //only check this if asked, otherwise there could be problems
+    goodForMETCorrection = (
+                iJet.correctedJet(0).pt()>10.0 &&   
+		(( !iJet.isPFJet() && iJet.emEnergyFraction()<0.9 ) || 
+		( iJet.isPFJet() && (iJet.neutralEmEnergyFraction() + iJet.chargedEmEnergyFraction())<0.9 ))
+		);
+  }
+
   if( fabs(iJet.eta())<2.4 ){
     loose = ( loose &&
 	      iJet.chargedHadronEnergyFraction() > 0.0 &&
@@ -663,6 +672,9 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   // Jet ID
   switch(iJetID){
+  case jetID::jetMETcorrection:
+    if( !goodForMETCorrection ) return false;
+    break;
   case jetID::jetPU:
   case jetID::jetMinimal:
   case jetID::jetLooseAOD:
@@ -1504,3 +1516,42 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
 
   return factor;
 }
+
+std::vector<pat::MET> MiniAODHelper::CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs){
+  // this function takes two jet collections and replaces their contribution to the Type1 correction of the MET
+
+  std::vector<pat::MET> outputMets;
+
+  for(std::vector<pat::MET>::const_iterator oldMET=pfMETs.begin();oldMET!=pfMETs.end();++oldMET){
+    pat::MET outMET=*oldMET; 
+
+    if(oldMET-pfMETs.begin() == 0){
+    //get old MET p4
+    TLorentzVector oldMETVec;
+    oldMETVec.SetPxPyPzE(oldMET->p4().Px(),oldMET->p4().Py(),oldMET->p4().Pz(),oldMET->p4().E());
+    // add the pT vector of the old jets with the initial correction to the MET vector
+    for(std::vector<pat::Jet>::const_iterator itJet=oldJetsForMET.begin();itJet!=oldJetsForMET.end();++itJet){
+      TLorentzVector oldJETVec;
+      oldJETVec.SetPtEtaPhiE(itJet->pt(),itJet->eta(),itJet->phi(),itJet->energy());
+      TLorentzVector PToldJETVec;
+      PToldJETVec.SetPxPyPzE(oldJETVec.Px(),oldJETVec.Py(),0.0,oldJETVec.Et());
+      oldMETVec+=PToldJETVec;
+    }
+    // now subtract the pT vectors of the clean recorrected jets
+    for(std::vector<pat::Jet>::const_iterator itJet=newJetsForMET.begin();itJet!=newJetsForMET.end();++itJet){
+      TLorentzVector newJETVec;
+      newJETVec.SetPtEtaPhiE(itJet->pt(),itJet->eta(),itJet->phi(),itJet->energy());
+      TLorentzVector PTnewJETVec;
+      PTnewJETVec.SetPxPyPzE(newJETVec.Px(),newJETVec.Py(),0.0,newJETVec.Et());
+      oldMETVec-=PTnewJETVec;
+    }
+    outMET.setP4(reco::Candidate::LorentzVector(oldMETVec.Px(),oldMETVec.Py(),oldMETVec.Pz(),oldMETVec.E()));
+    }
+    
+    outputMets.push_back(outMET);
+  }
+
+  return outputMets;
+
+}
+
