@@ -647,20 +647,23 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   // Absolute eta requirement
   if( fabs(iJet.eta()) > iMaxAbsEta ) return false;
 
-  bool loose = (
-		iJet.neutralHadronEnergyFraction() < 0.99 &&
-		iJet.chargedEmEnergyFraction() < 0.99 &&
-		iJet.neutralEmEnergyFraction() < 0.99 &&
-		iJet.numberOfDaughters() > 1
-		);
+  bool loose = false;
+  
+  if(iJetID!=jetID::none){
+  	loose = ( iJet.neutralHadronEnergyFraction() < 0.99 &&
+		          iJet.chargedEmEnergyFraction() < 0.99 &&
+		          iJet.neutralEmEnergyFraction() < 0.99 &&
+		          iJet.numberOfDaughters() > 1
+		        );
 
-  if( fabs(iJet.eta())<2.4 ){
-    loose = ( loose &&
-	      iJet.chargedHadronEnergyFraction() > 0.0 &&
-	      iJet.chargedMultiplicity() > 0
-	      );
+    if( fabs(iJet.eta())<2.4 ){
+      loose = ( loose &&
+	        iJet.chargedHadronEnergyFraction() > 0.0 &&
+	        iJet.chargedMultiplicity() > 0
+	        );
+    }
   }
-
+  
   // Jet ID
   switch(iJetID){
   case jetID::jetPU:
@@ -687,22 +690,12 @@ MiniAODHelper::isGoodTopJet(const boosted::HTTTopJet& iJet, const float iMinFatP
   CheckVertexSetUp();
   
   // Fatjet requirements
-  // Transverse momentum requirement
-  if( iJet.fatjet.pt() < iMinFatPt ) return false;
-
-  // Absolute eta requirement
-  if( fabs(iJet.fatjet.eta()) > iMaxAbsFatEta ) return false;
+  if( ! isGoodJet(iJet.fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) return false;
   
   // Subjets requirements
-  // Transverse momentum requirement
-  if( iJet.nonW.pt() < iMinSubPt ) return false;
-  if( iJet.W1.pt() < iMinSubPt ) return false;
-  if( iJet.W2.pt() < iMinSubPt ) return false;
-
-  // Absolute eta requirement
-  if( fabs(iJet.nonW.eta()) > iMaxAbsSubEta ) return false;
-  if( fabs(iJet.W1.eta()) > iMaxAbsSubEta ) return false;
-  if( fabs(iJet.W2.eta()) > iMaxAbsSubEta ) return false;
+  if( ! isGoodJet(iJet.nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') ) return false;
+  if( ! isGoodJet(iJet.W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') ) return false;
+  if( ! isGoodJet(iJet.W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') ) return false;
   
   return true;
 }
@@ -714,11 +707,7 @@ MiniAODHelper::isGoodHiggsJet(const boosted::SubFilterJet& iJet, const float iMi
   CheckVertexSetUp();
   
   // Fatjet requirements
-  // Transverse momentum requirement
-  if( iJet.fatjet.pt() < iMinFatPt ) return false;
-
-  // Absolute eta requirement
-  if( fabs(iJet.fatjet.eta()) > iMaxAbsFatEta ) return false;
+  if( ! isGoodJet(iJet.fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) return false;
   
   // Filterjets requirements
   if( iJet.filterjets.size() < 2 ) return false;
