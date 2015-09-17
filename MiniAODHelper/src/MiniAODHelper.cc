@@ -597,11 +597,23 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
 {
   CheckVertexSetUp();
 
-  double minTauPt = min_pt;
-
-  bool passesKinematics = false;
   bool passesIsolation = false;
   bool passesID = tau.tauID("decayModeFinding") >= .5;
+
+  if (!tau.leadChargedHadrCand().isAvailable())
+     return false;
+
+  auto track = tau.leadChargedHadrCand()->bestTrack();
+  if (!track)
+     return false;
+
+  // systematics are only defined for p_T > 20
+  bool passesKinematics = \
+                          (tau.pt() >= std::max(20.f, min_pt)) and \
+                          (fabs(tau.eta()) <= 2.3) and \
+                          (track->pt() >= 5.) and \
+                          (track->dxy(vertex.position()) < 1000.) and \
+                          (track->dz(vertex.position()) <= 0.2);
 
   switch (id) {
      case tau::nonIso:
@@ -629,9 +641,6 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
         passesIsolation = tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits") >= .5;
         break;
   }
-
-  // systematics are only defined for p_T > 20
-  passesKinematics = (tau.pt() >= 20) && (fabs(tau.eta()) <= 2.1) && (tau.pt() > minTauPt);
 
   return passesKinematics && passesIsolation && passesID;
 }
