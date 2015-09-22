@@ -871,7 +871,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 }
 
 //overloaded
-float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const
+float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType) const
 {
   //rho*EA corrections based on phys14
   //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
@@ -896,11 +896,22 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       switch(icorrType)
 	{
 	case corrType::rhoEA:
-	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
-      	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
-      	  else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
-          else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
-          else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	  if(ieffAreaType==effAreaType::phys14){
+	    if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
+	    else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
+	    else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
+	    else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	  }
+	  else if (ieffAreaType==effAreaType::spring15){
+	    if (Eta >= 0. && Eta < 1.0) EffArea = 0.1752;
+	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1862;
+	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1411;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1534;
+	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1903;
+	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
+	    else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
+	  }
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea;
 	  break;
@@ -1120,7 +1131,7 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
     double absSCeta = fabs(SCeta);
     
     bool isEB = ( absSCeta < 1.479 );
-    double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
+    double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     
     double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();
     double dEtaIn = fabs( iElectron.deltaEtaSuperClusterTrackAtVtx() );

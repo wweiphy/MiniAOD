@@ -87,6 +87,7 @@ namespace electronID{	enum electronID{	electronPreselection, electronSide, elect
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
+namespace effAreaType{ enum effAreaType{spring15,phys14};}
 
 using namespace std;
 
@@ -133,7 +134,7 @@ class MiniAODHelper{
   float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
   float GetElectronRelIso(const pat::Electron&) const;
-  float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType) const;
+  float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14) const;
   static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags"); 
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
