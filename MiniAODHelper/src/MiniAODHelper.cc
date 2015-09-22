@@ -585,6 +585,16 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesID = id;
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     break;
+  case electronID::electronSpring15Veto:
+  case electronID::electronSpring15L:
+  case electronID::electronSpring15M:
+  case electronID::electronSpring15T:
+    id = PassElectronSpring15Id( iElectron, iElectronID );
+    passesIso = id;
+    passesID = id;
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    break;
+
   }
 
   
@@ -1103,6 +1113,169 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
 
   return pass;
 }
+
+bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
+    
+    double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
+    double absSCeta = fabs(SCeta);
+    
+    bool isEB = ( absSCeta < 1.479 );
+    double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
+    
+    double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();
+    double dEtaIn = fabs( iElectron.deltaEtaSuperClusterTrackAtVtx() );
+    double dPhiIn = fabs( iElectron.deltaPhiSuperClusterTrackAtVtx() );
+    double hOverE = iElectron.hcalOverEcal();
+    
+    double ooEmooP = -999;
+    if( iElectron.ecalEnergy() == 0 ) ooEmooP = 1e30;
+    else if( !std::isfinite(iElectron.ecalEnergy()) ) ooEmooP = 1e30;
+    else ooEmooP = fabs(1.0/iElectron.ecalEnergy() - iElectron.eSuperClusterOverP()/iElectron.ecalEnergy() );
+    
+    double d0 = -999;
+    double dZ = -999;
+    double expectedMissingInnerHits = -999;
+    if( iElectron.gsfTrack().isAvailable() ){
+	d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
+	dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
+	expectedMissingInnerHits = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
+    }
+    
+    bool passConversionVeto = ( iElectron.passConversionVeto() );
+    
+    bool pass = false;
+    switch(iElectronID){
+    case electronID::electronSpring15Veto:
+	if( isEB ){
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0114  &&
+		  dEtaIn < 0.0152  &&
+		  dPhiIn < 0.216  &&
+		  hOverE < 0.181  &&
+		  relIso < 0.126  &&
+		  ooEmooP < 0.207  &&
+		  d0 < 0.0564  &&
+		  dZ < 0.472  &&
+		  expectedMissingInnerHits <= 2  &&
+		  passConversionVeto
+		  );
+	}
+	else{
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0352  &&
+		  dEtaIn < 0.0113  &&
+		  dPhiIn < 0.237  &&
+		  hOverE < 0.116  &&
+		  relIso < 0.144  &&
+		  ooEmooP < 0.174  &&
+		  d0 < 0.222  &&
+		  dZ < 0.921  &&
+		  expectedMissingInnerHits <= 3  &&
+		  passConversionVeto
+		  );
+	}
+	break;
+	
+    case electronID::electronSpring15L:
+	if( isEB ){
+	    pass=(
+		  full5x5_sigmaIetaIeta <= 0.0103  &&
+		  dEtaIn < 0.0105  &&
+		  dPhiIn < 0.115  &&
+		  hOverE < 0.104  &&
+		  relIso < 0.0893  &&
+		  ooEmooP < 0.102  &&
+		  d0 < 0.0261  &&
+		  dZ < 0.41  &&
+		  expectedMissingInnerHits <= 2  &&
+		  passConversionVeto
+		  );
+	}
+	else{
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0301  &&
+		  dEtaIn < 0.00814  &&
+		  dPhiIn < 0.182  &&
+		  hOverE < 0.0897  &&
+		  relIso < 0.121  &&
+		  ooEmooP < 0.126  &&
+		  d0 < 0.118  &&
+		  dZ < 0.822  &&
+		  expectedMissingInnerHits <= 1  &&
+		  passConversionVeto
+		  );
+	}
+	break;
+	
+    case electronID::electronSpring15M:
+	if( isEB ){
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0101  &&
+		  dEtaIn < 0.0103  &&
+		  dPhiIn < 0.0336  &&
+		  hOverE < 0.0876  &&
+		  relIso < 0.0766  &&
+		  ooEmooP < 0.0174  &&
+		  d0 < 0.0118  &&
+		  dZ < 0.373  &&
+		  expectedMissingInnerHits <= 2  &&
+		  passConversionVeto
+		  );
+	}
+	else{
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0283  &&
+		  dEtaIn < 0.00733  &&
+		  dPhiIn < 0.114  &&
+		  hOverE < 0.0678  &&
+		  relIso < 0.0678  &&
+		  ooEmooP < 0.0898  &&
+		  d0 < 0.0739  &&
+		  dZ < 0.602  &&
+		  expectedMissingInnerHits <= 1  &&
+		  passConversionVeto
+		  );
+	}
+	break;
+	
+    case electronID::electronSpring15T:
+	if( isEB ){
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0101 &&
+		  dEtaIn < 0.00926 &&
+		  dPhiIn < 0.0336 &&
+		  hOverE < 0.0597 &&
+		  relIso < 0.0354 &&
+		  ooEmooP < 0.012 &&
+		  d0 < 0.0111 &&
+		  dZ < 0.0466 &&
+		  expectedMissingInnerHits <= 2 &&
+		  passConversionVeto
+		  );
+	}
+	else{
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0279 &&
+		  dEtaIn < 0.00724 &&
+		  dPhiIn < 0.0918 &&
+		  hOverE < 0.0615 &&
+		  relIso < 0.0646 &&
+		  ooEmooP < 0.00999 &&
+		  d0 < 0.0351 &&
+		  dZ < 0.417 &&
+		  expectedMissingInnerHits <= 1 &&
+		  passConversionVeto
+		  );
+	}
+	break;
+	
+    default:
+	break;
+    }
+    
+    return pass;
+}
+
 
 void MiniAODHelper::addVetos(const reco::Candidate &cand) {
   for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
