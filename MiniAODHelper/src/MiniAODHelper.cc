@@ -440,6 +440,32 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
 
   switch(iMuonID){
   case muonID::muonPreselection:
+    // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
+    // selection userFloats
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idPreselection") > .5;
+    break;
+  case muonID::muonLooseMvaBased:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idLooseMVA") > .5;
+    break;
+  case muonID::muonTightMvaBased:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idTightMVA") > .5;
+    break;
+  case muonID::muonLooseCutBased:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idLooseCut") > .5;
+    break;
+  case muonID::muonTightCutBased:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idTightCut") > .5;
+    break;
   case muonID::muonSide:
   case muonID::muonSideLooseMVA:
   case muonID::muonSideTightMVA:
@@ -448,10 +474,6 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
   case muonID::muonPtEtaIsoOnly:
   case muonID::muonPtEtaIsoTrackerOnly:
   case muonID::muonRaw:
-  case muonID::muonLooseMvaBased:
-  case muonID::muonTightMvaBased:
-  case muonID::muonLooseCutBased:
-  case muonID::muonTightCutBased:
   case muonID::muonCutBased:
   case muonID::muon2lss:
   case muonID::muonLoose:
@@ -555,16 +577,38 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
 
   switch(iElectronID){
   case electronID::electronPreselection:
+    // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
+    // selection userFloats
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idPreselection") > .5;
+    break;
+  case electronID::electronLooseCutBased:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idLooseCut") > .5;
+    break;
+  case electronID::electronTightCutBased:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idTightCut") > .5;
+    break;
+  case electronID::electronLooseMvaBased:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idLooseMVA") > .5;
+    break;
+  case electronID::electronTightMvaBased:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idTightMVA") > .5;
+    break;
   case electronID::electronSide:
   case electronID::electronSideLooseMVA:
   case electronID::electronSideTightMVA:
   case electronID::electronLooseMinusTrigPresel:
   case electronID::electronRaw:
-  case electronID::electronLooseCutBased:
-  case electronID::electronTightCutBased:
   case electronID::electronCutBased:
-  case electronID::electronLooseMvaBased:
-  case electronID::electronTightMvaBased:
   case electronID::electron2lss:
   case electronID::electronLoose:
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
