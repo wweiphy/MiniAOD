@@ -5,7 +5,7 @@ process.load('Configuration.StandardSequences.Services_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 # define your favorite global tag
-process.GlobalTag.globaltag = 'PLS170_V7AN1::All'
+process.GlobalTag.globaltag = 'MCRUN2_74_V9::All'
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1))
 process.source = cms.Source("EmptySource")
 

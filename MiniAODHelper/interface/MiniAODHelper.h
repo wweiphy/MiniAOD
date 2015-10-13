@@ -131,8 +131,9 @@ class MiniAODHelper{
   bool isGoodTopJet(const boosted::HTTTopJet&, const float, const float, const float, const float, const jetID::jetID);
   bool isGoodHiggsJet(const boosted::SubFilterJet&, const float, const float);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
-  float GetMuonRelIso(const pat::Muon&) const;
-  float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
+  float GetMuonRelIso(const pat::Muon&) const; 
+  float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14) const;
+  double GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType, double &miniIsoR, double &pfIsoPUSubtracted, double &EffArea, double &pfIsoCharged, double &pfIsoNeutral, double &copyRho, const effAreaType::effAreaType=effAreaType::phys14) const;
   float GetElectronRelIso(const pat::Electron&) const;
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14) const;
   static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags"); 
