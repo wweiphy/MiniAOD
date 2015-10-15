@@ -130,7 +130,7 @@ void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
-  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
+  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV5_DATA_Uncertainty_AK4PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV5_MC_Uncertainty_AK4PFchs.txt";
 
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
