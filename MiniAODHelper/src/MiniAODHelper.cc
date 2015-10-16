@@ -130,7 +130,7 @@ void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
-  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
+  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV5_DATA_Uncertainty_AK4PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV5_MC_Uncertainty_AK4PFchs.txt";
 
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
@@ -444,6 +444,32 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
 
   switch(iMuonID){
   case muonID::muonPreselection:
+    // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
+    // selection userFloats
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idPreselection") > .5;
+    break;
+  case muonID::muonLooseMvaBased:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idLooseMVA") > .5;
+    break;
+  case muonID::muonTightMvaBased:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idTightMVA") > .5;
+    break;
+  case muonID::muonLooseCutBased:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idLooseCut") > .5;
+    break;
+  case muonID::muonTightCutBased:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = iMuon.userFloat("idTightCut") > .5;
+    break;
   case muonID::muonSide:
   case muonID::muonSideLooseMVA:
   case muonID::muonSideTightMVA:
@@ -452,10 +478,6 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
   case muonID::muonPtEtaIsoOnly:
   case muonID::muonPtEtaIsoTrackerOnly:
   case muonID::muonRaw:
-  case muonID::muonLooseMvaBased:
-  case muonID::muonTightMvaBased:
-  case muonID::muonLooseCutBased:
-  case muonID::muonTightCutBased:
   case muonID::muonCutBased:
   case muonID::muon2lss:
   case muonID::muonLoose:
@@ -559,16 +581,38 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
 
   switch(iElectronID){
   case electronID::electronPreselection:
+    // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
+    // selection userFloats
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idPreselection") > .5;
+    break;
+  case electronID::electronLooseCutBased:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idLooseCut") > .5;
+    break;
+  case electronID::electronTightCutBased:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idTightCut") > .5;
+    break;
+  case electronID::electronLooseMvaBased:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idLooseMVA") > .5;
+    break;
+  case electronID::electronTightMvaBased:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = iElectron.userFloat("idTightMVA") > .5;
+    break;
   case electronID::electronSide:
   case electronID::electronSideLooseMVA:
   case electronID::electronSideTightMVA:
   case electronID::electronLooseMinusTrigPresel:
   case electronID::electronRaw:
-  case electronID::electronLooseCutBased:
-  case electronID::electronTightCutBased:
   case electronID::electronCutBased:
-  case electronID::electronLooseMvaBased:
-  case electronID::electronTightMvaBased:
   case electronID::electron2lss:
   case electronID::electronLoose:
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
@@ -589,6 +633,16 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesID = id;
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     break;
+  case electronID::electronSpring15Veto:
+  case electronID::electronSpring15L:
+  case electronID::electronSpring15M:
+  case electronID::electronSpring15T:
+    id = PassElectronSpring15Id( iElectron, iElectronID );
+    passesIso = id;
+    passesID = id;
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    break;
+
   }
 
   
@@ -601,11 +655,23 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
 {
   CheckVertexSetUp();
 
-  double minTauPt = min_pt;
-
-  bool passesKinematics = false;
   bool passesIsolation = false;
   bool passesID = tau.tauID("decayModeFinding") >= .5;
+
+  if (!tau.leadChargedHadrCand().isAvailable())
+     return false;
+
+  auto track = tau.leadChargedHadrCand()->bestTrack();
+  if (!track)
+     return false;
+
+  // systematics are only defined for p_T > 20
+  bool passesKinematics = \
+                          (tau.pt() >= std::max(20.f, min_pt)) and \
+                          (fabs(tau.eta()) <= 2.3) and \
+                          (track->pt() >= 5.) and \
+                          (track->dxy(vertex.position()) < 1000.) and \
+                          (track->dz(vertex.position()) <= 0.2);
 
   switch (id) {
      case tau::nonIso:
@@ -634,9 +700,6 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
         break;
   }
 
-  // systematics are only defined for p_T > 20
-  passesKinematics = (tau.pt() >= 20) && (fabs(tau.eta()) <= 2.1) && (tau.pt() > minTauPt);
-
   return passesKinematics && passesIsolation && passesID;
 }
 
@@ -650,32 +713,33 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   // Absolute eta requirement
   if( fabs(iJet.eta()) > iMaxAbsEta ) return false;
-
+  
   // Jet ID
   bool loose = false;
+  bool goodForMETCorrection = false;
   
   if(iJetID!=jetID::none){
-    loose = ( iJet.neutralHadronEnergyFraction() < 0.99 &&
-		          iJet.chargedEmEnergyFraction() < 0.99 &&
-		          iJet.neutralEmEnergyFraction() < 0.99 &&
-		          iJet.numberOfDaughters() > 1
-		        );
-
+    loose = (
+		  iJet.neutralHadronEnergyFraction() < 0.99 &&
+		  iJet.chargedEmEnergyFraction() < 0.99 &&
+		  iJet.neutralEmEnergyFraction() < 0.99 &&
+		  iJet.numberOfDaughters() > 1
+		  );
+      
     if( fabs(iJet.eta())<2.4 ){
       loose = ( loose &&
-	              iJet.chargedHadronEnergyFraction() > 0.0 &&
-	              iJet.chargedMultiplicity() > 0
-	            );
+	      iJet.chargedHadronEnergyFraction() > 0.0 &&
+	      iJet.chargedMultiplicity() > 0
+	      );
     }
-  }
-
-  bool goodForMETCorrection=false;
-  if(iJetID==jetID::jetMETcorrection){ //only check this if asked, otherwise there could be problems
-    goodForMETCorrection = (
-                iJet.correctedJet(0).pt()>10.0 &&   
-		(( !iJet.isPFJet() && iJet.emEnergyFraction()<0.9 ) || 
-		( iJet.isPFJet() && (iJet.neutralEmEnergyFraction() + iJet.chargedEmEnergyFraction())<0.9 ))
-		);
+    
+    if(iJetID==jetID::jetMETcorrection){ //only check this if asked, otherwise there could be problems
+      goodForMETCorrection = (
+                  iJet.correctedJet(0).pt()>10.0 &&   
+		  (( !iJet.isPFJet() && iJet.emEnergyFraction()<0.9 ) || 
+		  ( iJet.isPFJet() && (iJet.neutralEmEnergyFraction() + iJet.chargedEmEnergyFraction())<0.9 ))
+		  );
+    }
   }
   
   switch(iJetID){
@@ -698,6 +762,7 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   return true;
 }
+
 
 
 float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
@@ -823,7 +888,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 }
 
 //overloaded
-float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const
+float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType) const
 {
   //rho*EA corrections based on phys14
   //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
@@ -848,11 +913,22 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       switch(icorrType)
 	{
 	case corrType::rhoEA:
-	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
-      	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
-      	  else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
-          else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
-          else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	  if(ieffAreaType==effAreaType::phys14){
+	    if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
+	    else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
+	    else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
+	    else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	  }
+	  else if (ieffAreaType==effAreaType::spring15){
+	    if (Eta >= 0. && Eta < 1.0) EffArea = 0.1752;
+	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1862;
+	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1411;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1534;
+	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1903;
+	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
+	    else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
+	  }
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea;
 	  break;
@@ -1065,6 +1141,169 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
 
   return pass;
 }
+
+bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
+    
+    double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
+    double absSCeta = fabs(SCeta);
+    
+    bool isEB = ( absSCeta < 1.479 );
+    double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    
+    double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();
+    double dEtaIn = fabs( iElectron.deltaEtaSuperClusterTrackAtVtx() );
+    double dPhiIn = fabs( iElectron.deltaPhiSuperClusterTrackAtVtx() );
+    double hOverE = iElectron.hcalOverEcal();
+    
+    double ooEmooP = -999;
+    if( iElectron.ecalEnergy() == 0 ) ooEmooP = 1e30;
+    else if( !std::isfinite(iElectron.ecalEnergy()) ) ooEmooP = 1e30;
+    else ooEmooP = fabs(1.0/iElectron.ecalEnergy() - iElectron.eSuperClusterOverP()/iElectron.ecalEnergy() );
+    
+    double d0 = -999;
+    double dZ = -999;
+    double expectedMissingInnerHits = -999;
+    if( iElectron.gsfTrack().isAvailable() ){
+	d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
+	dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
+	expectedMissingInnerHits = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
+    }
+    
+    bool passConversionVeto = ( iElectron.passConversionVeto() );
+    
+    bool pass = false;
+    switch(iElectronID){
+    case electronID::electronSpring15Veto:
+	if( isEB ){
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0114  &&
+		  dEtaIn < 0.0152  &&
+		  dPhiIn < 0.216  &&
+		  hOverE < 0.181  &&
+		  relIso < 0.126  &&
+		  ooEmooP < 0.207  &&
+		  d0 < 0.0564  &&
+		  dZ < 0.472  &&
+		  expectedMissingInnerHits <= 2  &&
+		  passConversionVeto
+		  );
+	}
+	else{
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0352  &&
+		  dEtaIn < 0.0113  &&
+		  dPhiIn < 0.237  &&
+		  hOverE < 0.116  &&
+		  relIso < 0.144  &&
+		  ooEmooP < 0.174  &&
+		  d0 < 0.222  &&
+		  dZ < 0.921  &&
+		  expectedMissingInnerHits <= 3  &&
+		  passConversionVeto
+		  );
+	}
+	break;
+	
+    case electronID::electronSpring15L:
+	if( isEB ){
+	    pass=(
+		  full5x5_sigmaIetaIeta <= 0.0103  &&
+		  dEtaIn < 0.0105  &&
+		  dPhiIn < 0.115  &&
+		  hOverE < 0.104  &&
+		  relIso < 0.0893  &&
+		  ooEmooP < 0.102  &&
+		  d0 < 0.0261  &&
+		  dZ < 0.41  &&
+		  expectedMissingInnerHits <= 2  &&
+		  passConversionVeto
+		  );
+	}
+	else{
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0301  &&
+		  dEtaIn < 0.00814  &&
+		  dPhiIn < 0.182  &&
+		  hOverE < 0.0897  &&
+		  relIso < 0.121  &&
+		  ooEmooP < 0.126  &&
+		  d0 < 0.118  &&
+		  dZ < 0.822  &&
+		  expectedMissingInnerHits <= 1  &&
+		  passConversionVeto
+		  );
+	}
+	break;
+	
+    case electronID::electronSpring15M:
+	if( isEB ){
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0101  &&
+		  dEtaIn < 0.0103  &&
+		  dPhiIn < 0.0336  &&
+		  hOverE < 0.0876  &&
+		  relIso < 0.0766  &&
+		  ooEmooP < 0.0174  &&
+		  d0 < 0.0118  &&
+		  dZ < 0.373  &&
+		  expectedMissingInnerHits <= 2  &&
+		  passConversionVeto
+		  );
+	}
+	else{
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0283  &&
+		  dEtaIn < 0.00733  &&
+		  dPhiIn < 0.114  &&
+		  hOverE < 0.0678  &&
+		  relIso < 0.0678  &&
+		  ooEmooP < 0.0898  &&
+		  d0 < 0.0739  &&
+		  dZ < 0.602  &&
+		  expectedMissingInnerHits <= 1  &&
+		  passConversionVeto
+		  );
+	}
+	break;
+	
+    case electronID::electronSpring15T:
+	if( isEB ){
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0101 &&
+		  dEtaIn < 0.00926 &&
+		  dPhiIn < 0.0336 &&
+		  hOverE < 0.0597 &&
+		  relIso < 0.0354 &&
+		  ooEmooP < 0.012 &&
+		  d0 < 0.0111 &&
+		  dZ < 0.0466 &&
+		  expectedMissingInnerHits <= 2 &&
+		  passConversionVeto
+		  );
+	}
+	else{
+	    pass=(
+		  full5x5_sigmaIetaIeta < 0.0279 &&
+		  dEtaIn < 0.00724 &&
+		  dPhiIn < 0.0918 &&
+		  hOverE < 0.0615 &&
+		  relIso < 0.0646 &&
+		  ooEmooP < 0.00999 &&
+		  d0 < 0.0351 &&
+		  dZ < 0.417 &&
+		  expectedMissingInnerHits <= 1 &&
+		  passConversionVeto
+		  );
+	}
+	break;
+	
+    default:
+	break;
+    }
+    
+    return pass;
+}
+
 
 void MiniAODHelper::addVetos(const reco::Candidate &cand) {
   for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
