@@ -652,7 +652,7 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
   CheckVertexSetUp();
 
   bool passesIsolation = false;
-  bool passesID = tau.tauID("decayModeFinding") >= .5;
+  bool passesID = tau.tauID("decayModeFindingNewDMs") >= .5;
 
   if (!tau.leadChargedHadrCand().isAvailable())
      return false;
@@ -666,8 +666,8 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
                           (tau.pt() >= std::max(20.f, min_pt)) and \
                           (fabs(tau.eta()) <= 2.3) and \
                           (track->pt() >= 5.) and \
-                          (track->dxy(vertex.position()) < 1000.) and \
-                          (track->dz(vertex.position()) <= 0.2);
+                          (fabs(track->dxy(vertex.position())) < 1000.) and \
+                          (fabs(track->dz(vertex.position())) <= 0.2);
 
   switch (id) {
      case tau::nonIso:
