@@ -136,6 +136,7 @@ class MiniAODHelper{
   double GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType, double &miniIsoR, double &pfIsoPUSubtracted, double &EffArea, double &pfIsoCharged, double &pfIsoNeutral, double &copyRho, const effAreaType::effAreaType=effAreaType::phys14) const;
   float GetElectronRelIso(const pat::Electron&) const;
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14) const;
+  double GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, double &miniIsoR, double &pfIsoPUSubtracted, double &EffArea, double &pfIsoCharged, double &pfIsoNeutral, double &copyRho, const effAreaType::effAreaType=effAreaType::phys14) const;
   static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags"); 
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;

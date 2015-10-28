@@ -117,6 +117,9 @@ void MiniAODHelper::SetPackedCandidates(const std::vector<pat::PackedCandidate> 
   std::sort(neutral_.begin(), neutral_.end(), ByEta());
   std::sort(pileup_.begin(),  pileup_.end(),  ByEta());
   clearVetos();
+  
+
+  
 }
 
 // Set up parameters one by one
@@ -140,16 +143,16 @@ void MiniAODHelper::SetJetCorrectorUncertainty(){
 void MiniAODHelper::SetFactorizedJetCorrector(){
 
   // Create the JetCorrectorParameter objects, the order does not matter.
-  //JetCorrectorParameters *ResJetPar = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/"); 
-  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L3Absolute_AK4PFchs.txt");
-  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L2Relative_AK4PFchs.txt");
-  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L1FastJet_AK4PFchs.txt");
+  JetCorrectorParameters *ResJetPar = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/CMGTools/RootTools/data/jec/Summer15_25nsV2_MC_L2L3Residual_AK8PFchs.txt"); 
+  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/CMGTools/RootTools/data/jec/Summer15_25nsV2_MC_L3Absolute_AK4PFchs.txt");
+  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/CMGTools/RootTools/data/jec/Summer15_25nsV2_MC_L2Relative_AK4PFchs.txt");
+  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/CMGTools/RootTools/data/jec/Summer15_25nsV2_MC_L1FastJet_AK4PFchs.txt");
   //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!! 
   std::vector<JetCorrectorParameters> vPar;
   vPar.push_back(*L1JetPar);
   vPar.push_back(*L2JetPar);
   vPar.push_back(*L3JetPar);
-  //vPar->push_back(ResJetPar);
+  vPar.push_back(*ResJetPar);
 
   useJetCorrector = new FactorizedJetCorrector(vPar);
 
@@ -298,22 +301,22 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
     }
 
     /// JER
-    double jerSF = 1.;
-    if( jet.genJet() ){
-      if( iSysType == sysType::JERup ){
-	jerSF = getJERfactor(1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
-      }
-      else if( iSysType == sysType::JERdown ){
-	jerSF = getJERfactor(-1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
-      }
-      else {
-	jerSF = getJERfactor(0, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
-      }
-      // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
-    }
-    // else     std::cout << "    ==> can't find genJet" << std::endl;
-
-    jet.scaleEnergy( jerSF );
+//     double jerSF = 1.;
+//     if( jet.genJet() ){
+//       if( iSysType == sysType::JERup ){
+// 	jerSF = getJERfactor(1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+//       }
+//       else if( iSysType == sysType::JERdown ){
+// 	jerSF = getJERfactor(-1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+//       }
+//       else {
+// 	jerSF = getJERfactor(0, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+//       }
+//       // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
+//     }
+//     // else     std::cout << "    ==> can't find genJet" << std::endl;
+// 
+//     jet.scaleEnergy( jerSF );
 
 
     outputJets.push_back(jet);
@@ -351,22 +354,22 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 
     jet.scaleEnergy( scale );
 
-    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
-      jecUnc_->setJetEta(jet.eta());
-      jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
-      double unc = 1;
-      double jes = 1;
-      if( iSysType==sysType::JESup ){
-	unc = jecUnc_->getUncertainty(true);
-	jes = 1 + unc;
-      }
-      else if( iSysType==sysType::JESdown ){
-	unc = jecUnc_->getUncertainty(false);
-	jes = 1 - unc;
-      }
-
-      jet.scaleEnergy( jes );
-    }
+    // if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+//       jecUnc_->setJetEta(jet.eta());
+//       jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
+//       double unc = 1;
+//       //double jes = 1;
+//       if( iSysType==sysType::JESup ){
+// 	unc = jecUnc_->getUncertainty(true);
+// 	jes = 1 + unc;
+//       }
+//       else if( iSysType==sysType::JESdown ){
+// 	unc = jecUnc_->getUncertainty(false);
+// 	jes = 1 - unc;
+//       }
+// 
+//       //jet.scaleEnergy( jes );
+//     }
 
     outputJets.push_back(jet);
   }
@@ -831,7 +834,7 @@ double MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneS
   double correction = 9999.;
   EffArea = 9999.;
   double Eta = abs(iMuon.eta());
-  
+  //cout << "Eta: " << Eta << endl; 
   //double pfIsoCharged;
   //double pfIsoNeutral;
   //double pfIsoPUSubtracted;
@@ -889,8 +892,15 @@ double MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneS
     case coneSize::miniIso:
       double miniIsoR = 10.0/min(max(double(iMuon.pt()), double(50.)),double(200.));
       miniIso_R = miniIsoR;
+      cout << " " << endl;
+      cout << "charged: " << endl;
       pfIsoCharged = isoSumRaw(charged_, iMuon, miniIsoR, 0.0001, 0.0, SelfVetoPolicy::selfVetoAll);
+      cout << "miniIso" << pfIsoCharged << endl;
+      cout << " " << endl;
+      cout << "neutral: " << endl;
       pfIsoNeutral = isoSumRaw(neutral_, iMuon, miniIsoR, 0.01, 0.5, SelfVetoPolicy::selfVetoAll);
+      cout << "miniIso" << pfIsoNeutral << endl;
+      cout << " " << endl;
       switch(icorrType)
       {
 	case corrType::rhoEA:
@@ -939,8 +949,22 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
   return result;
 }
 
+float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const effAreaType::effAreaType ieffAreaType) const
+{
+    double dummy1;
+    double dummy2;
+    double dummy3;
+    double dummy4;
+    double dummy5;
+    double dummy6;
+    
+    return GetElectronRelIso(iElectron,iconeSize,icorrType,dummy1,dummy2,dummy3,dummy4,dummy5,dummy6,ieffAreaType);
+}
+
+
 //overloaded
-float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const effAreaType::effAreaType ieffAreaType) const
+double MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,
+    double &miniIso_R, double &pfIsoPUSubtracted, double &EffArea, double &pfIsoCharged, double &pfIsoNeutral, double &copyRho, const effAreaType::effAreaType ieffAreaType) const
 {
   //rho*EA corrections based on phys14
   //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
@@ -948,12 +972,12 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
   float result = 9999; 
   
   double correction = 9999.;
-  double EffArea = 9999.;
+  //double EffArea = 9999.;
   double Eta = abs(iElectron.eta());
   
-  double pfIsoCharged;
-  double pfIsoNeutral;
-  double pfIsoPUSubtracted;
+  //double pfIsoCharged;
+  //double pfIsoNeutral;
+  //double pfIsoPUSubtracted;
   
   switch(iconeSize)
     {
@@ -995,6 +1019,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       double innerR_ch;
       double innerR_nu;
       double miniIsoR = 10.0/min(max(float(iElectron.pt()), float(50.)),float(200.));
+      miniIso_R = miniIsoR;
       if (iElectron.isEB())
 	{ 
 	  innerR_ch = 0.0;
@@ -1040,6 +1065,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
       break;
     }
+  copyRho = useRho;
   return result;
 }
 
@@ -1412,6 +1438,7 @@ float MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> &
     }
     // add to sum
     isosum += (*icharged)->pt();
+    cout << (*icharged)->pdgId() << "  " << (*icharged)->pt() << "  " << (*icharged)->eta() << "  " << (*icharged)->phi() << endl;
   }
   return isosum;
 }
