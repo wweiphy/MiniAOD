@@ -8,7 +8,7 @@
 #include "TMVA/Reader.h"
 
 #include "DataFormats/PatCandidates/interface/Jet.h"
-#include "MiniAOD/BoostedObjects/interface/HTTTopJet.h"
+#include "MiniAOD/BoostedObjects/interface/BoostedJet.h"
 #include "MiniAOD/MiniAODHelper/interface/MiniAODHelper.h"
 
 namespace TopTag{
@@ -25,16 +25,19 @@ class TopTagger{
     ~TopTagger();
     
     // Return the Output of the Top Tagger
-    float GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbose = false);
+    float GetTopTaggerOutput(const boosted::BoostedJet& jet, bool verbose = false);
 
     // Comparison function for Top Tagger output
-    bool FirstHasHigherTopTaggerOutput(boosted::HTTTopJet jet1, boosted::HTTTopJet jet2);
+    bool FirstHasHigherTopTaggerOutput(boosted::BoostedJet jet1, boosted::BoostedJet jet2);
 
     // Sorting function for Top Tagger output
-    boosted::HTTTopJetCollection GetSortedByTopTaggerOutput(const boosted::HTTTopJetCollection& topJets, bool verbose = false);
+    boosted::BoostedJetCollection GetSortedByTopTaggerOutput(const boosted::BoostedJetCollection& topJets, bool verbose = false);
 
     // Find a hadronic top candidate in Top jet collection
-    float GetTopHad(boosted::HTTTopJetCollection& topJets, boosted::HTTTopJet& topHadCand, bool verbose = false);
+    float GetTopHad(boosted::BoostedJetCollection& jets, boosted::BoostedJet& topHadCand, bool verbose = false);
+    
+    // Return subjet assignment
+    TopTag::SubjetAssign GetSubjetAssignment();
 
   private:
 
@@ -78,7 +81,7 @@ class TopTagger{
     void GetTMVAVars(std::string filePath_, bool verbose = false);
 
     // Clear the values of the TMVA input variables
-    void ResetTMVAVars();  
+    void ResetTMVAVars();
 };
 
 
@@ -88,7 +91,7 @@ struct TopTaggerOutputComparison{
 
   TopTaggerOutputComparison(TopTagger* topTagger_): topTagger(topTagger_){};
 
-  bool operator()(boosted::HTTTopJet jet1, boosted::HTTTopJet jet2){
+  bool operator()(boosted::BoostedJet jet1, boosted::BoostedJet jet2){
     return topTagger->GetTopTaggerOutput(jet1)>topTagger->GetTopTaggerOutput(jet2);
   };
 };

@@ -138,16 +138,16 @@ void TopTagger::ResetTMVAVars(){
 }
 
 
-float TopTagger::GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbose){
+float TopTagger::GetTopTaggerOutput(const boosted::BoostedJet& boostedjet, bool verbose){
   
-  if(topjet.nonW.pt()==0.) return -1.1;
-  if(topjet.W1.pt()==0.) return -1.1;
-  if(topjet.W2.pt()==0.) return -1.1;
+  if(boostedjet.nonW.pt()==0.) return -1.1;
+  if(boostedjet.W1.pt()==0.) return -1.1;
+  if(boostedjet.W2.pt()==0.) return -1.1;
   
   std::vector<pat::Jet> subjets;
-  subjets.push_back(topjet.nonW);
-  subjets.push_back(topjet.W1);
-  subjets.push_back(topjet.W2);
+  subjets.push_back(boostedjet.nonW);
+  subjets.push_back(boostedjet.W1);
+  subjets.push_back(boostedjet.W2);
   
   if(subjetAssign == TopTag::Pt){
     subjets = helper->GetSortedByPt(subjets);
@@ -238,20 +238,20 @@ float TopTagger::GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbo
         for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
           int iVar = itVarName-TMVAVarNames.begin();
         
-          if(*itVarName=="TopJet_Top_M")                TMVAVars[iVar] = topjet.topjet.mass();                                                                                                         
-          else if(*itVarName=="TopJet_PrunedMass")      TMVAVars[iVar] = topjet.prunedMass;                                                                                                            
-          else if(*itVarName=="TopJet_UnfilteredMass")  TMVAVars[iVar] = topjet.unfilteredMass;                                                                                                        
-          else if(*itVarName=="TopJet_fRec")            TMVAVars[iVar] = topjet.fRec;                                                                                                                  
-          else if(*itVarName=="TopJet_DRoptRoptCalc")   TMVAVars[iVar] = topjet.Ropt-topjet.RoptCalc;                                                                                                  
-          else if(*itVarName=="TopJet_Tau21Filtered")   TMVAVars[iVar] = topjet.tau2Filtered/topjet.tau1Filtered;                                                                                      
-          else if(*itVarName=="TopJet_Tau32Filtered")   TMVAVars[iVar] = topjet.tau3Filtered/topjet.tau2Filtered;                                                                                      
+          if(*itVarName=="TopJet_Top_M")                TMVAVars[iVar] = boostedjet.topjet.mass();                                                                                                         
+          else if(*itVarName=="TopJet_PrunedMass")      TMVAVars[iVar] = boostedjet.prunedMass;                                                                                                            
+          else if(*itVarName=="TopJet_UnfilteredMass")  TMVAVars[iVar] = boostedjet.unfilteredMass;                                                                                                        
+          else if(*itVarName=="TopJet_fRec")            TMVAVars[iVar] = boostedjet.fRec;                                                                                                                  
+          else if(*itVarName=="TopJet_DRoptRoptCalc")   TMVAVars[iVar] = boostedjet.Ropt-boostedjet.RoptCalc;                                                                                                  
+          else if(*itVarName=="TopJet_Tau21Filtered")   TMVAVars[iVar] = boostedjet.tau2Filtered/boostedjet.tau1Filtered;                                                                                      
+          else if(*itVarName=="TopJet_Tau32Filtered")   TMVAVars[iVar] = boostedjet.tau3Filtered/boostedjet.tau2Filtered;                                                                                      
           else if(*itVarName=="TopJet_WM" || *itVarName=="TopJet_Wbtag_M")                    TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M();                                              
           else if(*itVarName=="TopJet_BW1M" || *itVarName=="TopJet_BW1btag_M")                TMVAVars[iVar] = (subjets[0].p4()+subjets[1].p4()).M();                                              
           else if(*itVarName=="TopJet_BW2M" || *itVarName=="TopJet_BW2btag_M")                TMVAVars[iVar] = (subjets[0].p4()+subjets[2].p4()).M();                                              
           else if(*itVarName=="TopJet_BCSV" || *itVarName=="TopJet_Bbtag_CSV")                TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[0],btagger);                                       
           else if(*itVarName=="TopJet_W1CSV" || *itVarName=="TopJet_W1btag_CSV")              TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[1],btagger);                                       
           else if(*itVarName=="TopJet_W2CSV" || *itVarName=="TopJet_W2btag_CSV")              TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[2],btagger);                                       
-          else if(*itVarName=="TopJet_MRatio_WTop" || *itVarName=="TopJet_MRatio_Wbtag_Top")  TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M()/topjet.topjet.mass();                         
+          else if(*itVarName=="TopJet_MRatio_WTop" || *itVarName=="TopJet_MRatio_Wbtag_Top")  TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M()/boostedjet.topjet.mass();                         
           else if(*itVarName=="TopJet_Atan_BW1W2btag" || *itVarName=="TopJet_Atan_BW1W2btag") TMVAVars[iVar] = atan((subjets[0].p4()+subjets[1].p4()).M()/(subjets[0].p4()+subjets[2].p4()).M());
           else std::cout << "Error! No matching Top Tagger Input Variable found!" << std:: endl;
         }
@@ -279,9 +279,9 @@ float TopTagger::GetTopTaggerOutput(const boosted::HTTTopJet& topjet, bool verbo
 }
 
 
-boosted::HTTTopJetCollection TopTagger::GetSortedByTopTaggerOutput(const boosted::HTTTopJetCollection& topJets, bool verbose){
+boosted::BoostedJetCollection TopTagger::GetSortedByTopTaggerOutput(const boosted::BoostedJetCollection& boostedjets, bool verbose){
   
-  boosted::HTTTopJetCollection result = topJets;
+  boosted::BoostedJetCollection result = boostedjets;
   
   TopTaggerOutputComparison topTagComp(this);
   std::sort(result.begin(), result.end(),topTagComp);
@@ -290,11 +290,11 @@ boosted::HTTTopJetCollection TopTagger::GetSortedByTopTaggerOutput(const boosted
 }
 
 
-float TopTagger::GetTopHad(boosted::HTTTopJetCollection& topJets, boosted::HTTTopJet& topHadCand, bool verbose){
+float TopTagger::GetTopHad(boosted::BoostedJetCollection& boostedjets, boosted::BoostedJet& topHadCand, bool verbose){
   
   float maxTopTag=-9999;
   
-  for(boosted::HTTTopJetCollection::iterator itTopJet = topJets.begin() ; itTopJet != topJets.end(); ++itTopJet){
+  for(boosted::BoostedJetCollection::iterator itTopJet = boostedjets.begin() ; itTopJet != boostedjets.end(); ++itTopJet){
     
     float topTag = GetTopTaggerOutput(*itTopJet,verbose);
     
@@ -305,4 +305,8 @@ float TopTagger::GetTopHad(boosted::HTTTopJetCollection& topJets, boosted::HTTTo
   } 
   
   return maxTopTag;
+}
+
+TopTag::SubjetAssign TopTagger::GetSubjetAssignment(){
+  return subjetAssign;
 }

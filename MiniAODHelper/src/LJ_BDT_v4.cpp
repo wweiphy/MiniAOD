@@ -185,7 +185,8 @@ std::string LJ_BDT_v4::GetCategory(const std::vector<pat::Jet>& selectedJets) co
 float LJ_BDT_v4::Evaluate(std::string categoryLabel, const std::vector<pat::Muon>& selectedMuons, const std::vector<pat::Electron>& selectedElectrons, const std::vector<pat::Jet>& selectedJets, const std::vector<pat::Jet>& selectedJetsLoose, const pat::MET& pfMET){
 
   if(selectedMuons.size()+selectedElectrons.size()!=1){
-    cerr << "LJ_BDT_v4: not a SL event" << endl;
+    //    cerr << "LJ_BDT_v4: not a SL event" << endl;
+    return -2;
   }
   // ==================================================
   // construct object vectors etc

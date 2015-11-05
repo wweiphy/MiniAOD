@@ -375,40 +375,44 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 }
 
 
-std::vector<boosted::HTTTopJet> 
-MiniAODHelper::GetSelectedTopJets(const std::vector<boosted::HTTTopJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+std::vector<boosted::BoostedJet> 
+MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
 
   CheckSetUp();
 
-  std::vector<boosted::HTTTopJet> selectedJets;
+  std::vector<boosted::BoostedJet> selectedJets;
 
-  for( std::vector<boosted::HTTTopJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
-    if( isGoodTopJet(*it, iMinFatPt, iMaxAbsFatEta, iMinSubPt, iMaxAbsSubEta, iJetID) ) selectedJets.push_back(*it);
-  }
-
-  return selectedJets;
-}
-
-
-std::vector<boosted::SubFilterJet> 
-MiniAODHelper::GetSelectedHiggsJets(const std::vector<boosted::SubFilterJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
-
-  CheckSetUp();
-
-  std::vector<boosted::SubFilterJet> selectedJets;
-
-  for( std::vector<boosted::SubFilterJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
+  for( std::vector<boosted::BoostedJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
+  
+    boosted::BoostedJet boostedJet = *it;
     
-    boosted::SubFilterJet higgsJet = *it;
+    // Select Fat Jet
+    if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
+    
+    // Select Top Jet Part
+    if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+        isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+        isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
+      )
+    {
+      boostedJet.topjet = pat::Jet();
+      boostedJet.nonW = pat::Jet();
+      boostedJet.W1 = pat::Jet();
+      boostedJet.W2 = pat::Jet(); 
+    }
+    
     std::vector<pat::Jet> filterjets;
-    
-    for( std::vector<pat::Jet>::const_iterator itFilt = higgsJet.filterjets.begin(), edFilt = higgsJet.filterjets.end(); itFilt != edFilt; ++itFilt ){
+    for( std::vector<pat::Jet>::const_iterator itFilt = it->filterjets.begin(), edFilt = it->filterjets.end(); itFilt != edFilt; ++itFilt ){
       if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
     }
     
-    higgsJet.filterjets = filterjets;
-      
-    if( isGoodHiggsJet(higgsJet, iMinFatPt, iMaxAbsFatEta) ) selectedJets.push_back(higgsJet);
+    if(filterjets.size()<2){
+      filterjets.clear();
+    }
+    
+    boostedJet.filterjets = filterjets;
+    
+    selectedJets.push_back(boostedJet);
   }
 
   return selectedJets;
@@ -759,37 +763,6 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   return true;
 }
 
-
-bool 
-MiniAODHelper::isGoodTopJet(const boosted::HTTTopJet& iJet, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
-
-  CheckVertexSetUp();
-  
-  // Fatjet requirements
-  if( ! isGoodJet(iJet.fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) return false;
-  
-  // Subjets requirements
-  if( ! isGoodJet(iJet.nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') ) return false;
-  if( ! isGoodJet(iJet.W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') ) return false;
-  if( ! isGoodJet(iJet.W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') ) return false;
-  
-  return true;
-}
-
-
-bool 
-MiniAODHelper::isGoodHiggsJet(const boosted::SubFilterJet& iJet, const float iMinFatPt, const float iMaxAbsFatEta){
-
-  CheckVertexSetUp();
-  
-  // Fatjet requirements
-  if( ! isGoodJet(iJet.fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) return false;
-  
-  // Filterjets requirements
-  if( iJet.filterjets.size() < 2 ) return false;
-  
-  return true;
-}
 
 
 float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
