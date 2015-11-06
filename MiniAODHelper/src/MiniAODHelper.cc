@@ -11,6 +11,7 @@ MiniAODHelper::MiniAODHelper(){
   rhoIsSet = false;
   jetcorrectorIsSet = false;
   factorizedjetcorrectorIsSet = false;
+  electronMVAIsSet = false;
   
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
@@ -73,6 +74,15 @@ void MiniAODHelper::SetRho(double inputRho){
   useRho = inputRho;
 
   rhoIsSet = true;
+}
+
+void MiniAODHelper::SetUpElectronMVA(const std::string BarrelEtaLess08Weight, const std::string BarrelEtaGreater08Weight, const std::string EndcapWeight){
+  
+  electronMVAReader_BarrelEtaLess08 = new ElectronMVAReader::ElectronMVAReader(BarrelEtaLess08Weight);
+  electronMVAReader_BarrelEtaGreater08 = new ElectronMVAReader::ElectronMVAReader(BarrelEtaGreater08Weight);
+  electronMVAReader_Endcap = new ElectronMVAReader::ElectronMVAReader(EndcapWeight);
+
+  electronMVAIsSet = true;
 }
 
 namespace {
@@ -641,6 +651,8 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesIso = id;
     passesID = id;
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    break;
+  case electronID::electronEndOf15MVA:
     break;
 
   }

@@ -63,6 +63,8 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
+#include "ElectronMVAReader.h"
+
 #endif
 
 typedef std::map<std::string, std::string> mparams;
@@ -82,7 +84,7 @@ namespace tau { enum ID { nonIso, loose, medium, tight }; }
 namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, selfVetoFirst=2};}
 
 namespace muonID{		enum muonID{		muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonRaw, muonLooseCutBased, muonTightCutBased, muonCutBased, muonLooseMvaBased, muonTightMvaBased, muon2lss }; }
-namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss, electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T }; }
+namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss, electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T, electronEndOf15MVA }; }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
@@ -112,6 +114,7 @@ class MiniAODHelper{
   void SetJetCorrectorUncertainty();
   void SetFactorizedJetCorrector();
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
+  void SetUpElectronMVA(const std::string BarrelEtaLess08Weight, const std::string BarrelEtaGreater08Weight, const std::string EndcapWeight);
   
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
@@ -160,6 +163,7 @@ class MiniAODHelper{
   bool rhoIsSet;
   bool jetcorrectorIsSet;
   bool factorizedjetcorrectorIsSet;
+  bool electronMVAIsSet;
   
   string era;
   int sampleNumber;
@@ -179,6 +183,10 @@ class MiniAODHelper{
   const JetCorrector* corrector;
   FactorizedJetCorrector* useJetCorrector;
   JetCorrectionUncertainty *jecUnc_;
+
+  const ElectronMVAReader* electronMVAReader_BarrelEtaLess08;
+  const ElectronMVAReader* electronMVAReader_BarrelEtaGreater08;
+  const ElectronMVAReader* electronMVAReader_Endcap;
   
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
 
