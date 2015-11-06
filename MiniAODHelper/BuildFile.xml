@@ -18,6 +18,7 @@
 <use name="JetMETCorrections/Objects"/>
 <use name="CondFormats/JetMETObjects"/>
 <export>
+  <use name="root"/>
   <lib   name="1"/>
 </export>
 
