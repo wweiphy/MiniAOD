@@ -507,7 +507,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
     break;
   case muonID::muonTight:
     passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.12);
+    passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
     isPFMuon         = iMuon.isPFMuon();
 
     if( iMuon.globalTrack().isAvailable() ){
