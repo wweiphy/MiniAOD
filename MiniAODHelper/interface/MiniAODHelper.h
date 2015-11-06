@@ -63,7 +63,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
-#include "ElectronMVAReader.h"
+#include "MiniAOD/MiniAODHelper/interface/ElectronMVAReader.h"
 
 #endif
 
@@ -84,7 +84,7 @@ namespace tau { enum ID { nonIso, loose, medium, tight }; }
 namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, selfVetoFirst=2};}
 
 namespace muonID{		enum muonID{		muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonRaw, muonLooseCutBased, muonTightCutBased, muonCutBased, muonLooseMvaBased, muonTightMvaBased, muon2lss }; }
-namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss, electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T, electronEndOf15MVA }; }
+namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss, electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T, electronEndOf15MVAmedium }; }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
@@ -117,7 +117,7 @@ class MiniAODHelper{
   void SetUpElectronMVA(const std::string BarrelEtaLess08Weight, const std::string BarrelEtaGreater08Weight, const std::string EndcapWeight);
   
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
-  virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
+  virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const edm::Handle< reco::ConversionCollection >&, const edm::Handle< reco::BeamSpot >&, const float = 2.4);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
@@ -126,7 +126,7 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID);
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
-  bool isGoodElectron(const pat::Electron&, const float, const float, const electronID::electronID);
+  bool isGoodElectron(const pat::Electron&, const float, const float, const electronID::electronID, const edm::Handle< reco::ConversionCollection >&, const edm::Handle< reco::BeamSpot >&);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
@@ -184,9 +184,9 @@ class MiniAODHelper{
   FactorizedJetCorrector* useJetCorrector;
   JetCorrectionUncertainty *jecUnc_;
 
-  const ElectronMVAReader* electronMVAReader_BarrelEtaLess08;
-  const ElectronMVAReader* electronMVAReader_BarrelEtaGreater08;
-  const ElectronMVAReader* electronMVAReader_Endcap;
+  ElectronMVAReader* electronMVAReader_BarrelEtaLess08;
+  ElectronMVAReader* electronMVAReader_BarrelEtaGreater08;
+  ElectronMVAReader* electronMVAReader_Endcap;
   
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
 

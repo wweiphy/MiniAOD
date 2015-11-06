@@ -97,6 +97,8 @@ class MiniAODAnalyzer : public edm::EDAnalyzer {
   edm::EDGetTokenT <pat::JetCollection> ak4jetToken;
   edm::EDGetTokenT <edm::View<pat::Jet> > ak8jetToken;
   edm::EDGetTokenT <reco::BeamSpot> beamspotToken;
+  edm::EDGetTokenT< reco::ConversionCollection > EDMConversionCollectionToken;
+
 
   edm::EDGetTokenT <pat::JetCollection> ca12jetToken;
   edm::EDGetTokenT <pat::JetCollection> ca12filtjetToken;
@@ -219,6 +221,7 @@ MiniAODAnalyzer::MiniAODAnalyzer(const edm::ParameterSet& iConfig)
   ak4jetToken = consumes <pat::JetCollection> (edm::InputTag(std::string("slimmedJets")));
   ak8jetToken = consumes <edm::View<pat::Jet> > (edm::InputTag(std::string("slimmedJetsAK8")));
   beamspotToken = consumes <reco::BeamSpot> (edm::InputTag(std::string("offlineBeamSpot")));
+  EDMConversionCollectionToken        = consumes< reco::ConversionCollection > (edm::InputTag("reducedEgamma","reducedConversions",""));
 
   ca12jetToken = consumes <pat::JetCollection> (edm::InputTag(std::string("selectedPatJetsCA12PF")));
   ca12filtjetToken = consumes <pat::JetCollection> (edm::InputTag(std::string("selectedPatJetsCA3FiltPF")));
@@ -455,6 +458,9 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   edm::Handle<reco::BeamSpot> bsHandle;
   iEvent.getByToken(beamspotToken,bsHandle);
 
+  edm::Handle<reco::ConversionCollection> conversioncollectionHandle;
+  iEvent.getByToken( EDMConversionCollectionToken,conversioncollectionHandle );
+
   math::XYZPoint beamSpotPosition;
   beamSpotPosition.SetCoordinates(0,0,0);
   double BSx=0,BSy=0,BSz=0;
@@ -612,7 +618,7 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   std::vector<pat::Electron> selectedElectrons;
   if( pfelectrons.isValid() ){
-    selectedElectrons = miniAODhelper.GetSelectedElectrons(*pfelectrons, 30., electronID::electronTight);
+    selectedElectrons = miniAODhelper.GetSelectedElectrons(*pfelectrons, 30., electronID::electronTight, conversioncollectionHandle, bsHandle);
     for( std::vector<pat::Electron>::const_iterator pfele = pfelectrons->begin(); pfele!=pfelectrons->end(); ++pfele ){
       int ncut = 0;
       h_electron_selection->Fill(0.5+ncut++, 1);
@@ -777,7 +783,7 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   numAK4Jets_noTightLeptons_ += int( cleanSelectedJets.size() );
 
   std::vector<pat::Electron> electronsNoMu = miniAODhelper.RemoveOverlaps(selectedMuons, *pfelectrons);
-  std::vector<pat::Electron> cleanSelectedElectrons = miniAODhelper.GetSelectedElectrons(electronsNoMu, 30., electronID::electronTight);
+  std::vector<pat::Electron> cleanSelectedElectrons = miniAODhelper.GetSelectedElectrons(electronsNoMu, 30., electronID::electronTight,conversioncollectionHandle, bsHandle);
 
   numCleanTightElectrons_ += int( cleanSelectedElectrons.size() );
 

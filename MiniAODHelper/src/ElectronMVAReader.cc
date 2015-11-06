@@ -1,6 +1,6 @@
 #include "MiniAOD/MiniAODHelper/interface/ElectronMVAReader.h"
 
-ElectronMVAReader::ElectronMVAReader(std::string WeightFilePath_ = ""){
+ElectronMVAReader::ElectronMVAReader(std::string WeightFilePath_){
   
   char* CMSSWPath = getenv("CMSSW_BASE");
   std::string filePath = CMSSWPath;
@@ -10,7 +10,7 @@ ElectronMVAReader::ElectronMVAReader(std::string WeightFilePath_ = ""){
   GetTMVAVars(weightsPath);
   // Setup TMVA Reader
   TMVAReader = new TMVA::Reader("Silent");    
-        for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
+        for(std::vector<std::string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
           TMVAReader->AddVariable(*itVarName,&TMVAVars[itVarName-TMVAVarNames.begin()]);
         }
   TMVAReader->BookMVA("ElectronMVA",(weightsPath).c_str());
@@ -26,7 +26,7 @@ void ElectronMVAReader::GetTMVAVarNames(std::string filePath_, bool verbose){
   TMVAVarNames.clear();
   
   std::string line;
-  ifstream inFile (filePath_);
+  std::ifstream inFile (filePath_);
   
   if(inFile.is_open()){
   
@@ -42,7 +42,7 @@ void ElectronMVAReader::GetTMVAVarNames(std::string filePath_, bool verbose){
     }
     
     if(verbose){
-      for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
+      for(std::vector<std::string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
         std::cout << "Variable " << itVarName-TMVAVarNames.begin() << ": " << *itVarName << std::endl;
       }
     }
@@ -63,7 +63,7 @@ void ElectronMVAReader::GetTMVAVars(std::string filePath_, bool verbose){
   }
   
   if(verbose){
-    for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
+    for(std::vector<std::string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
       std::cout << "Variable " << itVarName-TMVAVarNames.begin() << ": " << *itVarName << ": " << TMVAVars[itVarName-TMVAVarNames.begin()] << std::endl;
     }
   }  
@@ -77,60 +77,62 @@ void ElectronMVAReader::ResetTMVAVars(){
 }
 
 
-float ElectronMVAReader::GetElectronMVAReaderOutput(const pat::Electron& iElectron, bool verbose){
+float ElectronMVAReader::GetElectronMVAReaderOutput(const pat::Electron& iElectron, const edm::Handle< reco::ConversionCollection >& conversions, const edm::Handle< reco::BeamSpot >& theBeamSpot, bool verbose){
 
         ResetTMVAVars();
 
-        for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
+
+        bool validKF= false; 
+        reco::TrackRef myTrackRef = iElectron.closestCtfTrackRef();
+        validKF = (myTrackRef.isAvailable() && (myTrackRef.isNonnull()) ); 
+
+	reco::ConversionRef conv_ref = ::ConversionTools::matchedConversion(iElectron, conversions, theBeamSpot.product()->position());
+	double vertexFitProbability = -1.; 
+	if(!conv_ref.isNull()) {
+	  const reco::Vertex &vtx = conv_ref.get()->conversionVertex(); if (vtx.isValid()) {
+	    vertexFitProbability = TMath::Prob( vtx.chi2(), vtx.ndof());
+	  } 
+	}
+
+
+        for(std::vector<std::string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
           int iVar = itVarName-TMVAVarNames.begin();
 
-          /*if(*itVarName=="ele_oldsigmaietaieta")                  TMVAVars[iVar] = iElectron.full5x5_sigmaIetaIeta();
-          else if(*itVarName=="ele_oldsigmaiphiiphi")                      TMVAVars[iVar] = iElectron.full5x5_sigmaIphiIphi();
-          else if(*itVarName=="ele_oldcircularity")                      TMVAVars[iVar] = 1. - iElectron.full5x5_e1x5() / iElectron.full5x5_e5x5();                                                                    
-          else if(*itVarName=="ele_oldr9")                      TMVAVars[iVar] = iElectron.full5x5_r9();
+          if(*itVarName=="ele_oldsigmaietaieta")                  	TMVAVars[iVar] = iElectron.full5x5_sigmaIetaIeta();
+          else if(*itVarName=="ele_oldsigmaiphiiphi")                   TMVAVars[iVar] = iElectron.full5x5_sigmaIphiIphi();
+          else if(*itVarName=="ele_oldcircularity")                     TMVAVars[iVar] = 1. - iElectron.full5x5_e1x5() / iElectron.full5x5_e5x5();                                                                    
+          else if(*itVarName=="ele_oldr9")                      	TMVAVars[iVar] = iElectron.full5x5_r9();
 
-          else if(*itVarName=="ele_scletawidth")                      TMVAVars[iVar] = iElectron.SuperCluster.etaWidth();
-          else if(*itVarName=="ele_sclphiwidth")                      TMVAVars[iVar] = iElectron.SuperCluster.phiWidth();
-          else if(*itVarName=="ele_he")                      TMVAVars[iVar] = iElectron.hadronicOverEm();
-          else if(*itVarName=="ele_psEoverEraw")                      TMVAVars[iVar] = iElectron.SuperCluster.preshowerEnergy() / iElectron.SuperCluster.rawEnergy();
+          else if(*itVarName=="ele_scletawidth")                      	TMVAVars[iVar] = iElectron.superCluster()->etaWidth();
+          else if(*itVarName=="ele_sclphiwidth")                      	TMVAVars[iVar] = iElectron.superCluster()->phiWidth();
+          else if(*itVarName=="ele_he")                      		TMVAVars[iVar] = iElectron.hadronicOverEm();
+          else if(*itVarName=="ele_psEoverEraw")                      	TMVAVars[iVar] = iElectron.superCluster()->preshowerEnergy() / iElectron.superCluster()->rawEnergy();
 
-          bool validKF= false; 
-          reco::TrackRef myTrackRef = iElectron.closestCtfTrackRef();
-          validKF = (myTrackRef.isAvailable() && (myTrackRef.isNonnull()) ); 
 
-          else if(*itVarName=="ele_kfhits")                     TMVAVars[iVar] =(validKF) ? myTrackRef->hitPattern().trackerLayersWithMeasurement() : -1. ;
-          else if(*itVarName=="ele_kfchi2")                      TMVAVars[iVar] = (validKF) ? myTrackRef->normalizedChi2() : 0;
-          else if(*itVarName=="ele_gsfchi2")                      TMVAVars[iVar] = iElectron.gsfTrack()->normalizedChi2();
+          else if(*itVarName=="ele_kfhits")                     	TMVAVars[iVar] =(validKF) ? myTrackRef->hitPattern().trackerLayersWithMeasurement() : -1. ;
+          else if(*itVarName=="ele_kfchi2")                      	TMVAVars[iVar] = (validKF) ? myTrackRef->normalizedChi2() : 0;
+          else if(*itVarName=="ele_gsfchi2")                      	TMVAVars[iVar] = iElectron.gsfTrack()->normalizedChi2();
 
-          else if(*itVarName=="ele_fbrem")                      TMVAVars[iVar] = iElectron.fbrem();
-          else if(*itVarName=="ele_gsfhits")                      TMVAVars[iVar] = iElectron.gsfTrack()->hitPattern().trackerLayersWithMeasurement();
-          else if(*itVarName=="ele_expected_inner_hits")                      TMVAVars[iVar] = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
+          else if(*itVarName=="ele_fbrem")                      	TMVAVars[iVar] = iElectron.fbrem();
+          else if(*itVarName=="ele_gsfhits")                      	TMVAVars[iVar] = iElectron.gsfTrack()->hitPattern().trackerLayersWithMeasurement();
+          else if(*itVarName=="ele_expected_inner_hits")                TMVAVars[iVar] = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
 
- reco::ConversionRef conv_ref = ConversionTools::matchedConversion(*iElectron,
-								    conversions, 
-								    theBeamSpot->position());
-  double vertexFitProbability = -1.; 
-  if(!conv_ref.isNull()) {
-    const reco::Vertex &vtx = conv_ref.get()->conversionVertex(); if (vtx.isValid()) {
-      vertexFitProbability = TMath::Prob( vtx.chi2(), vtx.ndof());
-    } 
-  }
-
-          else if(*itVarName=="ele_conversionVertexFitProbability")                      TMVAVars[iVar] = iElectron.full5x5_r9();
-          else if(*itVarName=="ele_oldr9")                      TMVAVars[iVar] = iElectron.full5x5_r9();
-          else if(*itVarName=="ele_oldr9")                      TMVAVars[iVar] = iElectron.full5x5_r9();
-          else if(*itVarName=="ele_oldr9")                      TMVAVars[iVar] = iElectron.full5x5_r9();
-          else if(*itVarName=="ele_oldr9")                      TMVAVars[iVar] = iElectron.full5x5_r9();
-          else if(*itVarName=="ele_oldr9")                      TMVAVars[iVar] = iElectron.full5x5_r9();
-          else if(*itVarName=="ele_oldr9")                      TMVAVars[iVar] = iElectron.full5x5_r9();
-
-*/
-                                                                                                                                                                                                                     
+	  
+          
+          else if(*itVarName=="ele_conversionVertexFitProbability")     TMVAVars[iVar] = vertexFitProbability;
+          
+          else if(*itVarName=="ele_ep")                      		TMVAVars[iVar] = iElectron.eSuperClusterOverP();
+          else if(*itVarName=="ele_eelepout")                      	TMVAVars[iVar] = iElectron.eEleClusterOverPout();
+          else if(*itVarName=="ele_IoEmIop")                      	TMVAVars[iVar] = (1.0/iElectron.ecalEnergy()) - (1.0 / float(iElectron.trackMomentumAtVtx().R()) );
+          else if(*itVarName=="ele_deltaetain")                      	TMVAVars[iVar] = iElectron.deltaEtaSuperClusterTrackAtVtx();
+          else if(*itVarName=="ele_deltaphiin")                      	TMVAVars[iVar] = iElectron.deltaPhiSuperClusterTrackAtVtx();
+          else if(*itVarName=="ele_deltaetaseed")                      	TMVAVars[iVar] = iElectron.deltaEtaSeedClusterTrackAtCalo();
+                                                                                                                                         
         }
 
         if(verbose){
           std::cout << "Electron MVA Variables:" << std::endl;
-          for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
+          for(std::vector<std::string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
             std::cout << "Variable " << itVarName-TMVAVarNames.begin() << ": " << *itVarName << ": " << TMVAVars[itVarName-TMVAVarNames.begin()] << std::endl;
           }
         }
