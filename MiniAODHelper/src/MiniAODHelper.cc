@@ -76,6 +76,15 @@ void MiniAODHelper::SetRho(double inputRho){
   rhoIsSet = true;
 }
 
+
+// Set up parameters one by one
+void MiniAODHelper::SetElectronMVAinfo(const edm::Handle< reco::ConversionCollection >& h_conversions_, const edm::Handle< reco::BeamSpot>& h_beamspot_){
+  
+  h_conversions=h_conversions_;
+  h_beamspot=h_beamspot_;
+  electronMVAinfoIsSet = true;
+}
+
 void MiniAODHelper::SetUpElectronMVA(const std::string BarrelEtaLess08Weight, const std::string BarrelEtaGreater08Weight, const std::string EndcapWeight){
   
   electronMVAReader_BarrelEtaLess08 = new ElectronMVAReader(BarrelEtaLess08Weight);
@@ -188,14 +197,14 @@ MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const 
 
 
 std::vector<pat::Electron> 
-MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const float iMinPt, const electronID::electronID iElectronID, const edm::Handle< reco::ConversionCollection >& h_conversions, const edm::Handle< reco::BeamSpot>& h_beamspot, const float iMaxEta){
+MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const float iMinPt, const electronID::electronID iElectronID, const float iMaxEta){
 
   CheckSetUp();
 
   std::vector<pat::Electron> selectedElectrons;
 
   for( std::vector<pat::Electron>::const_iterator it = inputElectrons.begin(), ed = inputElectrons.end(); it != ed; ++it ){
-    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID, h_conversions, h_beamspot) ) selectedElectrons.push_back(*it);
+    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID) ) selectedElectrons.push_back(*it);
   }
 
   return selectedElectrons;
@@ -547,7 +556,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
 
 
 bool 
-MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID, const edm::Handle< reco::ConversionCollection >& h_conversions, const edm::Handle< reco::BeamSpot>& h_beamspot){
+MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID){
 
   CheckVertexSetUp();
 
@@ -658,7 +667,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     //check preselction
     myTrigPresel = iElectron.pt()>15 && (( abs(iElectron.superCluster()->position().eta()) < 1.4442 && iElectron.full5x5_sigmaIetaIeta() < 0.012 && iElectron.hcalOverEcal() < 0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 && abs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 && abs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065 ) || ( abs(iElectron.superCluster()->position().eta()) > 1.5660 && iElectron.full5x5_sigmaIetaIeta() < 0.033 && iElectron.hcalOverEcal() <0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 ));
 
-    if(myTrigPresel and electronMVAIsSet){
+    if(myTrigPresel and electronMVAIsSet and electronMVAinfoIsSet){
       double MVAoutput=0;
 
       if(abs(iElectron.superCluster()->position().eta()) < 1.4442){ //is barrel
@@ -679,6 +688,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     else{
       id=false;
       if(!electronMVAIsSet)std::cout<<" Set up the electron MVA with SetUpElectronMVA(...) first"<<std::endl;
+      if(!electronMVAinfoIsSet) std::cout<<" Set up beamspot and conversion info for election MVA with SetElectronMVAinfo(...) first"<<std::endl;
     }
 
     passesID = id;

@@ -117,7 +117,7 @@ class MiniAODHelper{
   void SetUpElectronMVA(const std::string BarrelEtaLess08Weight, const std::string BarrelEtaGreater08Weight, const std::string EndcapWeight);
   
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
-  virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const edm::Handle< reco::ConversionCollection >&, const edm::Handle< reco::BeamSpot >&, const float = 2.4);
+  virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
@@ -126,7 +126,7 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID);
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
-  bool isGoodElectron(const pat::Electron&, const float, const float, const electronID::electronID, const edm::Handle< reco::ConversionCollection >&, const edm::Handle< reco::BeamSpot >&);
+  bool isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
@@ -134,6 +134,7 @@ class MiniAODHelper{
   float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
   float GetElectronRelIso(const pat::Electron&) const;
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14) const;
+  void SetElectronMVAinfo(const edm::Handle< reco::ConversionCollection >& h_conversions_, const edm::Handle< reco::BeamSpot>& h_beamspot_);
   static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags"); 
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
@@ -163,7 +164,8 @@ class MiniAODHelper{
   bool rhoIsSet;
   bool jetcorrectorIsSet;
   bool factorizedjetcorrectorIsSet;
-  bool electronMVAIsSet;
+  bool electronMVAIsSet=false;
+  bool electronMVAinfoIsSet=false;
   
   string era;
   int sampleNumber;
@@ -187,6 +189,10 @@ class MiniAODHelper{
   ElectronMVAReader* electronMVAReader_BarrelEtaLess08;
   ElectronMVAReader* electronMVAReader_BarrelEtaGreater08;
   ElectronMVAReader* electronMVAReader_Endcap;
+  
+  // Needed for electron MVA
+  edm::Handle< reco::ConversionCollection > h_conversions;
+  edm::Handle< reco::BeamSpot> h_beamspot;
   
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
 
