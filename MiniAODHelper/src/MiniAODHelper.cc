@@ -670,6 +670,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     if(myTrigPresel and electronMVAIsSet and electronMVAinfoIsSet){
       double MVAoutput=0;
 
+
       if(fabs(iElectron.superCluster()->position().eta()) < 1.479){ //is barrel
         if(fabs(iElectron.superCluster()->position().eta()) < 0.8){ //EB1
             MVAoutput=electronMVAReader_BarrelEtaLess08->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
