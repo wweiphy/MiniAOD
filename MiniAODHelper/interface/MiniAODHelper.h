@@ -148,6 +148,8 @@ class MiniAODHelper{
   double getJERfactor( const int, const double, const double, const double );
   std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
 
+  double GetElectronMVAIDValue(const pat::Electron&);
+
   template <typename T> T GetSortedByPt(const T&);
   template <typename T> T GetSortedByCSV(const T&);
   template <typename T, typename S> std::vector<T> RemoveOverlaps( const std::vector<S>&, const std::vector<T>& );
