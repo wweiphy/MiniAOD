@@ -100,8 +100,8 @@ float ElectronMVAReader::GetElectronMVAReaderOutput(const pat::Electron& iElectr
 
           if(*itVarName=="ele_oldsigmaietaieta")                  	TMVAVars[iVar] = iElectron.full5x5_sigmaIetaIeta();
           else if(*itVarName=="ele_oldsigmaiphiiphi")                   TMVAVars[iVar] = iElectron.full5x5_sigmaIphiIphi();
-          else if(*itVarName=="ele_oldcircularity")                     TMVAVars[iVar] = 1. - iElectron.full5x5_e1x5() / iElectron.full5x5_e5x5();                                                                    
-          else if(*itVarName=="ele_oldr9")                      	TMVAVars[iVar] = iElectron.full5x5_r9();
+          else if(*itVarName=="ele_oldcircularity")                     TMVAVars[iVar] = std::min(std::max(1. - iElectron.full5x5_e1x5() / iElectron.full5x5_e5x5(), -1.0), 2.0);                                                                    
+          else if(*itVarName=="ele_oldr9")                      	TMVAVars[iVar] = std::min(iElectron.full5x5_r9(), float(5.0));
 
           else if(*itVarName=="ele_scletawidth")                      	TMVAVars[iVar] = iElectron.superCluster()->etaWidth();
           else if(*itVarName=="ele_sclphiwidth")                      	TMVAVars[iVar] = iElectron.superCluster()->phiWidth();
@@ -110,10 +110,10 @@ float ElectronMVAReader::GetElectronMVAReaderOutput(const pat::Electron& iElectr
 
 
           else if(*itVarName=="ele_kfhits")                     	TMVAVars[iVar] =(validKF) ? myTrackRef->hitPattern().trackerLayersWithMeasurement() : -1. ;
-          else if(*itVarName=="ele_kfchi2")                      	TMVAVars[iVar] = (validKF) ? myTrackRef->normalizedChi2() : 0;
-          else if(*itVarName=="ele_gsfchi2")                      	TMVAVars[iVar] = iElectron.gsfTrack()->normalizedChi2();
+          else if(*itVarName=="ele_kfchi2")                      	TMVAVars[iVar] = (validKF) ? std::min(myTrackRef->normalizedChi2(), 10.0) : 0;
+          else if(*itVarName=="ele_gsfchi2")                      	TMVAVars[iVar] = std::min(iElectron.gsfTrack()->normalizedChi2(), 200.0);
 
-          else if(*itVarName=="ele_fbrem")                      	TMVAVars[iVar] = iElectron.fbrem();
+          else if(*itVarName=="ele_fbrem")                      	TMVAVars[iVar] = std::max(iElectron.fbrem(), float(-1.0));
           else if(*itVarName=="ele_gsfhits")                      	TMVAVars[iVar] = iElectron.gsfTrack()->hitPattern().trackerLayersWithMeasurement();
           else if(*itVarName=="ele_expected_inner_hits")                TMVAVars[iVar] = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
 
@@ -121,12 +121,12 @@ float ElectronMVAReader::GetElectronMVAReaderOutput(const pat::Electron& iElectr
           
           else if(*itVarName=="ele_conversionVertexFitProbability")     TMVAVars[iVar] = vertexFitProbability;
           
-          else if(*itVarName=="ele_ep")                      		TMVAVars[iVar] = iElectron.eSuperClusterOverP();
-          else if(*itVarName=="ele_eelepout")                      	TMVAVars[iVar] = iElectron.eEleClusterOverPout();
+          else if(*itVarName=="ele_ep")                      		TMVAVars[iVar] = std::min(iElectron.eSuperClusterOverP(), float(20.0));
+          else if(*itVarName=="ele_eelepout")                      	TMVAVars[iVar] = std::min(iElectron.eEleClusterOverPout(), float(20.0));
           else if(*itVarName=="ele_IoEmIop")                      	TMVAVars[iVar] = (1.0/iElectron.ecalEnergy()) - (1.0 / float(iElectron.trackMomentumAtVtx().R()) );
-          else if(*itVarName=="ele_deltaetain")                      	TMVAVars[iVar] = iElectron.deltaEtaSuperClusterTrackAtVtx();
-          else if(*itVarName=="ele_deltaphiin")                      	TMVAVars[iVar] = iElectron.deltaPhiSuperClusterTrackAtVtx();
-          else if(*itVarName=="ele_deltaetaseed")                      	TMVAVars[iVar] = iElectron.deltaEtaSeedClusterTrackAtCalo();
+          else if(*itVarName=="ele_deltaetain")                      	TMVAVars[iVar] = std::min(fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()), 0.06);
+          else if(*itVarName=="ele_deltaphiin")                      	TMVAVars[iVar] = std::min(fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()), 0.6);
+          else if(*itVarName=="ele_deltaetaseed")                      	TMVAVars[iVar] = std::min(fabs(iElectron.deltaEtaSeedClusterTrackAtCalo()), 0.2);
                                                                                                                                          
         }
 
