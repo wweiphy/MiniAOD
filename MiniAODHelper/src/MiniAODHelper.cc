@@ -1420,6 +1420,10 @@ bool MiniAODHelper::InECALbarrel(const pat::Electron& iElectron) const{
     return abs(iElectron.superCluster()->position().eta()) < 1.4442;
 }
 
+bool MiniAODHelper::InECALendcap(const pat::Electron& iElectron) const{
+    return abs(iElectron.superCluster()->position().eta()) > 1.5660;
+}
+
 bool MiniAODHelper::PassesMVAidPreselection(const pat::Electron& iElectron) const{
     if (iElectron.pt()<15) return false;
     if(InECALbarrel(iElectron)){
@@ -1431,13 +1435,14 @@ bool MiniAODHelper::PassesMVAidPreselection(const pat::Electron& iElectron) cons
 		&& fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 
 		&& fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065);
     }
-    else{
+    else if(InECALendcap(iElectron)){
 	return (iElectron.full5x5_sigmaIetaIeta() < 0.033 
 		&& iElectron.hcalOverEcal() <0.09 
 		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 
 		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 
 		&& (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18);
     }
+    else return false;
 }
 
 bool MiniAODHelper::PassesMVAidCuts(const pat::Electron& el, float cut0, float cut1, float cut2) const{

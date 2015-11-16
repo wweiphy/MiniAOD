@@ -141,6 +141,7 @@ class MiniAODHelper{
   bool PassElectronSpring15Id(const pat::Electron&, const electronID::electronID) const;
   vector<pat::Electron> GetElectronsWithMVAid(edm::Handle<edm::View<pat::Electron> > electrons, edm::Handle<edm::ValueMap<float> > mvaValues, edm::Handle<edm::ValueMap<int> > mvaCategories) const;
   bool InECALbarrel(const pat::Electron&) const;
+  bool InECALendcap(const pat::Electron&) const;
   bool PassesMVAidPreselection(const pat::Electron&) const;
   bool PassesMVAidCuts(const pat::Electron& el, float cut0, float cut1, float cut2) const;
   bool PassesMVAid80(const pat::Electron&) const;
