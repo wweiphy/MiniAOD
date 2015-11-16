@@ -661,6 +661,18 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesID = id;
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     break;
+  case electronID::electronEndOf15MVA80:
+    passesID = PassesMVAid80(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true; // TODO: what is the correct isolation here?    
+    break;
+  case electronID::electronEndOf15MVA90:
+    passesID = PassesMVAid90(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true; // TODO: what is the correct isolation here?
+    break;
+
+
   case electronID::electronEndOf15MVAmedium:
     id = false;
 
@@ -696,8 +708,6 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     break;
   }
-
-  
 
   return (passesKinematics && passesIso && passesID);
 }
@@ -1386,7 +1396,70 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
     
     return pass;
 }
+vector<pat::Electron> MiniAODHelper::GetElectronsWithMVAid(edm::Handle<edm::View<pat::Electron> > electrons, edm::Handle<edm::ValueMap<float> > mvaValues, edm::Handle<edm::ValueMap<int> > mvaCategories) const {
+    // Loop over electrons
+    vector<pat::Electron> electrons_with_id;
+    for (size_t i = 0; i < electrons->size(); ++i){
+	// Look up MVA id and category
+	float mvaValue  = (*mvaValues)[electrons->ptrAt(i)]; //  MVA values
+	int mvaCategory = (*mvaCategories)[electrons->ptrAt(i)]; // category of electron (barrel <0.8, barrel >0, endcap)
+	// add mva id to output collections
+	electrons_with_id.push_back(electrons->at(i));
+	electrons_with_id.back().addUserFloat("mvaValue",mvaValue);
+	electrons_with_id.back().addUserInt("mvaCategory",mvaCategory);
+    }
+    return electrons_with_id;
+}
+bool MiniAODHelper::InECALbarrel(const pat::Electron& iElectron) const{
+    return abs(iElectron.superCluster()->position().eta()) < 1.4442;
+}
 
+bool MiniAODHelper::PassesMVAidPreselection(const pat::Electron& iElectron) const{
+    if (iElectron.pt()<15) return false;
+    if(InECALbarrel(iElectron)){
+	return (iElectron.full5x5_sigmaIetaIeta() < 0.012 
+		&& iElectron.hcalOverEcal() < 0.09 
+		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 
+		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 
+		&& (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 
+		&& fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 
+		&& fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065);
+    }
+    else{
+	return (iElectron.full5x5_sigmaIetaIeta() < 0.033 
+		&& iElectron.hcalOverEcal() <0.09 
+		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 
+		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 
+		&& (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18);
+    }
+}
+
+bool MiniAODHelper::PassesMVAidCuts(const pat::Electron& el, float cut0, float cut1, float cut2) const{
+    if(!el.hasUserFloat("mvaValue") || !el.hasUserInt("mvaCategory")) {
+	std::cout << "mvaValue or category not set, run MiniAODHelper::AddMVAidToElectrons first" << std::endl;
+	return false;
+    }
+    if(!PassesMVAidPreselection(el)) return false;
+    bool pass=false;
+    int category =el.userInt("mvaCategory");
+    float value= el.userFloat("mvaValue");
+    switch(category){
+        case 0: pass=value>cut0; break;
+        case 1: pass=value>cut1; break;
+        case 2: pass=value>cut2; break;
+        default: std::cout << "unkown electron mva category" << std::endl;
+    }
+    return pass;
+}
+
+
+bool MiniAODHelper::PassesMVAid80(const pat::Electron& el) const{
+    return PassesMVAidCuts(el,0.988153,0.967910,0.841729);
+}
+
+bool MiniAODHelper::PassesMVAid90(const pat::Electron& el) const{
+    return PassesMVAidCuts(el,0.972153,0.922126,0.610764);
+}
 
 void MiniAODHelper::addVetos(const reco::Candidate &cand) {
   for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
