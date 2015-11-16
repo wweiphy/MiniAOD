@@ -677,13 +677,14 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     id = false;
 
     //check preselction
-    myTrigPresel = iElectron.pt()>15 && (( abs(iElectron.superCluster()->position().eta()) < 1.4442 && iElectron.full5x5_sigmaIetaIeta() < 0.012 && iElectron.hcalOverEcal() < 0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 && abs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 && abs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065 ) || ( abs(iElectron.superCluster()->position().eta()) > 1.5660 && iElectron.full5x5_sigmaIetaIeta() < 0.033 && iElectron.hcalOverEcal() <0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 ));
+    myTrigPresel = iElectron.pt()>15 && (( fabs(iElectron.superCluster()->position().eta()) < 1.4442 && iElectron.full5x5_sigmaIetaIeta() < 0.012 && iElectron.hcalOverEcal() < 0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 && fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 && fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065 ) || ( fabs(iElectron.superCluster()->position().eta()) > 1.5660 && iElectron.full5x5_sigmaIetaIeta() < 0.033 && iElectron.hcalOverEcal() <0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 ));
 
     if(myTrigPresel and electronMVAIsSet and electronMVAinfoIsSet){
       double MVAoutput=0;
 
-      if(abs(iElectron.superCluster()->position().eta()) < 1.4442){ //is barrel
-        if(abs(iElectron.superCluster()->position().eta()) < 0.8){ //EB1
+
+      if(fabs(iElectron.superCluster()->position().eta()) < 1.479){ //is barrel
+        if(fabs(iElectron.superCluster()->position().eta()) < 0.8){ //EB1
             MVAoutput=electronMVAReader_BarrelEtaLess08->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
             if(MVAoutput>0.988153)id=true;
         }
@@ -699,9 +700,13 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     }
     else{
       id=false;
+      //if(!myTrigPresel) std::cout<<" failed Preselection"<<std::endl;
       if(!electronMVAIsSet)std::cout<<" Set up the electron MVA with SetUpElectronMVA(...) first"<<std::endl;
       if(!electronMVAinfoIsSet) std::cout<<" Set up beamspot and conversion info for election MVA with SetElectronMVAinfo(...) first"<<std::endl;
     }
+
+//    passesID = true;
+//    passesIso = true;
 
     passesID = id;
     passesIso = id;
@@ -717,12 +722,12 @@ double MiniAODHelper::GetElectronMVAIDValue(const pat::Electron& iElectron){
 
       bool myTrigPresel = true;
 
-      myTrigPresel = iElectron.pt()>15 && (( abs(iElectron.superCluster()->position().eta()) < 1.4442 && iElectron.full5x5_sigmaIetaIeta() < 0.012 && iElectron.hcalOverEcal() < 0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 && abs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 && abs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065 ) || ( abs(iElectron.superCluster()->position().eta()) > 1.5660 && iElectron.full5x5_sigmaIetaIeta() < 0.033 && iElectron.hcalOverEcal() <0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 ));
+      myTrigPresel = iElectron.pt()>15 && (( fabs(iElectron.superCluster()->position().eta()) < 1.4442 && iElectron.full5x5_sigmaIetaIeta() < 0.012 && iElectron.hcalOverEcal() < 0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 && fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 && fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065 ) || ( fabs(iElectron.superCluster()->position().eta()) > 1.5660 && iElectron.full5x5_sigmaIetaIeta() < 0.033 && iElectron.hcalOverEcal() <0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 ));
 
     if(myTrigPresel and electronMVAIsSet and electronMVAinfoIsSet){
 
-      if(abs(iElectron.superCluster()->position().eta()) < 1.4442){ //is barrel
-        if(abs(iElectron.superCluster()->position().eta()) < 0.8){ //EB1
+      if(fabs(iElectron.superCluster()->position().eta()) < 1.479){ //is barrel
+        if(fabs(iElectron.superCluster()->position().eta()) < 0.8){ //EB1
             MVAoutput=electronMVAReader_BarrelEtaLess08->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
         }
         else{ //EB2
@@ -734,6 +739,7 @@ double MiniAODHelper::GetElectronMVAIDValue(const pat::Electron& iElectron){
       }
     }
     else{
+      //if(!myTrigPresel) std::cout<<" failed Preselection"<<std::endl;
       if(!electronMVAIsSet)std::cout<<" Set up the electron MVA with SetUpElectronMVA(...) first"<<std::endl;
       if(!electronMVAinfoIsSet) std::cout<<" Set up beamspot and conversion info for election MVA with SetElectronMVAinfo(...) first"<<std::endl;
     }
