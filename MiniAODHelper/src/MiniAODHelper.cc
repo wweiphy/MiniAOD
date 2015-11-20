@@ -11,7 +11,6 @@ MiniAODHelper::MiniAODHelper(){
   rhoIsSet = false;
   jetcorrectorIsSet = false;
   factorizedjetcorrectorIsSet = false;
-  electronMVAIsSet = false;
   
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
@@ -78,21 +77,6 @@ void MiniAODHelper::SetRho(double inputRho){
 
 
 // Set up parameters one by one
-void MiniAODHelper::SetElectronMVAinfo(const edm::Handle< reco::ConversionCollection >& h_conversions_, const edm::Handle< reco::BeamSpot>& h_beamspot_){
-  
-  h_conversions=h_conversions_;
-  h_beamspot=h_beamspot_;
-  electronMVAinfoIsSet = true;
-}
-
-void MiniAODHelper::SetUpElectronMVA(const std::string BarrelEtaLess08Weight, const std::string BarrelEtaGreater08Weight, const std::string EndcapWeight){
-  
-  electronMVAReader_BarrelEtaLess08 = new ElectronMVAReader(BarrelEtaLess08Weight);
-  electronMVAReader_BarrelEtaGreater08 = new ElectronMVAReader(BarrelEtaGreater08Weight);
-  electronMVAReader_Endcap = new ElectronMVAReader(EndcapWeight);
-
-  electronMVAIsSet = true;
-}
 
 namespace {
   struct ByEta {
@@ -676,83 +660,10 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso = true; // TODO: what is the correct isolation here?
     break;
-
-
-  case electronID::electronEndOf15MVAmedium:
-    id = false;
-
-    //check preselction
-    myTrigPresel = iElectron.pt()>15 && (( fabs(iElectron.superCluster()->position().eta()) < 1.4442 && iElectron.full5x5_sigmaIetaIeta() < 0.012 && iElectron.hcalOverEcal() < 0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 && fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 && fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065 ) || ( fabs(iElectron.superCluster()->position().eta()) > 1.5660 && iElectron.full5x5_sigmaIetaIeta() < 0.033 && iElectron.hcalOverEcal() <0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 ));
-
-    if(myTrigPresel and electronMVAIsSet and electronMVAinfoIsSet){
-      double MVAoutput=0;
-
-
-      if(fabs(iElectron.superCluster()->position().eta()) < 1.479){ //is barrel
-        if(fabs(iElectron.superCluster()->position().eta()) < 0.8){ //EB1
-            MVAoutput=electronMVAReader_BarrelEtaLess08->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
-            if(MVAoutput>0.988153)id=true;
-        }
-        else{ //EB2
-            MVAoutput=electronMVAReader_BarrelEtaGreater08->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
-            if(MVAoutput>0.967910)id=true;
-        }
-      }
-      else{ // is endcap
-            MVAoutput=electronMVAReader_Endcap->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
-            if(MVAoutput>0.841729)id=true;
-      }
-    }
-    else{
-      id=false;
-      //if(!myTrigPresel) std::cout<<" failed Preselection"<<std::endl;
-      if(!electronMVAIsSet)std::cout<<" Set up the electron MVA with SetUpElectronMVA(...) first"<<std::endl;
-      if(!electronMVAinfoIsSet) std::cout<<" Set up beamspot and conversion info for election MVA with SetElectronMVAinfo(...) first"<<std::endl;
-    }
-
-//    passesID = true;
-//    passesIso = true;
-
-    passesID = id;
-    passesIso = id;
-    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
-    break;
   }
 
   return (passesKinematics && passesIso && passesID);
 }
-
-double MiniAODHelper::GetElectronMVAIDValue(const pat::Electron& iElectron){
-      double MVAoutput=0;
-
-      bool myTrigPresel = true;
-
-      myTrigPresel = iElectron.pt()>15 && (( fabs(iElectron.superCluster()->position().eta()) < 1.4442 && iElectron.full5x5_sigmaIetaIeta() < 0.012 && iElectron.hcalOverEcal() < 0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 && fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 && fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065 ) || ( fabs(iElectron.superCluster()->position().eta()) > 1.5660 && iElectron.full5x5_sigmaIetaIeta() < 0.033 && iElectron.hcalOverEcal() <0.09 && (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 && (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 && (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 ));
-
-    if(myTrigPresel and electronMVAIsSet and electronMVAinfoIsSet){
-
-      if(fabs(iElectron.superCluster()->position().eta()) < 1.479){ //is barrel
-        if(fabs(iElectron.superCluster()->position().eta()) < 0.8){ //EB1
-            MVAoutput=electronMVAReader_BarrelEtaLess08->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
-        }
-        else{ //EB2
-            MVAoutput=electronMVAReader_BarrelEtaGreater08->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
-        }
-      }
-      else{ // is endcap
-            MVAoutput=electronMVAReader_Endcap->GetElectronMVAReaderOutput(iElectron, h_conversions, h_beamspot, false);
-      }
-    }
-    else{
-      //if(!myTrigPresel) std::cout<<" failed Preselection"<<std::endl;
-      if(!electronMVAIsSet)std::cout<<" Set up the electron MVA with SetUpElectronMVA(...) first"<<std::endl;
-      if(!electronMVAinfoIsSet) std::cout<<" Set up beamspot and conversion info for election MVA with SetElectronMVAinfo(...) first"<<std::endl;
-    }
- 
-  return MVAoutput;
-
-}
-
 
 bool
 MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID id)
@@ -1407,6 +1318,9 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
     
     return pass;
 }
+// adds electron mva output as user float to electrons
+// you have to run the mva id producer to get the value maps
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2#MVA_producer_based_recipe_AN1
 vector<pat::Electron> MiniAODHelper::GetElectronsWithMVAid(edm::Handle<edm::View<pat::Electron> > electrons, edm::Handle<edm::ValueMap<float> > mvaValues, edm::Handle<edm::ValueMap<int> > mvaCategories) const {
     // Loop over electrons
     vector<pat::Electron> electrons_with_id;
@@ -1449,7 +1363,7 @@ bool MiniAODHelper::PassesMVAidPreselection(const pat::Electron& iElectron) cons
     }
     else return false;
 }
-
+// returns true if electron passes above preselection and the cut corresponding to the electron-category (0: eta<0.8, 1: 0.8<eta<1.4442, 2: 1.5560<eta)
 bool MiniAODHelper::PassesMVAidCuts(const pat::Electron& el, float cut0, float cut1, float cut2) const{
     if(!el.hasUserFloat("mvaValue") || !el.hasUserInt("mvaCategory")) {
 	std::cout << "mvaValue or category not set, run MiniAODHelper::AddMVAidToElectrons first" << std::endl;
