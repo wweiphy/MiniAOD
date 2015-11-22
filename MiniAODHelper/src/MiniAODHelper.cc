@@ -59,6 +59,10 @@ void MiniAODHelper::SetUp(string iEra, int iSampleNumber, const analysisType::an
 
 }
 
+void MiniAODHelper::SetUpPUWeights(const std::string& fileNameMCNPU,const std::string& histNameMCNPU,const std::string& fileNameDataNPUEstimated,const std::string& histNameDataNPUEstimated) {
+  puWeightProducer_.initWeights(fileNameMCNPU,histNameMCNPU,fileNameDataNPUEstimated,histNameDataNPUEstimated);
+}
+
 // Set up parameters one by one
 void MiniAODHelper::SetVertex(const reco::Vertex& inputVertex){
 

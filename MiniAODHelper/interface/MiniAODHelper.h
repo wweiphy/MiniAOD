@@ -63,6 +63,9 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
+#include "MiniAOD/MiniAODHelper/interface/PUWeightProducer.h"
+
+
 #endif
 
 typedef std::map<std::string, std::string> mparams;
@@ -106,13 +109,15 @@ class MiniAODHelper{
 
   // Set up MiniAODHelper
   void SetUp(string, int, const analysisType::analysisType, bool);
+  void SetUpPUWeights(const std::string& fileNameMCNPU,const std::string& histNameMCNPU,const std::string& fileNameDataNPUEstimated,const std::string& histNameDataNPUEstimated);
   void SetVertex(const reco::Vertex&);
   void SetRho(double);
   void SetJetCorrector(const JetCorrector*);
   void SetJetCorrectorUncertainty();
   void SetFactorizedJetCorrector();
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
-  
+
+
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
@@ -143,6 +148,10 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetDeltaRCleanedJets(const std::vector<pat::Jet>&, const std::vector<pat::Muon>&, const std::vector<pat::Electron>&, const double);
   double getJERfactor( const int, const double, const double, const double );
   std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
+  // Return weight factor dependent on number of true PU interactions
+  double GetPUWeight(const unsigned int npu) const { return puWeightProducer_(npu); }
+  double GetPUWeight(const edm::Event& iEvent) const { return puWeightProducer_(iEvent); }
+
 
   template <typename T> T GetSortedByPt(const T&);
   template <typename T> T GetSortedByCSV(const T&);
@@ -179,6 +188,7 @@ class MiniAODHelper{
   const JetCorrector* corrector;
   FactorizedJetCorrector* useJetCorrector;
   JetCorrectionUncertainty *jecUnc_;
+  PUWeightProducer puWeightProducer_;
   
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
 
