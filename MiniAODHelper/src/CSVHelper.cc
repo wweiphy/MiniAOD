@@ -2,7 +2,7 @@
 
 #include "MiniAOD/MiniAODHelper/interface/CSVHelper.h"
 
-CSVHelper::CSVHelper(std::string hf, std::string lf)
+CSVHelper::CSVHelper(std::string hf, std::string lf, int nHFptBins_):nHFptBins(nHFptBins_)
 {
     std::string inputFileHF = hf.size() > 0 ? hf : "data/csv_rwt_hf_IT_FlatSF.root";
     std::string inputFileLF = lf.size() > 0 ? lf :"data/csv_rwt_lf_IT_FlatSF.root";
@@ -86,12 +86,12 @@ CSVHelper::fillCSVHistos(TFile *fileHF, TFile *fileLF)
                 break;
         }
 
-        for (int iPt = 0; iPt < 6; iPt++)
+        for (int iPt = 0; iPt < nHFptBins; iPt++)
             h_csv_wgt_hf[iSys][iPt] =
                 (TH1D *)fileHF->Get(Form("csv_ratio_Pt%i_Eta0_%s", iPt, syst_csv_suffix_hf.Data()));
 
         if (iSys < 5) {
-            for (int iPt = 0; iPt < 6; iPt++)
+            for (int iPt = 0; iPt < nHFptBins; iPt++)
                 c_csv_wgt_hf[iSys][iPt] =
                     (TH1D *)fileHF->Get(Form("c_csv_ratio_Pt%i_Eta0_%s", iPt, syst_csv_suffix_c.Data()));
         }
@@ -228,11 +228,20 @@ CSVHelper::getCSVWeight(std::vector<double> jetPts, std::vector<double> jetEtas,
                       << ", jetAbsEta = " << jetAbsEta << std::endl;
 
         if (abs(flavor) == 5) {
+	    // RESET iPt to maximum pt bin (only 5 bins for new SFs)
+	    if(iPt>=nHFptBins){
+		iPt=nHFptBins-1;
+	    }
             int useCSVBin = (csv >= 0.) ? h_csv_wgt_hf[iSysHF][iPt]->FindBin(csv) : 1;
             double iCSVWgtHF = h_csv_wgt_hf[iSysHF][iPt]->GetBinContent(useCSVBin);
             if (iCSVWgtHF != 0)
                 csvWgthf *= iCSVWgtHF;
+
         } else if (abs(flavor) == 4) {
+	    // RESET iPt to maximum pt bin (only 5 bins for new SFs)
+	    if(iPt>=nHFptBins){
+		iPt=nHFptBins-1;
+	    }
             int useCSVBin = (csv >= 0.) ? c_csv_wgt_hf[iSysC][iPt]->FindBin(csv) : 1;
             double iCSVWgtC = c_csv_wgt_hf[iSysC][iPt]->GetBinContent(useCSVBin);
             if (iCSVWgtC != 0)
