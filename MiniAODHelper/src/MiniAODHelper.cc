@@ -899,6 +899,18 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
   return result;
 }
 
+void MiniAODHelper::AddMuonRelIso(pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::string userFloatName) const{
+    float iso=GetMuonRelIso(iMuon,iconeSize,icorrType);
+    iMuon.addUserFloat(userFloatName,iso);
+}
+
+void MiniAODHelper::AddMuonRelIso(std::vector<pat::Muon>& muons,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::string userFloatName) const{
+    for(auto mu=muons.begin(); mu!=muons.end(); mu++){
+	AddMuonRelIso(*mu,iconeSize,icorrType,userFloatName);
+    }
+}
+
+
 float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 {
   float result = 9999; 
@@ -1004,6 +1016,17 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       break;
     }
   return result;
+}
+
+void MiniAODHelper::AddElectronRelIso(pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType, std::string userFloatName) const{
+    float iso=GetElectronRelIso(iElectron,iconeSize,icorrType,ieffAreaType);
+    iElectron.addUserFloat(userFloatName,iso);
+}
+
+void MiniAODHelper::AddElectronRelIso(std::vector<pat::Electron>& electrons,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType, std::string userFloatName) const{
+    for(auto el=electrons.begin(); el!=electrons.end(); el++){
+	AddElectronRelIso(*el,iconeSize,icorrType,ieffAreaType,userFloatName);
+    }
 }
 
 
