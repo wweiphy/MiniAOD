@@ -213,7 +213,7 @@ CSVHelper::getCSVWeight(std::vector<double> jetPts, std::vector<double> jetEtas,
             iPt = 3;
         else if (jetPt >= 100 && jetPt < 160)
             iPt = 4;
-        else if (jetPt >= 160 && jetPt < 10000)
+        else if (jetPt >= 160)
             iPt = 5;
 
         if (jetAbsEta >= 0 && jetAbsEta < 0.8)
