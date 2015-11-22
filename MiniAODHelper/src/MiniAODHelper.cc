@@ -660,6 +660,17 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso = true; // TODO: what is the correct isolation here?
     break;
+  case electronID::electronEndOf15MVA80iso0p1:
+    passesID = PassesMVAid80(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso=0.1>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    break;
+  case electronID::electronEndOf15MVA90iso0p1:
+    passesID = PassesMVAid90(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso=0.1>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    break;
+
   }
 
   return (passesKinematics && passesIso && passesID);
