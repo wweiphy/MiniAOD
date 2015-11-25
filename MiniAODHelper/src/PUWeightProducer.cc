@@ -10,7 +10,6 @@
 #include "TH1.h"
 
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/FileInPath.h"
 #include "FWCore/Utilities/interface/Exception.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
@@ -54,9 +53,9 @@ void PUWeightProducer::initWeights(const std::string& fileNameMCNPU,
 				   const std::string& histNameMCNPU,
 				   const std::string& fileNameDataNPUEstimated,
 				   const std::string& histNameDataNPUEstimated) {
-  edm::LogInfo("PUWeightProducer") << "Computing PU weights"
-				   << "\n  MC scenario   : " << fileNameMCNPU
-				   << "\n  data estimate : " << fileNameDataNPUEstimated;
+  std::cout << "Computing PU weights"
+	    << "\n  MC scenario   : " << fileNameMCNPU
+	    << "\n  data estimate : " << fileNameDataNPUEstimated << std::endl;
   puWeights_.clear();
   
   // get histograms with MC scenario and target distribution from file
