@@ -35,9 +35,11 @@ double PUWeightProducer::operator()(const edm::Event& iEvent) const {
 
 
 double PUWeightProducer::operator()(const unsigned int npu) const {
-  if( npu >= puWeights_.size() ) {
-    throw cms::Exception("BadPUWeightAccess") << "N(true PU) = " << npu << " out-of range 0 - " << puWeights_.size();
-  }
+    if( npu >= puWeights_.size() ) {
+	//throw cms::Exception("BadPUWeightAccess") << "N(true PU) = " << npu << " out-of range 0 - " << puWeights_.size();
+	std::cout << "N(true PU) = " << npu << " out-of range 0 - " << puWeights_.size() << " , returning weight at " << (puWeights_.size()-1) <<std::endl;
+	return puWeights_.at(puWeights_.size()-1);
+    }
   
   return puWeights_.at(npu);
 }
