@@ -63,6 +63,9 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
+#include "MiniAOD/MiniAODHelper/interface/PUWeightProducer.h"
+
+
 #endif
 
 typedef std::map<std::string, std::string> mparams;
@@ -82,7 +85,7 @@ namespace tau { enum ID { nonIso, loose, medium, tight }; }
 namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, selfVetoFirst=2};}
 
 namespace muonID{		enum muonID{		muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonRaw, muonLooseCutBased, muonTightCutBased, muonCutBased, muonLooseMvaBased, muonTightMvaBased, muon2lss }; }
-namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss, electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T }; }
+namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss, electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T, electronEndOf15MVA80 ,electronEndOf15MVA90,electronEndOf15MVA80iso0p1 ,electronEndOf15MVA90iso0p1 }; }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
@@ -106,35 +109,47 @@ class MiniAODHelper{
 
   // Set up MiniAODHelper
   void SetUp(string, int, const analysisType::analysisType, bool);
+  void SetUpPUWeights(const std::string& fileNameMCNPU,const std::string& histNameMCNPU,const std::string& fileNameDataNPUEstimated,const std::string& histNameDataNPUEstimated);
   void SetVertex(const reco::Vertex&);
   void SetRho(double);
   void SetJetCorrector(const JetCorrector*);
   void SetJetCorrectorUncertainty();
   void SetFactorizedJetCorrector();
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
-  
+
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetUncorrectedJets(edm::Handle<pat::JetCollection>);
-  std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA);
+  std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID);
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
-  bool isGoodElectron(const pat::Electron&, const float, const float, const electronID::electronID);
+  bool isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
+  void AddMuonRelIso(pat::Muon&,const coneSize::coneSize, const corrType::corrType,std::string userFloatName="relIso") const;
+  void AddMuonRelIso(std::vector<pat::Muon>&,const coneSize::coneSize, const corrType::corrType,std::string userFloatName="relIso") const;
   float GetElectronRelIso(const pat::Electron&) const;
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14) const;
+  void AddElectronRelIso(pat::Electron&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
+  void AddElectronRelIso(std::vector<pat::Electron>&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
   static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags"); 
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
   bool PassElectronSpring15Id(const pat::Electron&, const electronID::electronID) const;
+  vector<pat::Electron> GetElectronsWithMVAid(edm::Handle<edm::View<pat::Electron> > electrons, edm::Handle<edm::ValueMap<float> > mvaValues, edm::Handle<edm::ValueMap<int> > mvaCategories) const;
+  bool InECALbarrel(const pat::Electron&) const;
+  bool InECALendcap(const pat::Electron&) const;
+  bool PassesMVAidPreselection(const pat::Electron&) const;
+  bool PassesMVAidCuts(const pat::Electron& el, float cut0, float cut1, float cut2) const;
+  bool PassesMVAid80(const pat::Electron&) const;
+  bool PassesMVAid90(const pat::Electron&) const;
   void addVetos(const reco::Candidate &cand);
   void clearVetos();
   float isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId=-1) const;
@@ -143,6 +158,10 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetDeltaRCleanedJets(const std::vector<pat::Jet>&, const std::vector<pat::Muon>&, const std::vector<pat::Electron>&, const double);
   double getJERfactor( const int, const double, const double, const double );
   std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
+  // Return weight factor dependent on number of true PU interactions
+  double GetPUWeight(const unsigned int npu) const { return puWeightProducer_(npu); }
+  double GetPUWeight(const edm::Event& iEvent) const { return puWeightProducer_(iEvent); }
+
 
   template <typename T> T GetSortedByPt(const T&);
   template <typename T> T GetSortedByCSV(const T&);
@@ -179,7 +198,8 @@ class MiniAODHelper{
   const JetCorrector* corrector;
   FactorizedJetCorrector* useJetCorrector;
   JetCorrectionUncertainty *jecUnc_;
-  
+  PUWeightProducer puWeightProducer_;
+
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
 
   inline void CheckSetUp() const { if(!isSetUp){ ThrowFatalError("MiniAODHelper not yet set up."); } };

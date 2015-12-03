@@ -59,6 +59,10 @@ void MiniAODHelper::SetUp(string iEra, int iSampleNumber, const analysisType::an
 
 }
 
+void MiniAODHelper::SetUpPUWeights(const std::string& fileNameMCNPU,const std::string& histNameMCNPU,const std::string& fileNameDataNPUEstimated,const std::string& histNameDataNPUEstimated) {
+  puWeightProducer_.initWeights(fileNameMCNPU,histNameMCNPU,fileNameDataNPUEstimated,histNameDataNPUEstimated);
+}
+
 // Set up parameters one by one
 void MiniAODHelper::SetVertex(const reco::Vertex& inputVertex){
 
@@ -74,6 +78,9 @@ void MiniAODHelper::SetRho(double inputRho){
 
   rhoIsSet = true;
 }
+
+
+// Set up parameters one by one
 
 namespace {
   struct ByEta {
@@ -264,7 +271,9 @@ std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
 
 
 std::vector<pat::Jet> 
-MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType){
+MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER){
+
+  if( !doJES && !doJER ) return inputJets;
 
   CheckSetUp();
 
@@ -272,56 +281,59 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 
   for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
     pat::Jet jet = (*it);
-    double scale = 1.;
+    
+    /// JES
+    if( doJES ){
+      double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = corrector->correction(*it, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+      if( jetcorrectorIsSet ) scale = corrector->correction(*it, event, setup);
+      else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
 
-    jet.scaleEnergy( scale );
-     
-    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+      jet.scaleEnergy( scale );
 
-      jecUnc_->setJetEta(jet.eta());
-      jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
-      double unc = 1;
-      double jes = 1;
-      if( iSysType==sysType::JESup ){
-	unc = jecUnc_->getUncertainty(true);
-	jes = 1 + unc;
+      if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+
+        jecUnc_->setJetEta(jet.eta());
+        jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
+        double unc = 1;
+        double jes = 1;
+        if( iSysType==sysType::JESup ){
+	        unc = jecUnc_->getUncertainty(true);
+	        jes = 1 + unc;
+        }
+        else if( iSysType==sysType::JESdown ){
+	        unc = jecUnc_->getUncertainty(false);
+	        jes = 1 - unc;
+        }
+
+        jet.scaleEnergy( jes );
       }
-      else if( iSysType==sysType::JESdown ){
-	unc = jecUnc_->getUncertainty(false);
-	jes = 1 - unc;
-      }
-      
-      jet.scaleEnergy( jes );
     }
-
+    
     /// JER
-    double jerSF = 1.;
-    if( jet.genJet() ){
-      if( iSysType == sysType::JERup ){
-	jerSF = getJERfactor(1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+    if( doJER){
+      double jerSF = 1.;
+      if( jet.genJet() ){
+        if( iSysType == sysType::JERup ){
+	        jerSF = getJERfactor(1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+        }
+        else if( iSysType == sysType::JERdown ){
+	        jerSF = getJERfactor(-1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+        }
+        else {
+	        jerSF = getJERfactor(0, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
+        }
+        // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
       }
-      else if( iSysType == sysType::JERdown ){
-	jerSF = getJERfactor(-1, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
-      }
-      else {
-	jerSF = getJERfactor(0, fabs(jet.eta()), jet.genJet()->pt(), jet.pt());
-      }
-      // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
+      // else     std::cout << "    ==> can't find genJet" << std::endl;
+
+      jet.scaleEnergy( jerSF );
     }
-    // else     std::cout << "    ==> can't find genJet" << std::endl;
-
-    jet.scaleEnergy( jerSF );
-
 
     outputJets.push_back(jet);
-
   }
 
   return outputJets;
-
 }
 
 
@@ -507,7 +519,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
     break;
   case muonID::muonTight:
     passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.12);
+    passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
     isPFMuon         = iMuon.isPFMuon();
 
     if( iMuon.globalTrack().isAvailable() ){
@@ -642,10 +654,28 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesID = id;
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     break;
+  case electronID::electronEndOf15MVA80:
+    passesID = PassesMVAid80(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true; // TODO: what is the correct isolation here?    
+    break;
+  case electronID::electronEndOf15MVA90:
+    passesID = PassesMVAid90(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true; // TODO: what is the correct isolation here?
+    break;
+  case electronID::electronEndOf15MVA80iso0p1:
+    passesID = PassesMVAid80(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso=0.1>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    break;
+  case electronID::electronEndOf15MVA90iso0p1:
+    passesID = PassesMVAid90(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso=0.1>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    break;
 
   }
-
-  
 
   return (passesKinematics && passesIso && passesID);
 }
@@ -873,6 +903,18 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
   return result;
 }
 
+void MiniAODHelper::AddMuonRelIso(pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::string userFloatName) const{
+    float iso=GetMuonRelIso(iMuon,iconeSize,icorrType);
+    iMuon.addUserFloat(userFloatName,iso);
+}
+
+void MiniAODHelper::AddMuonRelIso(std::vector<pat::Muon>& muons,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::string userFloatName) const{
+    for(auto mu=muons.begin(); mu!=muons.end(); mu++){
+	AddMuonRelIso(*mu,iconeSize,icorrType,userFloatName);
+    }
+}
+
+
 float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 {
   float result = 9999; 
@@ -978,6 +1020,17 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       break;
     }
   return result;
+}
+
+void MiniAODHelper::AddElectronRelIso(pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType, std::string userFloatName) const{
+    float iso=GetElectronRelIso(iElectron,iconeSize,icorrType,ieffAreaType);
+    iElectron.addUserFloat(userFloatName,iso);
+}
+
+void MiniAODHelper::AddElectronRelIso(std::vector<pat::Electron>& electrons,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType, std::string userFloatName) const{
+    for(auto el=electrons.begin(); el!=electrons.end(); el++){
+	AddElectronRelIso(*el,iconeSize,icorrType,ieffAreaType,userFloatName);
+    }
 }
 
 
@@ -1303,7 +1356,78 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
     
     return pass;
 }
+// adds electron mva output as user float to electrons
+// you have to run the mva id producer to get the value maps
+// https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2#MVA_producer_based_recipe_AN1
+vector<pat::Electron> MiniAODHelper::GetElectronsWithMVAid(edm::Handle<edm::View<pat::Electron> > electrons, edm::Handle<edm::ValueMap<float> > mvaValues, edm::Handle<edm::ValueMap<int> > mvaCategories) const {
+    // Loop over electrons
+    vector<pat::Electron> electrons_with_id;
+    for (size_t i = 0; i < electrons->size(); ++i){
+	// Look up MVA id and category
+	float mvaValue  = (*mvaValues)[electrons->ptrAt(i)]; //  MVA values
+	int mvaCategory = (*mvaCategories)[electrons->ptrAt(i)]; // category of electron (barrel <0.8, barrel >0, endcap)
+	// add mva id to output collections
+	electrons_with_id.push_back(electrons->at(i));
+	electrons_with_id.back().addUserFloat("mvaValue",mvaValue);
+	electrons_with_id.back().addUserInt("mvaCategory",mvaCategory);
+    }
+    return electrons_with_id;
+}
+bool MiniAODHelper::InECALbarrel(const pat::Electron& iElectron) const{
+    return abs(iElectron.superCluster()->position().eta()) < 1.4442;
+}
 
+bool MiniAODHelper::InECALendcap(const pat::Electron& iElectron) const{
+    return abs(iElectron.superCluster()->position().eta()) > 1.5660;
+}
+
+bool MiniAODHelper::PassesMVAidPreselection(const pat::Electron& iElectron) const{
+    if (iElectron.pt()<15) return false;
+    if(InECALbarrel(iElectron)){
+	return (iElectron.full5x5_sigmaIetaIeta() < 0.012 
+		&& iElectron.hcalOverEcal() < 0.09 
+		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 
+		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 
+		&& (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 
+		&& fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 
+		&& fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065);
+    }
+    else if(InECALendcap(iElectron)){
+	return (iElectron.full5x5_sigmaIetaIeta() < 0.033 
+		&& iElectron.hcalOverEcal() <0.09 
+		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 
+		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 
+		&& (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18);
+    }
+    else return false;
+}
+// returns true if electron passes above preselection and the cut corresponding to the electron-category (0: eta<0.8, 1: 0.8<eta<1.4442, 2: 1.5560<eta)
+bool MiniAODHelper::PassesMVAidCuts(const pat::Electron& el, float cut0, float cut1, float cut2) const{
+    if(!el.hasUserFloat("mvaValue") || !el.hasUserInt("mvaCategory")) {
+	std::cout << "mvaValue or category not set, run MiniAODHelper::AddMVAidToElectrons first" << std::endl;
+	return false;
+    }
+    if(!PassesMVAidPreselection(el)) return false;
+    bool pass=false;
+    int category =el.userInt("mvaCategory");
+    float value= el.userFloat("mvaValue");
+    switch(category){
+        case 0: pass=value>cut0; break;
+        case 1: pass=value>cut1; break;
+        case 2: pass=value>cut2; break;
+        default: std::cout << "unkown electron mva category" << std::endl;
+    }
+    return pass;
+}
+
+
+bool MiniAODHelper::PassesMVAid80(const pat::Electron& el) const{
+    return PassesMVAidCuts(el,0.988153,0.967910,0.841729);
+}
+
+bool MiniAODHelper::PassesMVAid90(const pat::Electron& el) const{
+    return PassesMVAidCuts(el,0.972153,0.922126,0.610764);
+}
 
 void MiniAODHelper::addVetos(const reco::Candidate &cand) {
   for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
