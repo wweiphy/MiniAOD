@@ -137,7 +137,7 @@ void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
-  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV5_DATA_Uncertainty_AK4PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV5_MC_Uncertainty_AK4PFchs.txt";
+  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV6_DATA_Uncertainty_AK4PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt";
 
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
@@ -1798,26 +1798,26 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
   double scale_JER = 1., scale_JERup = 1., scale_JERdown = 1.;
 
   //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
-  if( jetAbsETA<0.5 ){ 
-    scale_JER = 1.079; scale_JERup = 1.105; scale_JERdown = 1.053;
+  if( jetAbsETA<0.8 ){ 
+    scale_JER = 1.061; scale_JERup = 1.061 + 0.023; scale_JERdown = 1.061 - 0.023;
   }
-  else if( jetAbsETA<1.1 ){ 
-    scale_JER = 1.099; scale_JERup = 1.127; scale_JERdown = 1.071;
+  else if( jetAbsETA<1.3 ){ 
+    scale_JER = 1.088; scale_JERup = 1.088 + 0.029; scale_JERdown = 1.088 - 0.029;
   }
-  else if( jetAbsETA<1.7 ){ 
-    scale_JER = 1.121; scale_JERup = 1.150; scale_JERdown = 1.092;
+  else if( jetAbsETA<1.9 ){ 
+    scale_JER = 1.106; scale_JERup = 1.106 + 0.030; scale_JERdown = 1.106 - 0.030;
   }
-  else if( jetAbsETA<2.3 ){ 
-    scale_JER = 1.208; scale_JERup = 1.254; scale_JERdown = 1.162;
+  else if( jetAbsETA<2.5 ){ 
+    scale_JER = 1.126; scale_JERup = 1.126 + 0.094; scale_JERdown = 1.126 - 0.094;
   }
-  else if( jetAbsETA<2.8 ){ 
-    scale_JER = 1.254; scale_JERup = 1.316; scale_JERdown = 1.192;
+  else if( jetAbsETA<3.0 ){ 
+    scale_JER = 1.343; scale_JERup = 1.343 + 0.123; scale_JERdown = 1.343 - 0.123;
   }
   else if( jetAbsETA<3.2 ){ 
-    scale_JER = 1.395; scale_JERup = 1.458; scale_JERdown = 1.332;
+    scale_JER = 1.303; scale_JERup = 1.303 + 0.111; scale_JERdown = 1.303 - 0.111;
   }
   else if( jetAbsETA<5.0 ){ 
-    scale_JER = 1.056; scale_JERup = 1.247; scale_JERdown = 0.865;
+    scale_JER = 1.320; scale_JERup = 1.320 + 0.286; scale_JERdown = 1.320 - 0.286;
   }
 
   double jetPt_JER = recojetPT;
