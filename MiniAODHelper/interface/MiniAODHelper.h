@@ -84,8 +84,8 @@ namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight }; }
 namespace tau { enum ID { nonIso, loose, medium, tight }; }
 namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, selfVetoFirst=2};}
 
-namespace muonID{		enum muonID{		muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonRaw, muonLooseCutBased, muonTightCutBased, muonCutBased, muonLooseMvaBased, muonTightMvaBased, muon2lss }; }
-namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss, electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T, electronEndOf15MVA80 ,electronEndOf15MVA90,electronEndOf15MVA80iso0p1 ,electronEndOf15MVA90iso0p1 }; }
+namespace muonID{		enum muonID{		muonPreselection, muonSide, muonSideLooseMVA, muonSideTightMVA, muonLoose, muonTight, muonTightDL, muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly, muonRaw, muonLooseCutBased, muonTightCutBased, muonCutBased, muonLooseMvaBased, muonTightMvaBased, muon2lss }; }
+namespace electronID{	enum electronID{	electronPreselection, electronSide, electronSideLooseMVA, electronSideTightMVA, electronLoose, electronTight, electronTightMinusTrigPresel, electronLooseMinusTrigPresel, electronRaw, electronLooseCutBased, electronTightCutBased, electronCutBased, electronPhys14L, electronPhys14M, electronPhys14T, electronLooseMvaBased, electronTightMvaBased, electron2lss, electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T, electronEndOf15MVA80 ,electronEndOf15MVA90,electronEndOf15MVA80iso0p1,electronEndOf15MVA80iso0p15 ,electronEndOf15MVA90iso0p1, electronEndOf15MVA90iso0p15 }; }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
@@ -126,6 +126,7 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID);
+  bool passesMuonPOGIdTight(const pat::Muon&);
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
   bool isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);

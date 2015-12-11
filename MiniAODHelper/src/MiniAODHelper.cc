@@ -430,6 +430,37 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
   return selectedJets;
 }
 
+bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
+
+    if( !iMuon.globalTrack().isAvailable() ) return false;
+
+    bool passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.) 
+				 && (iMuon.globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
+				 );
+    if(!passesGlobalTrackID) return false;
+
+
+    if(!iMuon.muonBestTrack().isAvailable() )return false;
+    bool passesMuonBestTrackID = ( (fabs(iMuon.muonBestTrack()->dxy(vertex.position())) < 0.2)
+				   && (fabs(iMuon.muonBestTrack()->dz(vertex.position())) < 0.5)
+				   );
+    if(!passesMuonBestTrackID) return false;
+
+    if(!iMuon.innerTrack().isAvailable() ) return false;
+    bool passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0);
+    if(!passesInnerTrackID) return false;
+
+    if(!iMuon.track().isAvailable() ) return false;
+    bool passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
+    if(!passesTrackID) return false;
+
+    if(iMuon.numberOfMatchedStations() <= 1) return false;
+
+    if(!iMuon.isPFMuon()) return false;
+
+    return true;
+
+}
 
 bool 
 MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
@@ -518,31 +549,19 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
     
     break;
   case muonID::muonTight:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
-    isPFMuon         = iMuon.isPFMuon();
+      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
+      passesID         = passesMuonPOGIdTight(iMuon);
+      break;
+  case muonID::muonTightDL:
+      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25);
+      passesID         = passesMuonPOGIdTight(iMuon);
+      break;
 
-    if( iMuon.globalTrack().isAvailable() ){
-      passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.) 
-			      && (iMuon.globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
-			      );
-    }
-    if( iMuon.muonBestTrack().isAvailable() ){
-      passesMuonBestTrackID = ( (fabs(iMuon.muonBestTrack()->dxy(vertex.position())) < 0.2)
-				&& (fabs(iMuon.muonBestTrack()->dz(vertex.position())) < 0.5)
-				);
-    }
-    if( iMuon.innerTrack().isAvailable() )
-      passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0);
-    if( iMuon.track().isAvailable() )
-      passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
 
-    passesTrackerID = ( passesGlobalTrackID && passesMuonBestTrackID && passesInnerTrackID && passesTrackID && (iMuon.numberOfMatchedStations() > 1) );
-
-    passesID        = (iMuon.isGlobalMuon() && isPFMuon && passesTrackerID);
-    break;
   }
-
+  
   return (passesKinematics && passesIso && passesID);
 }
 
@@ -674,6 +693,17 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso=0.1>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
+  case electronID::electronEndOf15MVA80iso0p15:
+    passesID = PassesMVAid80(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    break;
+  case electronID::electronEndOf15MVA90iso0p15:
+    passesID = PassesMVAid90(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    break;
+
 
   }
 
