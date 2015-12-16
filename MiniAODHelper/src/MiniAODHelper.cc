@@ -840,11 +840,12 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
 }
 
 //overloaded
-float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType) const
+float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::map<std::string,double> miniIso_calculation_params) const
 {
-  //rho corrections based on phys14
-  //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
-  // !!! NOTE !!! rho used should be: fixedGridRhoFastjetAll
+  
+  // !!! NOTE !!! rho used with Phys14 should be: fixedGridRhoFastjetAll
+  // !!! NOTE !!! rho used with Spring15 should be: fixedGridRhoFastjetCentralNeutral
+  
   float result = 9999; 
   
   double correction = 9999.;
@@ -865,11 +866,12 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	{
 	case corrType::rhoEA:
 	  //based on R04 Phys14_25ns_v1
-	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.1546;
-	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.1325;
-	  else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0913;
-	  else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1212;
-	  else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.2085;
+	  // if (Eta >= 0. && Eta < 0.8) EffArea = 0.1546;
+	  // else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.1325;
+	  // else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0913;
+	  // else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1212;
+	  // else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.2085;
+	  EffArea = -9999.;
 	  correction = useRho*EffArea;
 	  break;
 	case corrType::deltaBeta:
@@ -889,11 +891,19 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	{
 	case corrType::rhoEA:
 	  //effective area based on R03 Phys14_25ns_v1
-	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
-	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
-	  else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
-	  else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
-	  else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1177;
+	  // if (Eta >= 0. && Eta < 0.8) EffArea = 0.0913;
+	  // else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0765;
+	  // else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0546;
+	  // else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
+	  // else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1177;
+
+	  //effective area based on R03 Spring15	  
+	  if (abs(Eta) < 0.8) EffArea = 0.0735;
+	  else if (abs(Eta) < 1.3) EffArea = 0.0619;
+	  else if (abs(Eta) < 2.0) EffArea = 0.0465;
+	  else if (abs(Eta) < 2.2) EffArea = 0.0433;
+	  else EffArea = 0.0577;
+
 	  correction = useRho*EffArea;
 	  break;
 	case corrType::deltaBeta:
@@ -913,11 +923,19 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	{
 	case corrType::rhoEA:
 	  //effective area based on R03 Phys14_25ns_v1
-	  if (abs(Eta) < 0.8) EffArea = 0.0913;
-	  else if (abs(Eta) < 1.3) EffArea = 0.0765;
-	  else if (abs(Eta) < 2.0) EffArea = 0.0546;
-	  else if (abs(Eta) < 2.2) EffArea = 0.0728;
-	  else EffArea = 0.1177;
+	  // if (abs(Eta) < 0.8) EffArea = 0.0913;
+	  // else if (abs(Eta) < 1.3) EffArea = 0.0765;
+	  // else if (abs(Eta) < 2.0) EffArea = 0.0546;
+	  // else if (abs(Eta) < 2.2) EffArea = 0.0728;
+	  // else EffArea = 0.1177;
+
+	  //effective area based on R03 Spring15	  
+	  if (abs(Eta) < 0.8) EffArea = 0.0735;
+	  else if (abs(Eta) < 1.3) EffArea = 0.0619;
+	  else if (abs(Eta) < 2.0) EffArea = 0.0465;
+	  else if (abs(Eta) < 2.2) EffArea = 0.0433;
+	  else EffArea = 0.0577;
+
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
 	  break;
 	case corrType::deltaBeta: 
@@ -925,8 +943,17 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	  correction = 0.5*miniAbsIsoPU;
 	  break;
 	}
+      
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction);
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
+      
+      miniIso_calculation_params.clear();
+      miniIso_calculation_params["miniAbsIsoCharged"] = pfIsoCharged;
+      miniIso_calculation_params["miniAbsIsoNeutral"] = pfIsoNeutral;
+      miniIso_calculation_params["rho"] = useRho;
+      miniIso_calculation_params["effArea"] = EffArea;
+      miniIso_calculation_params["miniIsoR"] = miniIsoR;
+      miniIso_calculation_params["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted; 
       break;
       
     }
@@ -934,36 +961,36 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 }
 
 void MiniAODHelper::AddMuonRelIso(pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::string userFloatName) const{
-    float iso=GetMuonRelIso(iMuon,iconeSize,icorrType);
-    iMuon.addUserFloat(userFloatName,iso);
+  float iso=GetMuonRelIso(iMuon,iconeSize,icorrType);
+  iMuon.addUserFloat(userFloatName,iso);
 }
 
 void MiniAODHelper::AddMuonRelIso(std::vector<pat::Muon>& muons,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::string userFloatName) const{
-    for(auto mu=muons.begin(); mu!=muons.end(); mu++){
-	AddMuonRelIso(*mu,iconeSize,icorrType,userFloatName);
-    }
+  for(auto mu=muons.begin(); mu!=muons.end(); mu++){
+    AddMuonRelIso(*mu,iconeSize,icorrType,userFloatName);
+  }
 }
 
 
 float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 {
   float result = 9999; 
-
+  
   double pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
   double pfIsoNeutral = iElectron.pfIsolationVariables().sumNeutralHadronEt + iElectron.pfIsolationVariables().sumPhotonEt;
-
+  
   double pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - 0.5*iElectron.pfIsolationVariables().sumPUPt );
-
+  
   result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
   
   return result;
 }
 
 //overloaded
-float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType) const
+float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType, std::map<std::string,double> miniIso_calculation_params) const
 {
-  //rho*EA corrections based on phys14
-  //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
+   //rho*EA corrections based on phys14
+   //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
   // !!! NOTE !!! rho used should be: fixedGridRhoFastjetAll
   float result = 9999; 
   
@@ -1032,11 +1059,26 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	{
 	case corrType::rhoEA:
 	  //effective area based on R03
-	  if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
-      	  else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
-          else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
-          else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
-          else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+
+	  if(ieffAreaType==effAreaType::phys14)
+	    {
+	      if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
+	      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
+	      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
+	      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
+	      else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	    }
+	  else if (ieffAreaType==effAreaType::spring15)
+	    {
+	      if (Eta >= 0. && Eta < 1.0) EffArea = 0.1752;
+	      else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1862;
+	      else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1411;
+	      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1534;
+	      else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1903;
+	      else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
+	      else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
+	    }
+
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
 	  break;
@@ -1047,6 +1089,14 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	}
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction);
       result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
+
+      miniIso_calculation_params.clear();
+      miniIso_calculation_params["miniAbsIsoCharged"] = pfIsoCharged;
+      miniIso_calculation_params["miniAbsIsoNeutral"] = pfIsoNeutral;
+      miniIso_calculation_params["rho"] = useRho;
+      miniIso_calculation_params["effArea"] = EffArea;
+      miniIso_calculation_params["miniIsoR"] = miniIsoR;
+      miniIso_calculation_params["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted;
       break;
     }
   return result;

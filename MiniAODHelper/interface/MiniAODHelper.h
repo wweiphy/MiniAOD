@@ -158,11 +158,11 @@ class MiniAODHelper{
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&) const;
-  float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType) const;
+  float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType, std::map<std::string,double> miniIso_calculation_params = {}) const;
   void AddMuonRelIso(pat::Muon&,const coneSize::coneSize, const corrType::corrType,std::string userFloatName="relIso") const;
   void AddMuonRelIso(std::vector<pat::Muon>&,const coneSize::coneSize, const corrType::corrType,std::string userFloatName="relIso") const;
   float GetElectronRelIso(const pat::Electron&) const;
-  float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14) const;
+  float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14, std::map<std::string,double> miniIso_calculation_params = {}) const;
   void AddElectronRelIso(pat::Electron&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
   void AddElectronRelIso(std::vector<pat::Electron>&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
   static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags"); 
