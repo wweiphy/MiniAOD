@@ -182,6 +182,16 @@ class MiniAODHelper{
   int ttHFCategorization(const std::vector<reco::GenJet>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<reco::GenParticle>&, const std::vector<std::vector<int> >&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const double, const double);
   int GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >&);
   std::vector<pat::Jet> GetDeltaRCleanedJets(const std::vector<pat::Jet>&, const std::vector<pat::Muon>&, const std::vector<pat::Electron>&, const double);
+  
+  enum TTbarDecayMode{
+    ChNotDefined = 0 , 
+    SingleLepCh = 1, 
+    DiLepCh = 2 ,
+    FullHadCh = 3
+  };
+  // Top quarks "top->W->tau" are regarded as "leptonically decaying top quark" regardless of tau decay (tau->e/mu/had).
+  TTbarDecayMode GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles);
+
   double getJERfactor( const int, const double, const double, const double );
   std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
   // Return weight factor dependent on number of true PU interactions
@@ -230,7 +240,40 @@ class MiniAODHelper{
 
   inline void CheckSetUp() const { if(!isSetUp){ ThrowFatalError("MiniAODHelper not yet set up."); } };
   inline void CheckVertexSetUp() const { if(!vertexIsSet){ ThrowFatalError("Vertex is not set."); } };
+
+
+ private :
+
+  struct _topquarkdecayobjects {
+    const reco::Candidate * top ; 
+    const reco::Candidate * bottom ; 
+    const reco::Candidate * W ;
+    const reco::Candidate * WChild_up;
+    const reco::Candidate * WChild_down;
+    bool isWChild_tau ; 
+    const reco::Candidate * Tau_Neu ;
+    std::vector< const reco::Candidate *> TauChildren ;
+
+    bool isLeptonicDecay(){
+      return
+	abs( WChild_down->pdgId() ) == 11
+	||
+	abs( WChild_down->pdgId() ) == 13
+	||
+	isWChild_tau ;
+    }
+
+  }; // end structure .
+
   
+  void FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
+				      struct _topquarkdecayobjects * topdecayobjects) ;
+
+  bool checkIfRegisterd( const reco::Candidate * candidate , std::vector< const reco::Candidate * > list );
+
+  const reco::Candidate * GetObjectJustBeforeDecay( const reco::Candidate * particle );
+
+
 }; // End of class prototype
 
 
