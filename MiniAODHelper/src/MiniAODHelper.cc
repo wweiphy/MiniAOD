@@ -1878,35 +1878,35 @@ void MiniAODHelper::FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
 
 MiniAODHelper::TTbarDecayMode MiniAODHelper::GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles){
 
-  struct _topquarkdecayobjects topPosDecay ; 
-  struct _topquarkdecayobjects topNegDecay ; 
+  struct _topquarkdecayobjects topPosDecay = { }; 
+  struct _topquarkdecayobjects topNegDecay = { }; 
 
-  std::vector<const reco::Candidate * > idx_top ; 
+  std::vector<const reco::Candidate * > idx_top_pos ; 
+  std::vector<const reco::Candidate * > idx_top_neg ; 
 
   for(size_t i=0; i<mcparticles->size();i++){
     
-    //  - - - Check Top - - - -  -
     if( abs( (*mcparticles)[i].pdgId()  ) == 6 ){
       const reco::Candidate * cand =  & (*mcparticles)[i] ; 
       cand = GetObjectJustBeforeDecay ( cand );
-      if ( ! checkIfRegisterd( cand , idx_top ) ){
-	idx_top . push_back( cand );
-	
-	if( (*mcparticles)[i].pdgId() == 6 ){
-	  // This is a top_quark
-	  FillTopQuarkDecayInfomration ( cand ,
-					 & topPosDecay ) ;
-	  
-	}else{
-	  // This is an anti-top quark
-	  FillTopQuarkDecayInfomration ( cand , 
-					 & topNegDecay ) ;
-	}
-      } // end if : this is new candidate
-    } // end if : top/anti-top quark
+      
+      if ( cand -> pdgId() == 6  && !  checkIfRegisterd( cand , idx_top_pos ) ){
+	idx_top_pos  . push_back( cand );
+	FillTopQuarkDecayInfomration ( cand ,
+				       & topPosDecay ) ;
+      }
+      
+      if ( cand -> pdgId() == - 6 && !  checkIfRegisterd( cand , idx_top_neg ) ){
+	idx_top_neg  . push_back( cand );
+	FillTopQuarkDecayInfomration ( cand , 
+				       & topNegDecay ) ;
+      }
+      
+    } // end if : |PDGID|==6
     
   }// end mcparticles-Loop.
   
+  if( idx_top_pos.size() != 1 || idx_top_neg.size() != 1 ) return ChNotDefined ;
 
   if( (   topPosDecay . isLeptonicDecay() ) && ( ! topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ; 
   if( ( ! topPosDecay . isLeptonicDecay() ) && (   topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ; 
