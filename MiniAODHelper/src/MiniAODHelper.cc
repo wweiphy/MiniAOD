@@ -1738,6 +1738,186 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
 
 
 
+bool MiniAODHelper::checkIfRegisterd( const reco::Candidate * candidate , std::vector< const reco::Candidate * > list ){
+
+  for ( std::vector< const reco::Candidate * >::iterator it = list.begin() ; 
+	it != list.end() ; 
+	it ++ ){
+    if( candidate == * it  ) return true  ;
+  }
+  
+  return false ;
+
+} 
+
+
+const reco::Candidate * MiniAODHelper::GetObjectJustBeforeDecay( const reco::Candidate * particle ){
+
+  for ( unsigned int i = 0 ; i <  particle -> numberOfDaughters(); i++ ){
+    if( particle -> daughter( i ) -> pdgId()  ==  particle -> pdgId() ){
+
+      return GetObjectJustBeforeDecay( particle -> daughter (i) );
+
+    } // end if 
+  } // end for 
+
+  return particle ; 
+
+}
+
+
+void MiniAODHelper::FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
+						   struct _topquarkdecayobjects * topdecayobjects) {
+  
+  topdecayobjects -> top  = c ; 
+  topdecayobjects -> isWChild_tau = false ; 
+
+  c = GetObjectJustBeforeDecay( c );
+
+  for ( unsigned int i = 0 ; i <  c -> numberOfDaughters(); i++ ){
+    if( abs( c -> daughter( i ) -> pdgId() ) == 5 || 
+	abs( c -> daughter( i ) -> pdgId() ) == 3 ||
+	abs( c -> daughter( i ) -> pdgId() ) == 1 ){
+      topdecayobjects -> bottom = c -> daughter( i );
+    }
+    if( abs( c -> daughter( i ) -> pdgId() ) == 24 ){
+      topdecayobjects -> W = c -> daughter( i );
+    }
+  }
+
+
+  const reco::Candidate * W = topdecayobjects -> W ;
+
+  // (case-1) In some MC, W boson decays but stays (example : W -> u+d+W)
+  // (case-2) In other MC, W boson decays after some step (example : W->W->u+d)
+  //  In order to handle both case, 
+  //   - check if the W boson has fermion in ites daughter.
+  //      -> if so (=case 1), this is the W boson to see.
+  //      -> if not(=case 2), trackdown the W boson
+  bool W_boson_decays  = false ;
+  for ( unsigned int i = 0 ; i <  W -> numberOfDaughters(); i++ ){  
+    if(       abs( W -> daughter( i ) -> pdgId() ) == 6 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 4 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 2 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 12
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 14 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 16 
+	      || abs( W -> daughter( i ) -> pdgId() ) == 5 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 3 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 1 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 11
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 13 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 15 ){
+      W_boson_decays = true ; 
+    } // end if 
+  }// end for-loop
+  if( ! W_boson_decays ){
+    W = GetObjectJustBeforeDecay( W ) ; 
+  }
+
+  
+  for ( unsigned int i = 0 ; i <  W -> numberOfDaughters(); i++ ){
+
+    if(       abs( W -> daughter( i ) -> pdgId() ) == 6 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 4 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 2 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 12
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 14 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 16 ){
+      // --- up type 
+      topdecayobjects -> WChild_up   =  W -> daughter( i );
+    }else if ( abs( W -> daughter( i ) -> pdgId() ) == 5 
+	       ||  abs( W -> daughter( i ) -> pdgId() ) == 3 
+	       ||  abs( W -> daughter( i ) -> pdgId() ) == 1 
+	       ||  abs( W -> daughter( i ) -> pdgId() ) == 11
+	       ||  abs( W -> daughter( i ) -> pdgId() ) == 13 
+	       ||  abs( W -> daughter( i ) -> pdgId() ) == 15 ){
+      // --- down type
+      topdecayobjects -> WChild_down =   W -> daughter( i );
+    }
+
+    if( abs( W -> daughter( i ) -> pdgId() ) == 15 ){
+      topdecayobjects ->  isWChild_tau = true ; 
+    }
+
+  }// W boson loop
+
+
+  if( ! ( topdecayobjects ->  isWChild_tau ) ) return ; 
+
+  const reco::Candidate * tau = topdecayobjects -> WChild_down ;
+  // - - - - 
+  // track down until the Tau lepton decays 
+  // - - - - 
+  for( bool ready = false; ! ready ; ){
+    ready = true ; 
+    for ( unsigned int i = 0 ; i <  tau -> numberOfDaughters(); i++ ){
+      if( abs( tau -> daughter( i ) -> pdgId() ) == 15 ){
+	ready = false; 
+	tau = tau -> daughter( i ) ;
+	break ; 
+      }
+    }
+    
+  }
+  
+  for ( unsigned int i = 0 ; i <  tau -> numberOfDaughters(); i++ ){
+
+    if ( abs( tau -> daughter( i ) -> pdgId() ) == 16 ){
+      topdecayobjects -> Tau_Neu =  GetObjectJustBeforeDecay( tau -> daughter( i ) ) ;
+    }else{
+      topdecayobjects -> TauChildren.push_back( GetObjectJustBeforeDecay ( tau -> daughter( i ) ) );
+    }
+
+  }// Tau loop
+  
+}
+
+
+
+
+MiniAODHelper::TTbarDecayMode MiniAODHelper::GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles){
+
+  struct _topquarkdecayobjects topPosDecay = { }; 
+  struct _topquarkdecayobjects topNegDecay = { }; 
+
+  std::vector<const reco::Candidate * > idx_top_pos ; 
+  std::vector<const reco::Candidate * > idx_top_neg ; 
+
+  for(size_t i=0; i<mcparticles->size();i++){
+    
+    if( abs( (*mcparticles)[i].pdgId()  ) == 6 ){
+      const reco::Candidate * cand =  & (*mcparticles)[i] ; 
+      cand = GetObjectJustBeforeDecay ( cand );
+      
+      if ( cand -> pdgId() == 6  && !  checkIfRegisterd( cand , idx_top_pos ) ){
+	idx_top_pos  . push_back( cand );
+	FillTopQuarkDecayInfomration ( cand ,
+				       & topPosDecay ) ;
+      }
+      
+      if ( cand -> pdgId() == - 6 && !  checkIfRegisterd( cand , idx_top_neg ) ){
+	idx_top_neg  . push_back( cand );
+	FillTopQuarkDecayInfomration ( cand , 
+				       & topNegDecay ) ;
+      }
+      
+    } // end if : |PDGID|==6
+    
+  }// end mcparticles-Loop.
+  
+  if( idx_top_pos.size() != 1 || idx_top_neg.size() != 1 ) return ChNotDefined ;
+
+  if( (   topPosDecay . isLeptonicDecay() ) && ( ! topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ; 
+  if( ( ! topPosDecay . isLeptonicDecay() ) && (   topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ; 
+  if( (   topPosDecay . isLeptonicDecay() ) && (   topNegDecay . isLeptonicDecay() ) ) return DiLepCh ;
+  if( ( ! topPosDecay . isLeptonicDecay() ) && ( ! topNegDecay . isLeptonicDecay() ) ) return FullHadCh ;
+  
+  return ChNotDefined ;
+
+}
+
+
     ///////////////////
     /// Higgs Decay ///
     ///////////////////
