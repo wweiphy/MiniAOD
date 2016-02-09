@@ -54,10 +54,11 @@ double PUWeightProducer::operator()(const unsigned int npu) const {
 void PUWeightProducer::initWeights(const std::string& fileNameMCNPU,
 				   const std::string& histNameMCNPU,
 				   const std::string& fileNameDataNPUEstimated,
-				   const std::string& histNameDataNPUEstimated) {
-  std::cout << "Computing PU weights"
-	    << "\n  MC scenario   : " << fileNameMCNPU
-	    << "\n  data estimate : " << fileNameDataNPUEstimated << std::endl;
+				   const std::string& histNameDataNPUEstimated, bool verbose) {
+  if (verbose)
+    std::cout << "Computing PU weights"
+              << "\n  MC scenario   : " << fileNameMCNPU
+              << "\n  data estimate : " << fileNameDataNPUEstimated << std::endl;
   puWeights_.clear();
   
   // get histograms with MC scenario and target distribution from file
