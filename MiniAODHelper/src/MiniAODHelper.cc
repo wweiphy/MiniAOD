@@ -14,9 +14,9 @@ MiniAODHelper::MiniAODHelper(){
   
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
-  CSVLwp = 0.605;//CSVv2 0.423; // 10.1716% DUSG mistag efficiency
-  CSVMwp = 0.890;//CSVv2 0.814; // 1.0623% DUSG mistag efficiency
-  CSVTwp = 0.970;//CSVv2 0.941; // 0.1144% DUSG mistag efficiency
+  CSVLwp = 0.460;//CSVv2 0.423; // 10.1716% DUSG mistag efficiency
+  CSVMwp = 0.800;//CSVv2 0.814; // 1.0623% DUSG mistag efficiency
+  CSVTwp = 0.935;//CSVv2 0.941; // 0.1144% DUSG mistag efficiency
 
   samplename = "blank";
 
