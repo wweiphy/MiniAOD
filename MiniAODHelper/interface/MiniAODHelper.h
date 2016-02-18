@@ -138,7 +138,9 @@ class MiniAODHelper{
   void SetVertex(const reco::Vertex&);
   void SetRho(double);
   void SetJetCorrector(const JetCorrector*);
+  void SetBoostedJetCorrector(const JetCorrector*);
   void SetJetCorrectorUncertainty();
+  void SetBoostedJetCorrectorUncertainty();
   void SetFactorizedJetCorrector();
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
 
@@ -149,6 +151,7 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetUncorrectedJets(edm::Handle<pat::JetCollection>);
   pat::Jet GetCorrectedJet(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
+  pat::Jet GetCorrectedAK8Jet(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   std::vector<boosted::BoostedJet> GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& inputBoostedJets, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
@@ -206,6 +209,7 @@ class MiniAODHelper{
   bool vertexIsSet;
   bool rhoIsSet;
   bool jetcorrectorIsSet;
+  bool boostedjetcorrectorIsSet;
   bool factorizedjetcorrectorIsSet;
   
   string era;
@@ -224,8 +228,10 @@ class MiniAODHelper{
   reco::Vertex vertex;
 
   const JetCorrector* corrector;
+  const JetCorrector* ak8corrector;
   FactorizedJetCorrector* useJetCorrector;
   JetCorrectionUncertainty *jecUnc_;
+  JetCorrectionUncertainty *ak8jecUnc_;
   PUWeightProducer puWeightProducer_;
 
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
