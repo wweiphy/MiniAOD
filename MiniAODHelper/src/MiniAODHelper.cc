@@ -2326,28 +2326,28 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
   double factor = 1.;
     
   double scale_JER = 1., scale_JERup = 1., scale_JERdown = 1.;
-
+  double extrauncertainty=1.5;
   //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
   if( jetAbsETA<0.8 ){ 
-    scale_JER = 1.061; scale_JERup = 1.061 + 0.023; scale_JERdown = 1.061 - 0.023;
+    scale_JER = 1.061; scale_JERup = 1.061 + 0.023*extrauncertainty; scale_JERdown = 1.061 - 0.023*extrauncertainty;
   }
   else if( jetAbsETA<1.3 ){ 
-    scale_JER = 1.088; scale_JERup = 1.088 + 0.029; scale_JERdown = 1.088 - 0.029;
+    scale_JER = 1.088; scale_JERup = 1.088 + 0.029*extrauncertainty; scale_JERdown = 1.088 - 0.029*extrauncertainty;
   }
   else if( jetAbsETA<1.9 ){ 
-    scale_JER = 1.106; scale_JERup = 1.106 + 0.030; scale_JERdown = 1.106 - 0.030;
+    scale_JER = 1.106; scale_JERup = 1.106 + 0.030*extrauncertainty; scale_JERdown = 1.106 - 0.030*extrauncertainty;
   }
   else if( jetAbsETA<2.5 ){ 
-    scale_JER = 1.126; scale_JERup = 1.126 + 0.094; scale_JERdown = 1.126 - 0.094;
+    scale_JER = 1.126; scale_JERup = 1.126 + 0.094*extrauncertainty; scale_JERdown = 1.126 - 0.094*extrauncertainty;
   }
   else if( jetAbsETA<3.0 ){ 
-    scale_JER = 1.343; scale_JERup = 1.343 + 0.123; scale_JERdown = 1.343 - 0.123;
+    scale_JER = 1.343; scale_JERup = 1.343 + 0.123*extrauncertainty; scale_JERdown = 1.343 - 0.123*extrauncertainty;
   }
   else if( jetAbsETA<3.2 ){ 
-    scale_JER = 1.303; scale_JERup = 1.303 + 0.111; scale_JERdown = 1.303 - 0.111;
+    scale_JER = 1.303; scale_JERup = 1.303 + 0.111*extrauncertainty; scale_JERdown = 1.303 - 0.111*extrauncertainty;
   }
   else if( jetAbsETA<5.0 ){ 
-    scale_JER = 1.320; scale_JERup = 1.320 + 0.286; scale_JERdown = 1.320 - 0.286;
+    scale_JER = 1.320; scale_JERup = 1.320 + 0.286*extrauncertainty; scale_JERdown = 1.320 - 0.286*extrauncertainty;
   }
 
   double jetPt_JER = recojetPT;
