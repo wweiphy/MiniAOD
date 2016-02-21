@@ -147,7 +147,7 @@ void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
-  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV6_DATA_Uncertainty_AK4PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt";
+  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt";
 
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
@@ -155,7 +155,7 @@ void MiniAODHelper::SetJetCorrectorUncertainty(){
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
 
-  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV6_DATA_Uncertainty_AK8PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer15_25nsV6_MC_Uncertainty_AK8PFchs.txt";
+  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Fall15_25nsV2_MC_Uncertainty_AK8PFchs.txt";
 
   ak8jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
