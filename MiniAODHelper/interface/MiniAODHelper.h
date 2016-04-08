@@ -165,7 +165,7 @@ class MiniAODHelper{
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&) const;
-  float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType, std::map<std::string,double> miniIso_calculation_params = {}) const;
+  float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType, std::map<std::string,double>* miniIso_calculation_params = 0) const;
   void AddMuonRelIso(pat::Muon&,const coneSize::coneSize, const corrType::corrType,std::string userFloatName="relIso") const;
   void AddMuonRelIso(std::vector<pat::Muon>&,const coneSize::coneSize, const corrType::corrType,std::string userFloatName="relIso") const;
   float GetElectronRelIso(const pat::Electron&) const;
@@ -211,7 +211,7 @@ class MiniAODHelper{
   template <typename T, typename S> std::vector<T> RemoveOverlaps( const std::vector<S>&, const std::vector<T>& );
   template <typename T, typename S> T RemoveOverlap( const std::vector<S>&, const T& );
 
-  template <typename T, typename S> double DeltaR( const S&, const T& );
+  template <typename T, typename S> double DeltaR( const S&, const T& ) const;
   template <typename T, typename S> std::vector<T> GetDifference( const std::vector<S>&, const std::vector<T>& );
   template <typename T, typename S> std::vector<T> GetUnion( const std::vector<S>&, const std::vector<T>& );
 
@@ -427,7 +427,7 @@ std::vector<PATObj1> MiniAODHelper::RemoveOverlaps( const std::vector<PATObj2>& 
 
 
 template <typename PATObj1, typename PATObj2> 
-double MiniAODHelper::DeltaR( const PATObj2& two, const PATObj1& one ){
+double MiniAODHelper::DeltaR( const PATObj2& two, const PATObj1& one ) const {
 
   double deltaR = reco::deltaR( one->eta(), one->phi(), two->eta(), two->phi() );
   return deltaR;

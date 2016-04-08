@@ -1110,7 +1110,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
 }
 
 //overloaded
-float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::map<std::string,double> miniIso_calculation_params) const
+float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::map<std::string,double> *miniIso_calculation_params) const
 {
   
   // !!! NOTE !!! rho used with Phys14 should be: fixedGridRhoFastjetAll
@@ -1217,15 +1217,16 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction);
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
       
-      miniIso_calculation_params.clear();
-      miniIso_calculation_params["miniAbsIsoCharged"] = pfIsoCharged;
-      miniIso_calculation_params["miniAbsIsoNeutral"] = pfIsoNeutral;
-      miniIso_calculation_params["rho"] = useRho;
-      miniIso_calculation_params["effArea"] = EffArea;
-      miniIso_calculation_params["miniIsoR"] = miniIsoR;
-      miniIso_calculation_params["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted; 
+      if (miniIso_calculation_params) {
+         miniIso_calculation_params->clear();
+         (*miniIso_calculation_params)["miniAbsIsoCharged"] = pfIsoCharged;
+         (*miniIso_calculation_params)["miniAbsIsoNeutral"] = pfIsoNeutral;
+         (*miniIso_calculation_params)["rho"] = useRho;
+         (*miniIso_calculation_params)["effArea"] = EffArea;
+         (*miniIso_calculation_params)["miniIsoR"] = miniIsoR;
+         (*miniIso_calculation_params)["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted; 
+      }
       break;
-      
     }
   return result;
 }

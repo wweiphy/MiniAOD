@@ -16,6 +16,12 @@
 class PUWeightProducer {
 public:
   PUWeightProducer() : namePileupSummaryInfo_("addPileupInfo") {}
+  PUWeightProducer(const std::string& fileNameMCNPU,
+		   const std::string& histNameMCNPU,
+		   const std::string& fileNameDataNPUEstimated,
+		   const std::string& histNameDataNPUEstimated) : namePileupSummaryInfo_("addPileupInfo") {
+    initWeights(fileNameMCNPU, histNameMCNPU, fileNameDataNPUEstimated, histNameDataNPUEstimated, false);
+  }
 
   // Return weight factor dependent on number of true PU interactions
   double operator()(const unsigned int npu) const;
@@ -28,7 +34,8 @@ public:
   void initWeights(const std::string& fileNameMCNPU,
 		   const std::string& histNameMCNPU,
 		   const std::string& fileNameDataNPUEstimated,
-		   const std::string& histNameDataNPUEstimated);
+		   const std::string& histNameDataNPUEstimated,
+		   bool verbose=true);
 
 
 private:
