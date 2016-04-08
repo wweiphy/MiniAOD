@@ -1007,25 +1007,25 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
      case tau::nonIso:
         passesID = passesID and \
                    tau.tauID("againstMuonLoose3") >= .5 and \
-                   tau.tauID("againstElectronVLooseMVA5") >= .5;
+                   tau.tauID("againstElectronVLooseMVA6") >= .5;
         passesIsolation = true;
         break;
      case tau::loose:
         passesID = passesID and \
                    tau.tauID("againstMuonLoose3") >= .5 and \
-                   tau.tauID("againstElectronVLooseMVA5") >= .5;
+                   tau.tauID("againstElectronVLooseMVA6") >= .5;
         passesIsolation = tau.tauID("byLooseCombinedIsolationDeltaBetaCorr3Hits") >= .5;
         break;
      case tau::medium:
         passesID = passesID and \
                    tau.tauID("againstMuonLoose3") >= .5 and \
-                   tau.tauID("againstElectronLooseMVA5") >= .5;
+                   tau.tauID("againstElectronLooseMVA6") >= .5;
         passesIsolation = tau.tauID("byMediumCombinedIsolationDeltaBetaCorr3Hits") >= .5;
         break;
      case tau::tight:
         passesID = passesID and \
                    tau.tauID("againstMuonTight3") >= .5 and \
-                   tau.tauID("againstElectronMediumMVA5") >= .5;
+                   tau.tauID("againstElectronMediumMVA6") >= .5;
         passesIsolation = tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits") >= .5;
         break;
   }
