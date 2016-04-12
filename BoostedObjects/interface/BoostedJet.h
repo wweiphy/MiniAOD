@@ -90,6 +90,15 @@ namespace boosted {
       // Subjet Filterjet Information
       std::vector<pat::Jet> subjets;
       std::vector<pat::Jet> filterjets;
+      
+      // Pruned Jet Information
+      std::vector<pat::Jet> prunedsubjets;
+      
+      // Soft Drop Jet Information
+      std::vector<pat::Jet> sdsubjets;
+      
+      // Soft Drop Z2 B1 Jet Information
+      std::vector<pat::Jet> sdz2b1subjets;
   };
 
   typedef std::vector<BoostedJet> BoostedJetCollection;
