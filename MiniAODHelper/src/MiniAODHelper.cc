@@ -621,19 +621,31 @@ MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& i
   for( std::vector<boosted::BoostedJet>::const_iterator it = inputBoostedJets.begin(), ed = inputBoostedJets.end(); it != ed; ++it ){
     boosted::BoostedJet outputBoostedJet = *it;
     
+    // Correct Fat Jet with AK8 Corrections
     outputBoostedJet.fatjet = GetCorrectedAK8Jet(outputBoostedJet.fatjet,event,setup,iSysType,doJES,false,corrFactor,uncFactor);
     
+    // Correct HTT Subjets and propagate to Top Jet
     outputBoostedJet.nonW = GetCorrectedJet(outputBoostedJet.nonW,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
     outputBoostedJet.W1   = GetCorrectedJet(outputBoostedJet.W1  ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
     outputBoostedJet.W2   = GetCorrectedJet(outputBoostedJet.W2  ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
     
-    outputBoostedJet.subjets    =  GetCorrectedJets(outputBoostedJet.subjets   ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
-    outputBoostedJet.filterjets =  GetCorrectedJets(outputBoostedJet.filterjets,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
-    
     outputBoostedJet.topjet.setP4(outputBoostedJet.nonW.p4()+outputBoostedJet.W1.p4()+outputBoostedJet.W2.p4());
     
+    // Correct SF Subjets and filtered Subjets
+    outputBoostedJet.subjets        = GetCorrectedJets(outputBoostedJet.subjets       ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
+    outputBoostedJet.filterjets     = GetCorrectedJets(outputBoostedJet.filterjets    ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
+    
+    // Correct Pruned Subjets
+    outputBoostedJet.prunedsubjets  = GetCorrectedJets(outputBoostedJet.prunedsubjets ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
+    
+    // Correct Soft Drop Subjets
+    outputBoostedJet.sdsubjets      = GetCorrectedJets(outputBoostedJet.sdsubjets     ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
+    
+    // Correct SoftDrop Z2 B1 Subjets
+    outputBoostedJet.sdz2b1subjets  = GetCorrectedJets(outputBoostedJet.sdz2b1subjets ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
+    
     // Correction of pruned mass
-    outputBoostedJet.prunedMass = outputBoostedJet.prunedMass * GetAK8JetCorrectionFactor(outputBoostedJet.fatjet,event,setup,iSysType,doJES,false,corrFactor,uncFactor);
+    outputBoostedJet.prunedMass     = outputBoostedJet.prunedMass * GetAK8JetCorrectionFactor(outputBoostedJet.fatjet,event,setup,iSysType,doJES,false,corrFactor,uncFactor);
     
     // Recalculation of fRec
     double _mtmass = 172.3;
@@ -683,6 +695,16 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
       boostedJet.W2 = pat::Jet(); 
     }
     
+    // Select SF Jets
+    // Select Subjets
+    std::vector<pat::Jet> subjets;
+    for( std::vector<pat::Jet>::const_iterator itSub = it->subjets.begin(), edSub = it->subjets.end(); itSub != edSub; ++itSub ){
+      if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) subjets.push_back(*itSub);
+    }
+    
+    boostedJet.subjets = subjets;
+    
+    // Select Filterjets
     std::vector<pat::Jet> filterjets;
     for( std::vector<pat::Jet>::const_iterator itFilt = it->filterjets.begin(), edFilt = it->filterjets.end(); itFilt != edFilt; ++itFilt ){
       if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
@@ -693,6 +715,30 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
     }
     
     boostedJet.filterjets = filterjets;
+    
+    // Select Pruned Subjets
+    std::vector<pat::Jet> prunedsubjets;
+    for( std::vector<pat::Jet>::const_iterator itSub = it->prunedsubjets.begin(), edSub = it->prunedsubjets.end(); itSub != edSub; ++itSub ){
+      if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) prunedsubjets.push_back(*itSub);
+    }
+    
+    boostedJet.prunedsubjets = prunedsubjets;
+    
+    // Select Soft Drop Subjets
+    std::vector<pat::Jet> sdsubjets;
+    for( std::vector<pat::Jet>::const_iterator itSub = it->sdsubjets.begin(), edSub = it->sdsubjets.end(); itSub != edSub; ++itSub ){
+      if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) sdsubjets.push_back(*itSub);
+    }
+    
+    boostedJet.sdsubjets = sdsubjets;
+    
+    // Select Pruned Subjets
+    std::vector<pat::Jet> sdz2b1subjets;
+    for( std::vector<pat::Jet>::const_iterator itSub = it->sdz2b1subjets.begin(), edSub = it->sdz2b1subjets.end(); itSub != edSub; ++itSub ){
+      if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) sdz2b1subjets.push_back(*itSub);
+    }
+    
+    boostedJet.sdz2b1subjets = sdz2b1subjets;
     
     selectedJets.push_back(boostedJet);
   }
