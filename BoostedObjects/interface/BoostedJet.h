@@ -34,6 +34,9 @@ namespace boosted {
 	      tau1Filtered(-99),
 	      tau2Filtered(-99),
 	      tau3Filtered(-99),
+	      tau1Softdrop(-99),
+	      tau2Softdrop(-99),
+	      tau3Softdrop(-99),
         qWeight(-99),
         qEpsilon(-99),
         qSigmaM(-99) {};
@@ -82,6 +85,9 @@ namespace boosted {
 	    double tau1Filtered;
 	    double tau2Filtered;
 	    double tau3Filtered;
+	    float tau1Softdrop;
+	    float tau2Softdrop;
+	    float tau3Softdrop;
       
       double qWeight;
       double qEpsilon;
