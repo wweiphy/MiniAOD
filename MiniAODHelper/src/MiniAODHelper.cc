@@ -1258,7 +1258,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 }
 
 //overloaded
-float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType, std::map<std::string,double> miniIso_calculation_params) const
+float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const coneSize::coneSize iconeSize, const corrType::corrType icorrType,const effAreaType::effAreaType ieffAreaType, std::map<std::string,double>* miniIso_calculation_params) const
 {
    //rho*EA corrections based on phys14
    //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
@@ -1361,13 +1361,15 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction);
       result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
 
-      miniIso_calculation_params.clear();
-      miniIso_calculation_params["miniAbsIsoCharged"] = pfIsoCharged;
-      miniIso_calculation_params["miniAbsIsoNeutral"] = pfIsoNeutral;
-      miniIso_calculation_params["rho"] = useRho;
-      miniIso_calculation_params["effArea"] = EffArea;
-      miniIso_calculation_params["miniIsoR"] = miniIsoR;
-      miniIso_calculation_params["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted;
+      if (miniIso_calculation_params) {
+         miniIso_calculation_params->clear();
+         (*miniIso_calculation_params)["miniAbsIsoCharged"] = pfIsoCharged;
+         (*miniIso_calculation_params)["miniAbsIsoNeutral"] = pfIsoNeutral;
+         (*miniIso_calculation_params)["rho"] = useRho;
+         (*miniIso_calculation_params)["effArea"] = EffArea;
+         (*miniIso_calculation_params)["miniIsoR"] = miniIsoR;
+         (*miniIso_calculation_params)["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted;
+      }
       break;
     }
   return result;
