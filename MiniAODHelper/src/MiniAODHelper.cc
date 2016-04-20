@@ -698,7 +698,8 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
     // Select SF Jets
     // Select Subjets
     std::vector<pat::Jet> subjets;
-    for( std::vector<pat::Jet>::const_iterator itSub = it->subjets.begin(), edSub = it->subjets.end(); itSub != edSub; ++itSub ){
+    std::vector<pat::Jet> tempjets = GetSortedByPt(it->subjets);
+    for( std::vector<pat::Jet>::const_iterator itSub = tempjets.begin(), edSub = tempjets.end(); itSub != edSub; ++itSub ){
       if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) subjets.push_back(*itSub);
     }
     
@@ -706,19 +707,19 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
     
     // Select Filterjets
     std::vector<pat::Jet> filterjets;
-    for( std::vector<pat::Jet>::const_iterator itFilt = it->filterjets.begin(), edFilt = it->filterjets.end(); itFilt != edFilt; ++itFilt ){
-      if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
+    tempjets = GetSortedByPt(it->filterjets);
+    for( std::vector<pat::Jet>::const_iterator itSub = tempjets.begin(), edSub = tempjets.end(); itSub != edSub; ++itSub ){
+      if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itSub);
+      
+      if(filterjets.size()>=3) break;
     }
-    
-    if(filterjets.size()<2){
-      filterjets.clear();
-    }
-    
+        
     boostedJet.filterjets = filterjets;
     
     // Select Pruned Subjets
     std::vector<pat::Jet> prunedsubjets;
-    for( std::vector<pat::Jet>::const_iterator itSub = it->prunedsubjets.begin(), edSub = it->prunedsubjets.end(); itSub != edSub; ++itSub ){
+    tempjets = GetSortedByPt(it->prunedsubjets);
+    for( std::vector<pat::Jet>::const_iterator itSub = tempjets.begin(), edSub = tempjets.end(); itSub != edSub; ++itSub ){
       if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) prunedsubjets.push_back(*itSub);
     }
     
@@ -726,7 +727,8 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
     
     // Select Soft Drop Subjets
     std::vector<pat::Jet> sdsubjets;
-    for( std::vector<pat::Jet>::const_iterator itSub = it->sdsubjets.begin(), edSub = it->sdsubjets.end(); itSub != edSub; ++itSub ){
+    tempjets = GetSortedByPt(it->sdsubjets);
+    for( std::vector<pat::Jet>::const_iterator itSub = tempjets.begin(), edSub = tempjets.end(); itSub != edSub; ++itSub ){
       if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) sdsubjets.push_back(*itSub);
     }
     
@@ -734,7 +736,8 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
     
     // Select Pruned Subjets
     std::vector<pat::Jet> sdz2b1subjets;
-    for( std::vector<pat::Jet>::const_iterator itSub = it->sdz2b1subjets.begin(), edSub = it->sdz2b1subjets.end(); itSub != edSub; ++itSub ){
+    tempjets = GetSortedByPt(it->sdz2b1subjets);
+    for( std::vector<pat::Jet>::const_iterator itSub = tempjets.begin(), edSub = tempjets.end(); itSub != edSub; ++itSub ){
       if( isGoodJet(*itSub, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) sdz2b1subjets.push_back(*itSub);
     }
     
