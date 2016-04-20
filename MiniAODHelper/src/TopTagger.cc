@@ -238,21 +238,22 @@ float TopTagger::GetTopTaggerOutput(const boosted::BoostedJet& boostedjet, bool 
         for(std::vector<string>::const_iterator itVarName=TMVAVarNames.begin();itVarName!=TMVAVarNames.end();++itVarName){
           int iVar = itVarName-TMVAVarNames.begin();
         
-          if(*itVarName=="TopJet_Top_M")                TMVAVars[iVar] = boostedjet.topjet.mass();                                                                                                         
-          else if(*itVarName=="TopJet_PrunedMass")      TMVAVars[iVar] = boostedjet.prunedMass;                                                                                                            
-          else if(*itVarName=="TopJet_UnfilteredMass")  TMVAVars[iVar] = boostedjet.unfilteredMass;                                                                                                        
-          else if(*itVarName=="TopJet_fRec")            TMVAVars[iVar] = boostedjet.fRec;                                                                                                                  
-          else if(*itVarName=="TopJet_DRoptRoptCalc")   TMVAVars[iVar] = boostedjet.Ropt-boostedjet.RoptCalc;                                                                                                  
-          else if(*itVarName=="TopJet_Tau21Filtered")   TMVAVars[iVar] = boostedjet.tau2Filtered/boostedjet.tau1Filtered;                                                                                      
-          else if(*itVarName=="TopJet_Tau32Filtered")   TMVAVars[iVar] = boostedjet.tau3Filtered/boostedjet.tau2Filtered;                                                                                      
-          else if(*itVarName=="TopJet_WM" || *itVarName=="TopJet_Wbtag_M")                    TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M();                                              
-          else if(*itVarName=="TopJet_BW1M" || *itVarName=="TopJet_BW1btag_M")                TMVAVars[iVar] = (subjets[0].p4()+subjets[1].p4()).M();                                              
-          else if(*itVarName=="TopJet_BW2M" || *itVarName=="TopJet_BW2btag_M")                TMVAVars[iVar] = (subjets[0].p4()+subjets[2].p4()).M();                                              
-          else if(*itVarName=="TopJet_BCSV" || *itVarName=="TopJet_Bbtag_CSV")                TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[0],btagger);                                       
-          else if(*itVarName=="TopJet_W1CSV" || *itVarName=="TopJet_W1btag_CSV")              TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[1],btagger);                                       
-          else if(*itVarName=="TopJet_W2CSV" || *itVarName=="TopJet_W2btag_CSV")              TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[2],btagger);                                       
-          else if(*itVarName=="TopJet_MRatio_WTop" || *itVarName=="TopJet_MRatio_Wbtag_Top")  TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M()/boostedjet.topjet.mass();                         
-          else if(*itVarName=="TopJet_Atan_BW1W2btag" || *itVarName=="TopJet_Atan_BW1W2btag") TMVAVars[iVar] = atan((subjets[0].p4()+subjets[1].p4()).M()/(subjets[0].p4()+subjets[2].p4()).M());
+          if(*itVarName=="BoostedJet_Top_M")                TMVAVars[iVar] = boostedjet.topjet.mass();                                                                                                         
+          else if(*itVarName=="BoostedJet_PrunedMass")      TMVAVars[iVar] = boostedjet.prunedMass;                                                                                                            
+          else if(*itVarName=="BoostedJet_UnfilteredMass")  TMVAVars[iVar] = boostedjet.unfilteredMass;                                                                                                        
+          else if(*itVarName=="BoostedJet_M")               TMVAVars[iVar] = boostedjet.fatjet.mass();                                                                                                        
+          else if(*itVarName=="BoostedJet_fRec")            TMVAVars[iVar] = boostedjet.fRec;                                                                                                                  
+          else if(*itVarName=="BoostedJet_DRoptRoptCalc")   TMVAVars[iVar] = boostedjet.Ropt-boostedjet.RoptCalc;                                                                                                  
+          else if(*itVarName=="BoostedJet_Tau21Filtered")   TMVAVars[iVar] = boostedjet.tau2Filtered/boostedjet.tau1Filtered;                                                                                      
+          else if(*itVarName=="BoostedJet_Tau32Filtered")   TMVAVars[iVar] = boostedjet.tau3Filtered/boostedjet.tau2Filtered;                                                                                      
+          else if(*itVarName=="BoostedJet_WM" || *itVarName=="BoostedJet_Wbtag_M")                    TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M();                                              
+          else if(*itVarName=="BoostedJet_BW1M" || *itVarName=="BoostedJet_BW1btag_M")                TMVAVars[iVar] = (subjets[0].p4()+subjets[1].p4()).M();                                              
+          else if(*itVarName=="BoostedJet_BW2M" || *itVarName=="BoostedJet_BW2btag_M")                TMVAVars[iVar] = (subjets[0].p4()+subjets[2].p4()).M();                                              
+          else if(*itVarName=="BoostedJet_BCSV" || *itVarName=="BoostedJet_Bbtag_CSV")                TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[0],btagger);                                       
+          else if(*itVarName=="BoostedJet_W1CSV" || *itVarName=="BoostedJet_W1btag_CSV")              TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[1],btagger);                                       
+          else if(*itVarName=="BoostedJet_W2CSV" || *itVarName=="BoostedJet_W2btag_CSV")              TMVAVars[iVar] = MiniAODHelper::GetJetCSV(subjets[2],btagger);                                       
+          else if(*itVarName=="BoostedJet_MRatio_WTop" || *itVarName=="BoostedJet_MRatio_Wbtag_Top")  TMVAVars[iVar] = (subjets[1].p4()+subjets[2].p4()).M()/boostedjet.topjet.mass();                         
+          else if(*itVarName=="BoostedJet_Atan_BW1W2btag" || *itVarName=="BoostedJet_Atan_BW1W2btag") TMVAVars[iVar] = atan((subjets[0].p4()+subjets[1].p4()).M()/(subjets[0].p4()+subjets[2].p4()).M());
           else std::cout << "Error! No matching Top Tagger Input Variable found!" << std:: endl;
         }
 
