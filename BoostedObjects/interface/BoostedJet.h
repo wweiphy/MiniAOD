@@ -36,7 +36,10 @@ namespace boosted {
 	      tau3Filtered(-99),
         qWeight(-99),
         qEpsilon(-99),
-        qSigmaM(-99) {};
+        qSigmaM(-99),
+        tau1Softdrop(-99),
+        tau2Softdrop(-99),
+        tau3Softdrop(-99) {};
       
       math::XYZTLorentzVector GetWJetVec() const{
         
@@ -99,9 +102,11 @@ namespace boosted {
       
       // Soft Drop Z2 B1 Jet Information
       std::vector<pat::Jet> sdz2b1subjets;
-      std::vector<double> tau1Softdrop;
-	    std::vector<double> tau2Softdrop;
-	    std::vector<double> tau3Softdrop;
+      
+      // Soft Drop Groomed N-Subjettiness
+      double tau1Softdrop;
+	    double tau2Softdrop;
+	    double tau3Softdrop;
 
   };
 
