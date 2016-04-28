@@ -8,6 +8,7 @@
 namespace boosted {
 
   enum JetType{ Top, Higgs, NA };
+  enum SubjetType{ SF_Sub, SF_Filter, Pruned, SD, SDZ2B1 };
   
   class BoostedJet {
     
