@@ -1036,7 +1036,7 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
 bool 
 MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint){
   
-  CheckVertexSetUp();
+//   CheckVertexSetUp();
   
   // Transverse momentum requirement
   if( iJet.pt() < iMinPt ) return false;
