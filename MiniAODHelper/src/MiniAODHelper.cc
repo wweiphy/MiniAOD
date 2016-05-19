@@ -126,6 +126,15 @@ void MiniAODHelper::SetPackedCandidates(const std::vector<pat::PackedCandidate> 
   clearVetos();
 }
 
+// Return packed cands collection
+std::vector<pat::PackedCandidate> MiniAODHelper::GetPackedCandidates(void){
+
+  std::vector<pat::PackedCandidate> packed_cands_collection = *allcands_;
+
+  if (packed_cands_collection.size() == 0) std::cout << "MiniAODHelper WARNING: packedCandidates are NOT set!" << std::endl;
+
+  return packed_cands_collection;
+}
 
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
