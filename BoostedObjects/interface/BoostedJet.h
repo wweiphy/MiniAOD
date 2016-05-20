@@ -15,11 +15,11 @@ namespace boosted {
     public:
     
       BoostedJet() :
-		    fatjet(pat::Jet()),
-        topjet(pat::Jet()),
-		    nonW(pat::Jet()),
-		    W1(pat::Jet()),
-		    W2(pat::Jet()),
+		    fatjet(pat::Jet(reco::PFJet())),
+        topjet(pat::Jet(reco::BasicJet())),
+		    nonW(pat::Jet(reco::PFJet())),
+		    W1(pat::Jet(reco::PFJet())),
+		    W2(pat::Jet(reco::PFJet())),
 		    fatjetMass(-99),
         fatjetPt(-99),
         fatjetEta(-99),

@@ -683,16 +683,16 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
     // Select Fat Jet
     if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
     
-    // Select Top Jet Part
-    if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
-        isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
-        isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
+    // Select HTTV2 Subjets
+    if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, iJetID, '-') &&
+        isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, iJetID, '-') &&
+        isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, iJetID, '-'))
       )
     {
-      boostedJet.topjet = pat::Jet();
-      boostedJet.nonW = pat::Jet();
-      boostedJet.W1 = pat::Jet();
-      boostedJet.W2 = pat::Jet(); 
+      boostedJet.topjet = pat::Jet(reco::BasicJet());
+      boostedJet.nonW = pat::Jet(reco::PFJet());
+      boostedJet.W1 = pat::Jet(reco::PFJet());
+      boostedJet.W2 = pat::Jet(reco::PFJet()); 
     }
     
     // Select SF Jets
