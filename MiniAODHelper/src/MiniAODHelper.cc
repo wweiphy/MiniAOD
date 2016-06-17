@@ -147,7 +147,7 @@ void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
-  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt";
+  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_Uncertainty_AK4PFchs.txt";
 
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
@@ -155,7 +155,7 @@ void MiniAODHelper::SetJetCorrectorUncertainty(){
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
 
-  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Fall15_25nsV2_MC_Uncertainty_AK8PFchs.txt";
+  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_Uncertainty_AK8PFchs.txt";
 
   ak8jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
@@ -166,9 +166,9 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
 
   // Create the JetCorrectorParameter objects, the order does not matter.
   //JetCorrectorParameters *ResJetPar = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/"); 
-  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L3Absolute_AK4PFchs.txt");
-  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L2Relative_AK4PFchs.txt");
-  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L1FastJet_AK4PFchs.txt");
+  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_L3Absolute_AK4PFchs.txt");
+  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_L2Relative_AK4PFchs.txt");
+  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_L1FastJet_AK4PFchs.txt");
   //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!! 
   std::vector<JetCorrectorParameters> vPar;
   vPar.push_back(*L1JetPar);
