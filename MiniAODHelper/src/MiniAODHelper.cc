@@ -148,11 +148,14 @@ void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
 
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
-
   std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt";
 
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+}
 
+void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& params)
+{
+   jecUnc_ = new JetCorrectionUncertainty(params);
 }
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
@@ -305,7 +308,7 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
 
     if (corrector) {
        scale = corrector->correction(outputJet, event, setup);
-    } else {
+    } else if (!use_corrected_jets) {
        edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
     }
 
@@ -373,7 +376,7 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
 
     if (corrector) {
        scale = corrector->correction(outputJet, event, setup);
-    } else {
+    } else if (!use_corrected_jets) {
        edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
     }
 

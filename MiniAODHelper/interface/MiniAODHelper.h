@@ -137,9 +137,11 @@ class MiniAODHelper{
   void SetUpPUWeights(const std::string& fileNameMCNPU,const std::string& histNameMCNPU,const std::string& fileNameDataNPUEstimated,const std::string& histNameDataNPUEstimated);
   void SetVertex(const reco::Vertex&);
   void SetRho(double);
+  void UseCorrectedJets() { use_corrected_jets = true; };
   void SetJetCorrector(const JetCorrector*);
   void SetBoostedJetCorrector(const JetCorrector*);
   void SetJetCorrectorUncertainty();
+  void SetJetCorrectorUncertainty(const JetCorrectorParameters&);
   void SetBoostedJetCorrectorUncertainty();
   void SetFactorizedJetCorrector();
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
@@ -222,6 +224,7 @@ class MiniAODHelper{
   bool vertexIsSet;
   bool rhoIsSet;
   bool factorizedjetcorrectorIsSet;
+  bool use_corrected_jets = false;
   
   string era;
   int sampleNumber;
