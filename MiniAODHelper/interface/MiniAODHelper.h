@@ -221,8 +221,6 @@ class MiniAODHelper{
   bool isSetUp;
   bool vertexIsSet;
   bool rhoIsSet;
-  bool jetcorrectorIsSet;
-  bool boostedjetcorrectorIsSet;
   bool factorizedjetcorrectorIsSet;
   
   string era;
@@ -240,10 +238,10 @@ class MiniAODHelper{
   std::vector<const reco::Candidate *> vetos_;
   reco::Vertex vertex;
 
-  const JetCorrector* corrector;
-  const JetCorrector* ak8corrector;
+  const JetCorrector* corrector = 0;
+  const JetCorrector* ak8corrector = 0;
   FactorizedJetCorrector* useJetCorrector;
-  JetCorrectionUncertainty *jecUnc_;
+  JetCorrectionUncertainty *jecUnc_ = 0;
   JetCorrectionUncertainty *ak8jecUnc_;
   PUWeightProducer puWeightProducer_;
 
