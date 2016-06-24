@@ -15,6 +15,7 @@
 <use name="DataFormats/RecoCandidate"/>
 <use name="DataFormats/VertexReco"/>
 <use name="PhysicsTools/Utilities"/>
+<use name="PhysicsTools/Heppy"/>
 <use name="SimDataFormats/PileupSummaryInfo"/>
 <use name="HLTrigger/HLTcore"/>
 <use name="JetMETCorrections/Objects"/>

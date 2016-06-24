@@ -63,6 +63,8 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
+#include "PhysicsTools/Heppy/interface/IsolationComputer.h"
+
 #include "MiniAOD/MiniAODHelper/interface/PUWeightProducer.h"
 
 
@@ -82,7 +84,6 @@ namespace sysType{enum sysType{NA, JERup, JERdown, JESup, JESdown, hfSFup, hfSFd
 namespace jetID{		enum jetID{			none, jetPU, jetMinimal, jetLooseAOD, jetLoose, jetTight, jetMETcorrection }; }
 namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight }; }
 namespace tau { enum ID { nonIso, loose, medium, tight }; }
-namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, selfVetoFirst=2};}
 
 namespace muonID{
    enum muonID{
@@ -144,7 +145,7 @@ class MiniAODHelper{
   void SetJetCorrectorUncertainty(const JetCorrectorParameters&);
   void SetBoostedJetCorrectorUncertainty();
   void SetFactorizedJetCorrector();
-  void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
+  void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., float dxy_thresh=9999., bool also_leptons=false) { iso_comp_.setPackedCandidates(all, fromPV_thresh, dz_thresh, dxy_thresh, also_leptons); };
   
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
@@ -160,7 +161,7 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   std::vector<boosted::BoostedJet> GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& inputBoostedJets, const edm::Event&, const edm::EventSetup&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
   std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID);
-  std::vector<pat::PackedCandidate> GetPackedCandidates(void);
+  std::vector<pat::PackedCandidate> GetPackedCandidates() { return iso_comp_.GetPackedCandidates(); };
   bool passesMuonPOGIdTight(const pat::Muon&);
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
   bool isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID);
@@ -188,7 +189,6 @@ class MiniAODHelper{
   bool PassesMVAid90(const pat::Electron&) const;
   void addVetos(const reco::Candidate &cand);
   void clearVetos();
-  float isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId=-1) const;
   int ttHFCategorization(const std::vector<reco::GenJet>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<reco::GenParticle>&, const std::vector<std::vector<int> >&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const double, const double);
   int GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >&);
   std::vector<pat::Jet> GetDeltaRCleanedJets(const std::vector<pat::Jet>&, const std::vector<pat::Muon>&, const std::vector<pat::Electron>&, const double);
@@ -235,8 +235,6 @@ class MiniAODHelper{
   float CSVLwp, CSVMwp, CSVTwp;
 
   double useRho;
-  const std::vector<pat::PackedCandidate> * allcands_;
-  std::vector<const pat::PackedCandidate *> charged_, neutral_, pileup_;
   //  mutable std::vector<float> weights_;
   std::vector<const reco::Candidate *> vetos_;
   reco::Vertex vertex;
@@ -252,6 +250,12 @@ class MiniAODHelper{
 
   inline void CheckSetUp() const { if(!isSetUp){ ThrowFatalError("MiniAODHelper not yet set up."); } };
   inline void CheckVertexSetUp() const { if(!vertexIsSet){ ThrowFatalError("Vertex is not set."); } };
+
+   class IsoComputer : public heppy::IsolationComputer {
+      public:
+         std::vector<pat::PackedCandidate> GetPackedCandidates() { return std::vector<pat::PackedCandidate>(*allcands_); };
+   };
+   IsoComputer iso_comp_;
 
 
  private :

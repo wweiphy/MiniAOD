@@ -80,62 +80,6 @@ void MiniAODHelper::SetRho(double inputRho){
 
 
 // Set up parameters one by one
-
-namespace {
-  struct ByEta {
-    bool operator()(const pat::PackedCandidate *c1, const pat::PackedCandidate *c2) const {
-      return c1->eta() < c2->eta();
-    }
-    bool operator()(float c1eta, const pat::PackedCandidate *c2) const {
-      return c1eta < c2->eta();
-    }
-    bool operator()(const pat::PackedCandidate *c1, float c2eta) const {
-      return c1->eta() < c2eta;
-    }
-  };
-}
-
-// Set up parameters one by one
-void MiniAODHelper::SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh, float dz_thresh, bool also_leptons){
-
-  allcands_ = &all;
-  charged_.clear(); neutral_.clear(); pileup_.clear();
-  for (const pat::PackedCandidate &p : all) {
-    if (p.charge() == 0) {
-      neutral_.push_back(&p);
-    } 
-    else { 
-
-      if ( (abs(p.pdgId()) == 211 ) || ( also_leptons && ((abs(p.pdgId()) == 11 ) || (abs(p.pdgId()) == 13 )) ) )  {
-	
-	if (p.fromPV() > fromPV_thresh && fabs(p.dz()) < dz_thresh ) {
-	  charged_.push_back(&p);
-	} 
-	else {
-	  pileup_.push_back(&p);
-	}
-      }
-    }
-  }
-  //  if (weightCone_ > 0) weights_.resize(neutral_.size());
-  //  std::fill(weights_.begin(), weights_.end(), -1.f);
-  std::sort(charged_.begin(), charged_.end(), ByEta());
-  std::sort(neutral_.begin(), neutral_.end(), ByEta());
-  std::sort(pileup_.begin(),  pileup_.end(),  ByEta());
-  clearVetos();
-}
-
-// Return packed cands collection
-std::vector<pat::PackedCandidate> MiniAODHelper::GetPackedCandidates(void){
-
-  std::vector<pat::PackedCandidate> packed_cands_collection = *allcands_;
-
-  if (packed_cands_collection.size() == 0) std::cout << "MiniAODHelper WARNING: packedCandidates are NOT set!" << std::endl;
-
-  return packed_cands_collection;
-}
-
-// Set up parameters one by one
 void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
   corrector = iCorrector;
 }
@@ -1206,8 +1150,8 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 
     case coneSize::miniIso:
       double miniIsoR = 10.0/min(max(float(iMuon.pt()), float(50.)),float(200.));
-      pfIsoCharged = isoSumRaw(charged_, iMuon, miniIsoR, 0.0001, 0.0, SelfVetoPolicy::selfVetoAll);
-      pfIsoNeutral = isoSumRaw(neutral_, iMuon, miniIsoR, 0.01, 0.5, SelfVetoPolicy::selfVetoAll);
+      pfIsoCharged = iso_comp_.chargedAbsIso(iMuon, miniIsoR, 0.0001, 0.0);
+      pfIsoNeutral = iso_comp_.neutralAbsIsoRaw(iMuon, miniIsoR, 0.01, 0.5);
       switch(icorrType)
 	{
 	case corrType::rhoEA:
@@ -1228,7 +1172,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
 	  break;
 	case corrType::deltaBeta: 
-	  double miniAbsIsoPU = isoSumRaw(pileup_, iMuon, miniIsoR, 0.01, 0.5, SelfVetoPolicy::selfVetoAll);
+	  double miniAbsIsoPU = iso_comp_.puAbsIso(iMuon, miniIsoR, 0.01, 0.5, IsoComputer::selfVetoAll);
 	  correction = 0.5*miniAbsIsoPU;
 	  break;
 	}
@@ -1343,8 +1287,9 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	  innerR_nu = 0.08;
 	}
       
-      pfIsoCharged = isoSumRaw(charged_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
-      pfIsoNeutral = isoSumRaw(neutral_, iElectron, miniIsoR, innerR_nu, 0.0, SelfVetoPolicy::selfVetoNone, 22)+isoSumRaw(neutral_, iElectron, miniIsoR, 0.0, 0.0, SelfVetoPolicy::selfVetoNone, 130);
+      pfIsoCharged = iso_comp_.chargedAbsIso(iElectron, miniIsoR, innerR_ch, 0.0, IsoComputer::selfVetoNone);
+      pfIsoNeutral = iso_comp_.photonAbsIsoRaw(iElectron, miniIsoR, innerR_nu, 0.0, IsoComputer::selfVetoNone)
+         + iso_comp_.neutralHadAbsIsoRaw(iElectron, miniIsoR, 0.0, 0.0, IsoComputer::selfVetoNone);
       switch(icorrType)
 	{
 	case corrType::rhoEA:
@@ -1373,7 +1318,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
 	  break;
 	case corrType::deltaBeta: 
-	  double miniAbsIsoPU = isoSumRaw(pileup_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
+	  double miniAbsIsoPU = iso_comp_.puAbsIso(iElectron, miniIsoR, innerR_ch, 0.0, IsoComputer::selfVetoNone);
 	  correction = 0.5*miniAbsIsoPU;
 	  break;
 	}
@@ -1810,43 +1755,6 @@ void MiniAODHelper::addVetos(const reco::Candidate &cand) {
 
 void MiniAODHelper::clearVetos() {
   vetos_.clear();
-}
-
-float MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId) const
-{
-  float dR2 = dR*dR, innerR2 = innerR*innerR;
-  
-  std::vector<const reco::Candidate *> vetos(vetos_);
-  for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
-    if (selfVeto == SelfVetoPolicy::selfVetoNone) break;
-    const reco::CandidatePtr &cp = cand.sourceCandidatePtr(i);
-    if (cp.isNonnull() && cp.isAvailable()) {
-      vetos.push_back(&*cp);
-      if (selfVeto == SelfVetoPolicy::selfVetoFirst) break;
-    }
-  }
-  
-  typedef std::vector<const pat::PackedCandidate *>::const_iterator IT;
-  IT candsbegin = std::lower_bound(cands.begin(), cands.end(), cand.eta() - dR, ByEta());
-  IT candsend = std::upper_bound(candsbegin, cands.end(), cand.eta() + dR, ByEta());
-  
-  double isosum = 0;
-  for (IT icharged = candsbegin; icharged < candsend; ++icharged) {
-    // pdgId
-    if (pdgId > 0 && abs((*icharged)->pdgId()) != pdgId) continue;
-    // threshold
-    if (threshold > 0 && (*icharged)->pt() < threshold) continue;
-    // cone
-    float mydr2 = reco::deltaR2(**icharged, cand);
-    if (mydr2 >= dR2 || mydr2 < innerR2) continue;
-    // veto
-    if (std::find(vetos.begin(), vetos.end(), *icharged) != vetos.end()) {
-      continue;
-    }
-    // add to sum
-    isosum += (*icharged)->pt();
-  }
-  return isosum;
 }
 
 //// tt+X categorization -----------------------------
