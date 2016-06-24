@@ -197,7 +197,9 @@ class MiniAODHelper{
     FullHadCh = 3
   };
   // Top quarks "top->W->tau" are regarded as "leptonically decaying top quark" regardless of tau decay (tau->e/mu/had).
-  TTbarDecayMode GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles);
+  TTbarDecayMode GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles , 
+			       TLorentzVector * top =0 , 
+			       TLorentzVector * antitop =0 );
 
   double getJERfactor( const int, const double, const double, const double );
   std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
