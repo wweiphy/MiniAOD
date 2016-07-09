@@ -298,7 +298,6 @@ CSVHelper::getCSVWeight(const std::vector<double>& jetPts,
       if(iPt>=nHFptBins_){
 	iPt=nHFptBins_-1;
       }
-      std::cout << "AAA: " << iSysHF << ": " << iPt << std::endl;
       const int useCSVBin = (csv >= 0.) ? h_csv_wgt_hf.at(iSysHF).at(iPt)->FindBin(csv) : 1;
       const double iCSVWgtHF = h_csv_wgt_hf.at(iSysHF).at(iPt)->GetBinContent(useCSVBin);
       if (iCSVWgtHF != 0)
@@ -309,7 +308,6 @@ CSVHelper::getCSVWeight(const std::vector<double>& jetPts,
       if(iPt>=nHFptBins_){
 	iPt=nHFptBins_-1;
       }
-      std::cout << "BBB: " << iSysC << ": " << iPt << std::endl;
       const int useCSVBin = (csv >= 0.) ? c_csv_wgt_hf.at(iSysC).at(iPt)->FindBin(csv) : 1;
       const double iCSVWgtC = c_csv_wgt_hf.at(iSysC).at(iPt)->GetBinContent(useCSVBin);
       if (iCSVWgtC != 0)
@@ -317,7 +315,6 @@ CSVHelper::getCSVWeight(const std::vector<double>& jetPts,
     } else {
       if (iPt >= 3)
 	iPt = 3; /// [30-40], [40-60] and [60-10000] only 3 Pt bins for lf
-      std::cout << "CCC: " << iSysLF << ": " << iPt << ": " << iEta << std::endl;
       const int useCSVBin = (csv >= 0.) ? h_csv_wgt_lf.at(iSysLF).at(iPt).at(iEta)->FindBin(csv) : 1;
       const double iCSVWgtLF = h_csv_wgt_lf.at(iSysLF).at(iPt).at(iEta)->GetBinContent(useCSVBin);
       if (iCSVWgtLF != 0)
