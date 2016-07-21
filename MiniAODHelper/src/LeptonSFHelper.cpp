@@ -7,6 +7,9 @@ LeptonSFHelper::LeptonSFHelper( ){
 
   SetElectronHistos( );
   SetMuonHistos( );
+  SetElectronElectronHistos( );
+  SetMuonMuonHistos( );
+  SetElectronMuonHistos( );
 
   electronMaxPt = 150;
   muonMaxPt = 115;
@@ -41,8 +44,11 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   float MuonTriggerSF = 1.0;
   float MuonTriggerSF_Up = 1.0;
   float MuonTriggerSF_Down = 1.0;
+  float ElectronElectronTriggerSF = 1.0;
+  float MuonMuonTriggerSF = 1.0;
+  float ElectronMuonTriggerSF = 1.0;
 
-
+ 
   for (auto Electron: Electrons){ //Electron is of type pat::Electron
 
     ElectronIDSF = ElectronIDSF * GetElectronSF(Electron.pt(), Electron.eta(), 0, "ID");
@@ -72,6 +78,34 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
     MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "Trigger");
 
   }
+  
+  //std::cout << "Anzahl El plus Mu " << Electrons.size()+Muons.size() << std::endl;
+  
+  if(Electrons.size()+Muons.size()==2) {
+    if(Electrons.size()==2) {
+      
+	//std::cout << "zwei Elektronen ! " << std::endl;
+	ElectronElectronTriggerSF = ElectronElectronTriggerSF * GetElectronElectronSF(Electrons.at(0).eta(), Electrons.at(1).eta(), 0, "Trigger");
+
+      
+    }
+    else if(Muons.size()==2) {
+      
+	//std::cout << "zwei Muonen ! " << std::endl;
+	MuonMuonTriggerSF = MuonMuonTriggerSF * GetMuonMuonSF(Muons.at(0).eta(), Muons.at(1).eta(), 0, "Trigger");
+
+      
+    }
+    else {
+      
+	//std::cout << "ein Ele und ein Mu ! " << std::endl;
+	ElectronMuonTriggerSF = ElectronMuonTriggerSF * GetElectronMuonSF(Electrons.at(0).eta(), Muons.at(0).eta(), 0, "Trigger");
+
+      
+    }
+  }
+  
+  //std::cout << ElectronElectronTriggerSF << "  " << MuonMuonTriggerSF << "  " << ElectronMuonTriggerSF << std::endl;
 
   ScaleFactorMap["ElectronSFID"] = ElectronIDSF;
   ScaleFactorMap["ElectronSFID_Up"] = ElectronIDSF_Up;
@@ -82,6 +116,7 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   ScaleFactorMap["ElectronSFTrigger"] = ElectronTriggerSF;
   ScaleFactorMap["ElectronSFTrigger_Up"] = ElectronTriggerSF_Up;
   ScaleFactorMap["ElectronSFTrigger_Down"] = ElectronTriggerSF_Down;
+  ScaleFactorMap["ElectronElectronTriggerSF"] =ElectronElectronTriggerSF;
 
   ScaleFactorMap["MuonSFID"] = MuonIDSF;
   ScaleFactorMap["MuonSFID_Up"] = MuonIDSF_Up;
@@ -92,8 +127,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   ScaleFactorMap["MuonSFTrigger"] = MuonTriggerSF;
   ScaleFactorMap["MuonSFTrigger_Up"] = MuonTriggerSF_Up;
   ScaleFactorMap["MuonSFTrigger_Down"] = MuonTriggerSF_Down;
+  ScaleFactorMap["MuonMuonTriggerSF"] = MuonMuonTriggerSF;
 
-
+  ScaleFactorMap["ElectronMuonTriggerSF"] = ElectronMuonTriggerSF;
 
   ScaleFactorMap["ElectronSF"]= ElectronIDSF * ElectronIsoSF * ElectronTriggerSF;
   ScaleFactorMap["ElectronSF_Up"]= ElectronIDSF_Up * ElectronIsoSF_Up * ElectronTriggerSF_Up;
@@ -243,13 +279,59 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
 
 
 }
+float LeptonSFHelper::GetElectronElectronSF(  float electronEta1 , float electronEta2 , int syst , std::string type  ) {
+  
+  int thisBin=0;
+  
+  float searchEta1=fabs(electronEta1);
+  float searchEta2=fabs(electronEta2);
+  
+  float nomval = 0;
+  if ( type == "Trigger" ){
+
+    thisBin = h_ele_ele_TRIGGER_abseta_abseta->FindBin( searchEta1 , searchEta2 );
+    nomval = h_ele_ele_TRIGGER_abseta_abseta->GetBinContent( thisBin );
+
+  }
+  return nomval;
+}
+float LeptonSFHelper::GetMuonMuonSF(  float muonEta1 , float muonEta2 , int syst , std::string type  ) {
+  int thisBin=0;
+  
+  float searchEta1=fabs(muonEta1);
+  float searchEta2=fabs(muonEta2);
+  
+  float nomval = 0;
+  if ( type == "Trigger" ){
+
+    thisBin = h_mu_mu_TRIGGER_abseta_abseta->FindBin( searchEta1 , searchEta2 );
+    nomval = h_mu_mu_TRIGGER_abseta_abseta->GetBinContent( thisBin );
+
+  }
+  return nomval;
+}
+float LeptonSFHelper::GetElectronMuonSF(  float electronEta , float muonEta , int syst , std::string type  ) {
+  int thisBin=0;
+  
+  float searchEta1=fabs(electronEta);
+  float searchEta2=fabs(muonEta);
+  
+  float nomval = 0;
+  if ( type == "Trigger" ){
+
+    thisBin = h_ele_mu_TRIGGER_abseta_abseta->FindBin( searchEta1 , searchEta2 );
+    nomval= h_ele_mu_TRIGGER_abseta_abseta->GetBinContent( thisBin );
+
+  }
+  return nomval;
+}
 //PRIVATE
 
 void LeptonSFHelper::SetElectronHistos( ){
 
   std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "ScaleFactor_GsfElectronToRECO_passingTrigWP80.txt.egamma_SF2D.root";
   std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "eleTrig_SF.root";
-  std::string ISOinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "Isolation_SF.root";
+  std::string ISOinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "eleRECO.txt.egamma_SF2D.root";
 
   TFile *f_IDSF = new TFile(std::string(IDinputFile).c_str(),"READ");
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
@@ -257,15 +339,15 @@ void LeptonSFHelper::SetElectronHistos( ){
 
   h_ele_ID_abseta_pt_ratio = (TH2F*)f_IDSF->Get("EGamma_SF2D"); 
   h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_TRIGGERSF->Get("h_eleTrig_SF");
-  h_ele_ISO_abseta_pt_ratio = (TH2F*)f_ISOSF->Get("IsolationSF");
+  h_ele_ISO_abseta_pt_ratio = (TH2F*)f_ISOSF->Get("EGamma_SF2D");
 
 }
 
 void LeptonSFHelper::SetMuonHistos( ){
   
-  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "MuonID_Z_RunCD_Reco76X_Feb15.root";
+  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "MuonID_Z_2016runB_2p6fb.root";
   std::string TRIGGERinputFile =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "SingleMuonTrigger_Z_RunCD_Reco76X_Feb15.root";
-  std::string ISOinputFile =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "/MuonIso_Z_RunCD_Reco76X_Feb15.root";
+  std::string ISOinputFile =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "MuonISO_Z_2016runB_2p6fb.root";
 
   TFile *f_IDSF = new TFile(std::string(IDinputFile).c_str(),"READ");
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
@@ -276,4 +358,28 @@ void LeptonSFHelper::SetMuonHistos( ){
   h_mu_TRIGGER_abseta_pt_ratio4p2 = (TH2F*)f_TRIGGERSF->Get("runD_IsoMu20_OR_IsoTkMu20_HLTv4p2_PtEtaBins/abseta_pt_ratio");
   h_mu_ISO_abseta_pt_ratio = (TH2F*)f_ISOSF->Get("MC_NUM_TightRelIso_DEN_TightID_PAR_pt_spliteta_bin1/abseta_pt_ratio");
   
+}
+
+void LeptonSFHelper::SetElectronElectronHistos( ){
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "triggerSummary_ee.root";
+  
+  TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
+  
+  h_ele_ele_TRIGGER_abseta_abseta = (TH2F*)f_TRIGGERSF->Get("scalefactor_eta2d_with_syst");
+}
+
+void LeptonSFHelper::SetMuonMuonHistos( ){
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "triggerSummary_mumu.root";
+  
+  TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
+  
+  h_mu_mu_TRIGGER_abseta_abseta = (TH2F*)f_TRIGGERSF->Get("scalefactor_eta2d_with_syst");
+}
+
+void LeptonSFHelper::SetElectronMuonHistos( ){
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "triggerSummary_emu.root";
+  
+  TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
+  
+  h_ele_mu_TRIGGER_abseta_abseta = (TH2F*)f_TRIGGERSF->Get("scalefactor_eta2d_with_syst");
 }

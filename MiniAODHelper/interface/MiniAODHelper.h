@@ -200,7 +200,8 @@ class MiniAODHelper{
   TTbarDecayMode GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles , 
 			       TLorentzVector * top =0 , 
 			       TLorentzVector * antitop =0 );
-
+  
+  bool jetdPtMatched(const pat::Jet& inputJet);
   double getJERfactor( const int, const double, const double, const double );
   std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
   // Return weight factor dependent on number of true PU interactions

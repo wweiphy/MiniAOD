@@ -147,7 +147,7 @@ void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
-  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_Uncertainty_AK4PFchs.txt";
+  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt";
 
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
@@ -155,7 +155,7 @@ void MiniAODHelper::SetJetCorrectorUncertainty(){
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
 
-  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_Uncertainty_AK8PFchs.txt";
+  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK8PFchs.txt";
 
   ak8jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
@@ -166,9 +166,9 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
 
   // Create the JetCorrectorParameter objects, the order does not matter.
   //JetCorrectorParameters *ResJetPar = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/"); 
-  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_L3Absolute_AK4PFchs.txt");
-  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_L2Relative_AK4PFchs.txt");
-  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV3_MC_L1FastJet_AK4PFchs.txt");
+  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L3Absolute_AK4PFchs.txt");
+  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L2Relative_AK4PFchs.txt");
+  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L1FastJet_AK4PFchs.txt");
   //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!! 
   std::vector<JetCorrectorParameters> vPar;
   vPar.push_back(*L1JetPar);
@@ -328,7 +328,7 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() ){
+    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
       }
@@ -369,6 +369,7 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
 
     outputJet.scaleEnergy( scale*corrFactor );
     factor *= scale*corrFactor;
+
     
     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
 
@@ -393,7 +394,7 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() ){
+    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
       }
@@ -455,7 +456,7 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() ){
+    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
       }
@@ -520,7 +521,7 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() ){
+    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
       }
@@ -2336,6 +2337,46 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 
 
 /// JER function
+
+bool MiniAODHelper::jetdPtMatched(const pat::Jet& inputJet) {
+  std::ifstream infile("MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt");
+  double eta_min;
+  double eta_max;
+  double rho_min;
+  double rho_max;
+  double dummy;
+  double pt_min;
+  double pt_max;
+  double par0;
+  double par1;
+  double par2;
+  double par3;
+  double jet_pt=inputJet.pt();
+  double jet_rho=useRho;
+  double jet_eta=inputJet.eta();
+  double genjet_pt=inputJet.genJet()->pt();
+  //int i=0;
+  while (infile>>eta_min>>eta_max>>rho_min>>rho_max>>dummy>>pt_min>>pt_max>>par0>>par1>>par2>>par3) {
+    //cout << "eta min " << eta_min << "  " << "eta_max " << eta_max << endl;
+    if(jet_eta<eta_max && jet_eta>eta_min && jet_rho<rho_max && jet_rho>rho_min) {
+      //cout << "found matching entry in JER file in line #" << i << endl;
+      if(jet_pt<pt_min) {jet_pt=pt_min;}
+      if(jet_pt>pt_max) {jet_pt=pt_max;}
+      double sigma_mc=sqrt(par0*fabs(par0)/(jet_pt*jet_pt)+par1*par1*pow(jet_pt,par3)+par2*par2);
+      //cout << "|jet_pt-genjet_pt|=" << fabs(jet_pt-genjet_pt) << "  3*sigma_mc*jet_pt=" << 3*sigma_mc*jet_pt << endl;
+      if(fabs(jet_pt-genjet_pt)<3*sigma_mc*jet_pt) {
+	//cout << "#############################################################" << endl;
+	//cout << "JER dPt condition is satisfied" << endl;
+	//cout << "#############################################################" << endl;
+	return true;
+      }
+    }
+    //i++;
+  }
+  //cout << "JER dPt conditon is not satisfied" << endl;
+  return false;
+}
+
 double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA, const double genjetPT, const double recojetPT){
 
   // CheckSetUp();
@@ -2346,43 +2387,43 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
   double extrauncertainty=1.5;
   //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
   if( jetAbsETA<0.5 ){ 
-    scale_JER = 1.095; scale_JERup = 1.095 + 0.018*extrauncertainty; scale_JERdown = 1.095 - 0.018*extrauncertainty;
+    scale_JER = 1.122; scale_JERup = 1.122 + 0.026*extrauncertainty; scale_JERdown = 1.122 - 0.026*extrauncertainty;
   }
   else if( jetAbsETA<0.8 ){ 
-    scale_JER = 1.120; scale_JERup = 1.120 + 0.028*extrauncertainty; scale_JERdown = 1.120 - 0.028*extrauncertainty;
+    scale_JER = 1.167; scale_JERup = 1.167 + 0.048*extrauncertainty; scale_JERdown = 1.167 - 0.048*extrauncertainty;
   }
   else if( jetAbsETA<1.1 ){ 
-    scale_JER = 1.097; scale_JERup = 1.097 + 0.017*extrauncertainty; scale_JERdown = 1.097 - 0.017*extrauncertainty;
+    scale_JER = 1.168; scale_JERup = 1.168 + 0.046*extrauncertainty; scale_JERdown = 1.168 - 0.046*extrauncertainty;
   }
   else if( jetAbsETA<1.3 ){ 
-    scale_JER = 1.103; scale_JERup = 1.103 + 0.033*extrauncertainty; scale_JERdown = 1.103 - 0.033*extrauncertainty;
+    scale_JER = 1.029; scale_JERup = 1.029 + 0.066*extrauncertainty; scale_JERdown = 1.029 - 0.066*extrauncertainty;
   }
   else if( jetAbsETA<1.7 ){ 
-    scale_JER = 1.118; scale_JERup = 1.118 + 0.014*extrauncertainty; scale_JERdown = 1.118 - 0.014*extrauncertainty;
+    scale_JER = 1.115; scale_JERup = 1.115 + 0.030*extrauncertainty; scale_JERdown = 1.115 - 0.030*extrauncertainty;
   }
   else if( jetAbsETA<1.9 ){ 
-    scale_JER = 1.100; scale_JERup = 1.100 + 0.033*extrauncertainty; scale_JERdown = 1.100 - 0.033*extrauncertainty;
+    scale_JER = 1.041; scale_JERup = 1.041 + 0.062*extrauncertainty; scale_JERdown = 1.041 - 0.062*extrauncertainty;
   }
   else if( jetAbsETA<2.1 ){ 
-    scale_JER = 1.162; scale_JERup = 1.162 + 0.044*extrauncertainty; scale_JERdown = 1.162 - 0.044*extrauncertainty;
+    scale_JER = 1.167; scale_JERup = 1.167 + 0.086*extrauncertainty; scale_JERdown = 1.167 - 0.086*extrauncertainty;
   }
   else if( jetAbsETA<2.3 ){ 
-    scale_JER = 1.160; scale_JERup = 1.160 + 0.048*extrauncertainty; scale_JERdown = 1.160 - 0.048*extrauncertainty;
+    scale_JER = 1.094; scale_JERup = 1.094 + 0.093*extrauncertainty; scale_JERdown = 1.094 - 0.093*extrauncertainty;
   }
   else if( jetAbsETA<2.5 ){ 
-    scale_JER = 1.161; scale_JERup = 1.161 + 0.060*extrauncertainty; scale_JERdown = 1.161 - 0.060*extrauncertainty;
+    scale_JER = 1.168; scale_JERup = 1.168 + 0.120*extrauncertainty; scale_JERdown = 1.168 - 0.120*extrauncertainty;
   }
   else if( jetAbsETA<2.8 ){ 
-    scale_JER = 1.209; scale_JERup = 1.209 + 0.059*extrauncertainty; scale_JERdown = 1.209 - 0.059*extrauncertainty;
+    scale_JER = 1.266; scale_JERup = 1.266 + 0.132*extrauncertainty; scale_JERdown = 1.266 - 0.132*extrauncertainty;
   }
   else if( jetAbsETA<3.0 ){ 
-    scale_JER = 1.564; scale_JERup = 1.564 + 0.321*extrauncertainty; scale_JERdown = 1.564 - 0.321*extrauncertainty;
+    scale_JER = 1.595; scale_JERup = 1.595 + 0.175*extrauncertainty; scale_JERdown = 1.595 - 0.175*extrauncertainty;
   }
   else if( jetAbsETA<3.2 ){ 
-    scale_JER = 1.384; scale_JERup = 1.384 + 0.033*extrauncertainty; scale_JERdown = 1.384 - 0.033*extrauncertainty;
+    scale_JER = 0.998; scale_JERup = 0.998 + 0.066*extrauncertainty; scale_JERdown = 0.998 - 0.066*extrauncertainty;
   }
   else if( jetAbsETA<5.0 ){ 
-    scale_JER = 1.216; scale_JERup = 1.216 + 0.050*extrauncertainty; scale_JERdown = 1.216 - 0.050*extrauncertainty;
+    scale_JER = 1.226; scale_JERup = 1.226 + 0.145*extrauncertainty; scale_JERdown = 1.226 - 0.145*extrauncertainty;
   }
 
   double jetPt_JER = recojetPT;
@@ -2391,7 +2432,7 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
 
   double diff_recojet_genjet = recojetPT - genjetPT;
 
-  if( genjetPT>10. ){
+  if( genjetPT>0.001 ){
     jetPt_JER = std::max( 0., genjetPT + scale_JER * ( diff_recojet_genjet ) );
     jetPt_JERup = std::max( 0., genjetPT + scale_JERup * ( diff_recojet_genjet ) );
     jetPt_JERdown = std::max( 0., genjetPT + scale_JERdown * ( diff_recojet_genjet ) );
@@ -2401,7 +2442,7 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
   else if( returnType==-1 ) factor = jetPt_JERdown/recojetPT;
   else                      factor = jetPt_JER/recojetPT;
 
-  if( !(genjetPT>10.) ) factor = 1.;
+  if( !(genjetPT>0.001) ) factor = 1.;
 
   return factor;
 }
