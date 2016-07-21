@@ -2150,7 +2150,9 @@ void MiniAODHelper::FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
 
 
 
-MiniAODHelper::TTbarDecayMode MiniAODHelper::GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles){
+MiniAODHelper::TTbarDecayMode MiniAODHelper::GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles,
+							   TLorentzVector * topquark , 
+							   TLorentzVector * antitopquark ){
 
   struct _topquarkdecayobjects topPosDecay = { }; 
   struct _topquarkdecayobjects topNegDecay = { }; 
@@ -2182,6 +2184,18 @@ MiniAODHelper::TTbarDecayMode MiniAODHelper::GetTTbarDecay(edm::Handle<std::vect
   
   if( idx_top_pos.size() != 1 || idx_top_neg.size() != 1 ) return ChNotDefined ;
 
+  if( topquark !=0 ){
+    topquark -> SetPtEtaPhiM( topPosDecay.top->pt(),
+			      topPosDecay.top->eta(),
+			      topPosDecay.top->phi(),
+			      topPosDecay.top->mass());
+  }
+  if(antitopquark != 0 ){
+    antitopquark -> SetPtEtaPhiM( topNegDecay.top->pt(),
+				  topNegDecay.top->eta(),
+				  topNegDecay.top->phi(),
+				  topNegDecay.top->mass());
+  }
   if( (   topPosDecay . isLeptonicDecay() ) && ( ! topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ; 
   if( ( ! topPosDecay . isLeptonicDecay() ) && (   topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ; 
   if( (   topPosDecay . isLeptonicDecay() ) && (   topNegDecay . isLeptonicDecay() ) ) return DiLepCh ;
