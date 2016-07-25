@@ -20,6 +20,52 @@ MiniAODHelper::MiniAODHelper(){
 
   samplename = "blank";
 
+  { //  JER preparation
+
+    std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
+    std::ifstream infile( JER_file); 
+    if( ! infile ){
+      std::cerr << "Error: cannot open file(" << JER_file << ")" << endl;
+      exit(1);
+    }
+
+    double eta_min;
+    double eta_max;
+    double rho_min;
+    double rho_max;
+    double dummy;
+    double pt_min;
+    double pt_max;
+    double par0;
+    double par1;
+    double par2;
+    double par3;
+
+    JER_etaMin.clear();
+    JER_etaMax.clear();
+    JER_rhoMin.clear();
+    JER_rhoMax.clear();
+    JER_PtMin.clear();
+    JER_PtMax.clear();
+    JER_Par0.clear();
+    JER_Par1.clear();
+    JER_Par2.clear();
+    JER_Par3.clear();
+
+    while (infile>>eta_min>>eta_max>>rho_min>>rho_max>>dummy>>pt_min>>pt_max>>par0>>par1>>par2>>par3) {
+      JER_etaMin.push_back(eta_min);
+      JER_etaMax.push_back(eta_max);
+      JER_rhoMin.push_back(rho_min);
+      JER_rhoMax.push_back(rho_max);
+      JER_PtMin .push_back(pt_min);
+      JER_PtMax .push_back(pt_max);
+      JER_Par0  .push_back(par0);
+      JER_Par1  .push_back(par1);
+      JER_Par2  .push_back(par2);
+      JER_Par3  .push_back(par3);
+    }
+
+  } // end of JER preparation
 }
 
 // Destructor
@@ -2339,31 +2385,19 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 /// JER function
 
 bool MiniAODHelper::jetdPtMatched(const pat::Jet& inputJet) {
-  std::ifstream infile( string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ); 
-  double eta_min;
-  double eta_max;
-  double rho_min;
-  double rho_max;
-  double dummy;
-  double pt_min;
-  double pt_max;
-  double par0;
-  double par1;
-  double par2;
-  double par3;
-  double jet_pt=inputJet.pt();
-  double jet_rho=useRho;
-  double jet_eta=inputJet.eta();
-  double genjet_pt=inputJet.genJet()->pt();
-  //int i=0;
-  while (infile>>eta_min>>eta_max>>rho_min>>rho_max>>dummy>>pt_min>>pt_max>>par0>>par1>>par2>>par3) {
-    //cout << "eta min " << eta_min << "  " << "eta_max " << eta_max << endl;
-    if(jet_eta<eta_max && jet_eta>eta_min && jet_rho<rho_max && jet_rho>rho_min) {
-      //cout << "found matching entry in JER file in line #" << i << endl;
-      if(jet_pt<pt_min) {jet_pt=pt_min;}
-      if(jet_pt>pt_max) {jet_pt=pt_max;}
-      double sigma_mc=sqrt(par0*fabs(par0)/(jet_pt*jet_pt)+par1*par1*pow(jet_pt,par3)+par2*par2);
-      //cout << "|jet_pt-genjet_pt|=" << fabs(jet_pt-genjet_pt) << "  3*sigma_mc*jet_pt=" << 3*sigma_mc*jet_pt << endl;
+
+  const double jet_eta=inputJet.eta();
+
+  for( unsigned int i = 0 ; i < JER_etaMax.size() ; i ++){
+
+    if(jet_eta < JER_etaMax[i] && jet_eta > JER_etaMin[i] && useRho < JER_rhoMax[i] && useRho > JER_rhoMin[i] ) {
+
+      double jet_pt=inputJet.pt();
+      if(jet_pt< JER_PtMin[i]){jet_pt=JER_PtMin[i];}
+      if(jet_pt> JER_PtMax[i]){jet_pt=JER_PtMax[i];}
+
+      const double sigma_mc=sqrt( JER_Par0[i]*fabs(JER_Par0[i]) / (jet_pt*jet_pt)+JER_Par1[i]*JER_Par1[i]*pow(jet_pt,JER_Par3[i])+JER_Par2[i]*JER_Par2[i]);
+      const double genjet_pt=inputJet.genJet()->pt();
       if(fabs(jet_pt-genjet_pt)<3*sigma_mc*jet_pt) {
 	//cout << "#############################################################" << endl;
 	//cout << "JER dPt condition is satisfied" << endl;

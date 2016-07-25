@@ -286,6 +286,16 @@ class MiniAODHelper{
 
   const reco::Candidate * GetObjectJustBeforeDecay( const reco::Candidate * particle );
 
+  std::vector<double>    JER_etaMin;
+  std::vector<double>    JER_etaMax;
+  std::vector<double>    JER_rhoMin;
+  std::vector<double>    JER_rhoMax;
+  std::vector<double>    JER_PtMin;
+  std::vector<double>    JER_PtMax;
+  std::vector<double>    JER_Par0;
+  std::vector<double>    JER_Par1;
+  std::vector<double>    JER_Par2;
+  std::vector<double>    JER_Par3;
 
 }; // End of class prototype
 
