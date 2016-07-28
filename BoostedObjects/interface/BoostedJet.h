@@ -8,17 +8,18 @@
 namespace boosted {
 
   enum JetType{ Top, Higgs, NA };
+  enum SubjetType{ SF_Sub, SF_Filter, Pruned, SD, SDZ2B1 };
   
   class BoostedJet {
     
     public:
     
       BoostedJet() :
-		    fatjet(pat::Jet()),
-        topjet(pat::Jet()),
-		    nonW(pat::Jet()),
-		    W1(pat::Jet()),
-		    W2(pat::Jet()),
+		    fatjet(pat::Jet(reco::PFJet())),
+        topjet(pat::Jet(reco::BasicJet())),
+		    nonW(pat::Jet(reco::PFJet())),
+		    W1(pat::Jet(reco::PFJet())),
+		    W2(pat::Jet(reco::PFJet())),
 		    fatjetMass(-99),
         fatjetPt(-99),
         fatjetEta(-99),
@@ -36,7 +37,10 @@ namespace boosted {
 	      tau3Filtered(-99),
         qWeight(-99),
         qEpsilon(-99),
-        qSigmaM(-99) {};
+        qSigmaM(-99),
+        tau1Softdrop(-99),
+        tau2Softdrop(-99),
+        tau3Softdrop(-99) {};
       
       math::XYZTLorentzVector GetWJetVec() const{
         
@@ -90,6 +94,21 @@ namespace boosted {
       // Subjet Filterjet Information
       std::vector<pat::Jet> subjets;
       std::vector<pat::Jet> filterjets;
+      
+      // Pruned Jet Information
+      std::vector<pat::Jet> prunedsubjets;
+      
+      // Soft Drop Jet Information
+      std::vector<pat::Jet> sdsubjets;
+      
+      // Soft Drop Z2 B1 Jet Information
+      std::vector<pat::Jet> sdz2b1subjets;
+      
+      // Soft Drop Groomed N-Subjettiness
+      double tau1Softdrop;
+	    double tau2Softdrop;
+	    double tau3Softdrop;
+
   };
 
   typedef std::vector<BoostedJet> BoostedJetCollection;

@@ -14,20 +14,26 @@ TopTagger::TopTagger(TopTag::Mode mode_, TopTag::SubjetAssign subjetAssign_, std
       {
         file = new TFile(filePath.c_str());
 
-        mtop_top_histo=(TH1F*)file->Get("TopJet_Top_M_True");
-        mtop_nottop_histo=(TH1F*)file->Get("TopJet_Top_M_False");
-
-        if(subjetAssign == TopTag::Wmass){
-          mratio_top_histo=(TH1F*)file->Get("TopJet_MRatio_W_Top_True");
-          mratio_nottop_histo=(TH1F*)file->Get("TopJet_MRatio_W_Top_False");
-          atan_top_histo=(TH1F*)file->Get("TopJet_MRatio_W_Top_True");
-          atan_nottop_histo=(TH1F*)file->Get("TopJet_MRatio_W_Top_False");
+        mtop_top_histo=(TH1F*)file->Get("BoostedJet_Top_M_True");
+        mtop_nottop_histo=(TH1F*)file->Get("BoostedJet_Top_M_False");
+        
+        if(subjetAssign == TopTag::Pt){
+          mratio_top_histo=(TH1F*)file->Get("BoostedJet_MRatio_23_Top_True");
+          mratio_nottop_histo=(TH1F*)file->Get("BoostedJet_MRatio_23_Top_False");
+          atan_top_histo=(TH1F*)file->Get("BoostedJet_Atan_1213_True");
+          atan_nottop_histo=(TH1F*)file->Get("BoostedJet_Atan_1213_False");
+        }
+        else if(subjetAssign == TopTag::Wmass){
+          mratio_top_histo=(TH1F*)file->Get("BoostedJet_MRatio_W_Top_True");
+          mratio_nottop_histo=(TH1F*)file->Get("BoostedJet_MRatio_W_Top_False");
+          atan_top_histo=(TH1F*)file->Get("BoostedJet_Atan_BW1W2_True");
+          atan_nottop_histo=(TH1F*)file->Get("BoostedJet_Atan_BW1W2_False");
         }
         else if(subjetAssign == TopTag::CSV){
-          mratio_top_histo=(TH1F*)file->Get("TopJet_MRatio_Wbtag_Top_True");
-          mratio_nottop_histo=(TH1F*)file->Get("TopJet_MRatio_Wbtag_Top_False");
-          atan_top_histo=(TH1F*)file->Get("TopJet_MRatio_Wbtag_Top_True");
-          atan_nottop_histo=(TH1F*)file->Get("TopJet_MRatio_Wbtag_Top_False");
+          mratio_top_histo=(TH1F*)file->Get("BoostedJet_MRatio_Wbtag_Top_True");
+          mratio_nottop_histo=(TH1F*)file->Get("BoostedJet_MRatio_Wbtag_Top_False");
+          atan_top_histo=(TH1F*)file->Get("BoostedJet_Atan_BW1W2btag_True");
+          atan_nottop_histo=(TH1F*)file->Get("BoostedJet_Atan_BW1W2btag_False");
         }
         else{
           std::cout << "Error! No matching Subjet Assignment found!" << std:: endl;
@@ -221,10 +227,10 @@ float TopTagger::GetTopTaggerOutput(const boosted::BoostedJet& boostedjet, bool 
 
         float ptt = mtop_top_histo->Interpolate(mTop);
         float ptf = mtop_nottop_histo->Interpolate(mTop);
-        float pat = atan_top_histo->Interpolate(atan);
-        float paf = atan_nottop_histo->Interpolate(atan);
         float pmt = mratio_top_histo->Interpolate(mratio);
         float pmf = mratio_nottop_histo->Interpolate(mratio);
+        float pat = atan_top_histo->Interpolate(atan);
+        float paf = atan_nottop_histo->Interpolate(atan);
         float lr = ptt*pat*pmt/(ptt*pat*pmt+ptf*paf*pmf);
 
         return 2*lr-1;
