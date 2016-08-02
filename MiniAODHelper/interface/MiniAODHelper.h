@@ -139,9 +139,27 @@ class MiniAODHelper{
   void SetRho(double);
   void SetJetCorrector(const JetCorrector*);
   void SetBoostedJetCorrector(const JetCorrector*);
+
+  /** 
+  * \deprecated
+  **/
   void SetJetCorrectorUncertainty();
+  /**
+  * \deprecated
+  **/
   void SetBoostedJetCorrectorUncertainty();
+  /**
+  * \deprecated
+  **/
   void SetFactorizedJetCorrector();
+  /**
+  *
+  *//
+  void SetJetCorrectorUncertainty(const edm::EventSetup& iSetup);
+  void SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup);
+  void SetFactorizedJetCorrector(const edm::EventSetup& iSetup);
+
+
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
 
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);

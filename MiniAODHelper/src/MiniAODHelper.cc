@@ -153,12 +153,26 @@ void MiniAODHelper::SetJetCorrectorUncertainty(){
 
 }
 
+void MiniAODHelper::SetJetCorrectorUncertainty(const edm::EventSetup& iSetup){
+  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+  iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl);
+  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+  jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+}
+
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
 
   std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK8PFchs.txt";
 
   ak8jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
+}
+
+void MiniAODHelper::SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup){
+  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+  iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
+  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+  ak8jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
 }
 
 // Set up parameters one by one
@@ -185,7 +199,9 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
   factorizedjetcorrectorIsSet = true;
 }
 
-
+void MiniAODHelper::SetFactorizedJetCorrector(const edm::EventSetup& iSetup){
+  throw cms::Exception("FunctionNotDefined") << "Function SetFactorizedJetCorrector is not defined";
+}
 
 std::vector<pat::Muon> 
 MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const float iMaxEta){
