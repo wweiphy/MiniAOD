@@ -21,6 +21,7 @@
 #include "TMVA/Reader.h"
 #include "TMVA/MethodCuts.h"
 
+
 #ifdef __MAKECINT__
 #pragma link C++ class std::vector< TLorentzVector >+; 
 #endif
@@ -56,12 +57,14 @@
 #include "DataFormats/Math/interface/LorentzVector.h"
 
 #include "JetMETCorrections/Objects/interface/JetCorrector.h"
+#include "JetMETCorrections/Objects/interface/JetCorrectionsRecord.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/ESHandle.h"
 
 #include "MiniAOD/MiniAODHelper/interface/PUWeightProducer.h"
 
@@ -154,7 +157,7 @@ class MiniAODHelper{
   void SetFactorizedJetCorrector();
   /**
   *
-  *//
+  **/
   void SetJetCorrectorUncertainty(const edm::EventSetup& iSetup);
   void SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup);
   void SetFactorizedJetCorrector(const edm::EventSetup& iSetup);
