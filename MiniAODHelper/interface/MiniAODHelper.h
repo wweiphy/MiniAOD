@@ -5,7 +5,7 @@
 #include <vector>
 #include <map>
 #include <exception>
-#include <cmath> 
+#include <cmath>
 #include <iomanip>
 #include <algorithm>
 #include "TVector.h"
@@ -23,7 +23,7 @@
 
 
 #ifdef __MAKECINT__
-#pragma link C++ class std::vector< TLorentzVector >+; 
+#pragma link C++ class std::vector< TLorentzVector >+;
 #endif
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
@@ -130,7 +130,7 @@ T * ptr(T * obj) { return obj; } //obj is already pointer, return it!
 class MiniAODHelper{
 
   // === Functions === //
- public: 
+ public:
   // Constructor(s) and destructor
   MiniAODHelper();
   virtual ~MiniAODHelper();
@@ -143,7 +143,7 @@ class MiniAODHelper{
   void SetJetCorrector(const JetCorrector*);
   void SetBoostedJetCorrector(const JetCorrector*);
 
-  /** 
+  /**
   * \deprecated
   **/
   void SetJetCorrectorUncertainty();
@@ -193,7 +193,7 @@ class MiniAODHelper{
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14, std::map<std::string,double>* miniIso_calculation_params = 0) const;
   void AddElectronRelIso(pat::Electron&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
   void AddElectronRelIso(std::vector<pat::Electron>&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
-  static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags"); 
+  static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags");
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
   bool PassElectronSpring15Id(const pat::Electron&, const electronID::electronID) const;
@@ -210,18 +210,18 @@ class MiniAODHelper{
   int ttHFCategorization(const std::vector<reco::GenJet>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<reco::GenParticle>&, const std::vector<std::vector<int> >&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const std::vector<int>&, const double, const double);
   int GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >&);
   std::vector<pat::Jet> GetDeltaRCleanedJets(const std::vector<pat::Jet>&, const std::vector<pat::Muon>&, const std::vector<pat::Electron>&, const double);
-  
+
   enum TTbarDecayMode{
-    ChNotDefined = 0 , 
-    SingleLepCh = 1, 
+    ChNotDefined = 0 ,
+    SingleLepCh = 1,
     DiLepCh = 2 ,
     FullHadCh = 3
   };
   // Top quarks "top->W->tau" are regarded as "leptonically decaying top quark" regardless of tau decay (tau->e/mu/had).
-  TTbarDecayMode GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles , 
-			       TLorentzVector * top =0 , 
+  TTbarDecayMode GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles ,
+			       TLorentzVector * top =0 ,
 			       TLorentzVector * antitop =0 );
-  
+
   bool jetdPtMatched(const pat::Jet& inputJet);
   double getJERfactor( const int, const double, const double, const double );
   std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
@@ -240,14 +240,14 @@ class MiniAODHelper{
   template <typename T, typename S> std::vector<T> GetUnion( const std::vector<S>&, const std::vector<T>& );
 
  protected:
-  
+
   bool isSetUp;
   bool vertexIsSet;
   bool rhoIsSet;
   bool jetcorrectorIsSet;
   bool boostedjetcorrectorIsSet;
   bool factorizedjetcorrectorIsSet;
-  
+
   string era;
   int sampleNumber;
   bool isData;
@@ -266,8 +266,8 @@ class MiniAODHelper{
   const JetCorrector* corrector;
   const JetCorrector* ak8corrector;
   FactorizedJetCorrector* useJetCorrector;
-  JetCorrectionUncertainty *jecUnc_;
-  JetCorrectionUncertainty *ak8jecUnc_;
+  JetCorrectionUncertainty *jecUnc_ = nullptr;
+  JetCorrectionUncertainty *ak8jecUnc_ = nullptr;
   PUWeightProducer puWeightProducer_;
 
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
@@ -279,12 +279,12 @@ class MiniAODHelper{
  private :
 
   struct _topquarkdecayobjects {
-    const reco::Candidate * top ; 
-    const reco::Candidate * bottom ; 
+    const reco::Candidate * top ;
+    const reco::Candidate * bottom ;
     const reco::Candidate * W ;
     const reco::Candidate * WChild_up;
     const reco::Candidate * WChild_down;
-    bool isWChild_tau ; 
+    bool isWChild_tau ;
     const reco::Candidate * Tau_Neu ;
     std::vector< const reco::Candidate *> TauChildren ;
 
@@ -299,7 +299,7 @@ class MiniAODHelper{
 
   }; // end structure .
 
-  
+
   void FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
 				      struct _topquarkdecayobjects * topdecayobjects) ;
 
@@ -382,7 +382,7 @@ std::vector<PATObj1> MiniAODHelper::GetUnion(const std::vector<PATObj2>& col2,co
 }
 
 
-template <typename PATObj1, typename PATObj2> 
+template <typename PATObj1, typename PATObj2>
 PATObj1 MiniAODHelper::RemoveOverlap( const std::vector<PATObj2>& other, const PATObj1& unclean ){
 
   unsigned int nSources1 = unclean.numberOfSourceCandidatePtrs();
@@ -433,11 +433,11 @@ PATObj1 MiniAODHelper::RemoveOverlap( const std::vector<PATObj2>& other, const P
 }
 
 
-template <typename PATObj1, typename PATObj2> 
+template <typename PATObj1, typename PATObj2>
 std::vector<PATObj1> MiniAODHelper::RemoveOverlaps( const std::vector<PATObj2>& other, const std::vector<PATObj1>& unclean ){
 
   std::vector<PATObj1> cleaned;
-  
+
   for( typename std::vector<PATObj1>::const_iterator iobj1 = unclean.begin(); iobj1!=unclean.end(); ++iobj1 ){
 
     PATObj1 myobj = (*iobj1);
@@ -450,7 +450,7 @@ std::vector<PATObj1> MiniAODHelper::RemoveOverlaps( const std::vector<PATObj2>& 
 }
 
 
-template <typename PATObj1, typename PATObj2> 
+template <typename PATObj1, typename PATObj2>
 double MiniAODHelper::DeltaR( const PATObj2& two, const PATObj1& one ) const {
 
   double deltaR = reco::deltaR( one->eta(), one->phi(), two->eta(), two->phi() );
