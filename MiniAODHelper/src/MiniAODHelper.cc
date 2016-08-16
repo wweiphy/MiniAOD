@@ -377,6 +377,8 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
     if( jetcorrectorIsSet ) scale = corrector->correction(outputJet, event, setup);
     else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
 
+    outputJet.addUserFloat("HelperJES",scale);
+
     outputJet.scaleEnergy( scale*corrFactor );
 
     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
@@ -388,10 +390,12 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
       if( iSysType==sysType::JESup ){
 	      unc = jecUnc_->getUncertainty(true);
 	      jes = 1 + (unc*uncFactor);
+	      outputJet.addUserFloat("HelperJESUp",unc);
       }
       else if( iSysType==sysType::JESdown ){
 	      unc = jecUnc_->getUncertainty(false);
 	      jes = 1 - (unc*uncFactor);
+	      outputJet.addUserFloat("HelperJESDown",unc);
       }
 
       outputJet.scaleEnergy( jes );
