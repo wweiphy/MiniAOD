@@ -8,18 +8,22 @@
 namespace boosted {
 
   enum JetType{ Top, Higgs, NA };
+<<<<<<< HEAD
+=======
+  enum SubjetType{ SF_Sub, SF_Filter, Pruned, SD };
+>>>>>>> CMSSW_8_0_8
 
   class BoostedJet {
 
     public:
 
       BoostedJet() :
-		    fatjet(pat::Jet()),
-        topjet(pat::Jet()),
-		    nonW(pat::Jet()),
-		    W1(pat::Jet()),
-		    W2(pat::Jet()),
-		    fatjetMass(-99),
+        fatjet(pat::Jet(reco::PFJet())),
+        topjet(pat::Jet(reco::BasicJet())),
+        nonW(pat::Jet(reco::PFJet())),
+        W1(pat::Jet(reco::PFJet())),
+        W2(pat::Jet(reco::PFJet())),
+        fatjetMass(-99),
         fatjetPt(-99),
         fatjetEta(-99),
         fatjetPhi(-99),
@@ -29,14 +33,17 @@ namespace boosted {
         fRec(-99),
         massRatioPassed(-99),
         tau1Unfiltered(-99),
-	      tau2Unfiltered(-99),
-	      tau3Unfiltered(-99),
-	      tau1Filtered(-99),
-	      tau2Filtered(-99),
-	      tau3Filtered(-99),
+        tau2Unfiltered(-99),
+        tau3Unfiltered(-99),
+        tau1Filtered(-99),
+        tau2Filtered(-99),
+        tau3Filtered(-99),
         qWeight(-99),
         qEpsilon(-99),
         qSigmaM(-99),
+        tau1Softdrop(-99),
+        tau2Softdrop(-99),
+        tau3Softdrop(-99),
         isGoodTopJet(false),
         isGoodHiggsJet(false) {};
 
@@ -59,11 +66,11 @@ namespace boosted {
 
       // HTT V2 Information
       pat::Jet topjet;
-	    pat::Jet nonW;
-	    pat::Jet W1;
-	    pat::Jet W2;
+      pat::Jet nonW;
+      pat::Jet W1;
+      pat::Jet W2;
 
-	    double fatjetMass;
+      double fatjetMass;
       double fatjetPt;
       double fatjetEta;
       double fatjetPhi;
@@ -79,22 +86,45 @@ namespace boosted {
       double ptForRoptCalc;
 
       double tau1Unfiltered;
+<<<<<<< HEAD
 	    double tau2Unfiltered;
 	    double tau3Unfiltered;
 	    double tau1Filtered;
 	    double tau2Filtered;
 	    double tau3Filtered;
+=======
+      double tau2Unfiltered;
+      double tau3Unfiltered;
+      double tau1Filtered;
+      double tau2Filtered;
+      double tau3Filtered;
+>>>>>>> CMSSW_8_0_8
 
       double qWeight;
       double qEpsilon;
       double qSigmaM;
 
+<<<<<<< HEAD
       bool isGoodTopJet;
       bool isGoodHiggsJet;
 
+=======
+>>>>>>> CMSSW_8_0_8
       // Subjet Filterjet Information
       std::vector<pat::Jet> subjets;
       std::vector<pat::Jet> filterjets;
+
+      // Pruned Jet Information
+      std::vector<pat::Jet> prunedsubjets;
+
+      // Soft Drop Jet Information
+      std::vector<pat::Jet> sdsubjets;
+
+      // Soft Drop Groomed N-Subjettiness
+      double tau1Softdrop;
+      double tau2Softdrop;
+      double tau3Softdrop;
+
   };
 
   typedef std::vector<BoostedJet> BoostedJetCollection;
