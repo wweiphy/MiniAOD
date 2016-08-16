@@ -23,7 +23,7 @@ MiniAODHelper::MiniAODHelper(){
   { //  JER preparation
 
     std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
-    std::ifstream infile( JER_file); 
+    std::ifstream infile( JER_file);
     if( ! infile ){
       std::cerr << "Error: cannot open file(" << JER_file << ")" << endl;
       exit(1);
@@ -732,7 +732,7 @@ MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& i
 
 
 std::vector<boosted::BoostedJet>
-MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& inputJets, const float iMinFatPt, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
 
   CheckSetUp();
 
@@ -743,7 +743,7 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
     boosted::BoostedJet boostedJet = *it;
 
     // Select Fat Jet
-    if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
+    //if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
 
     // Select Top Jet Part
     if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
@@ -755,15 +755,35 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
       boostedJet.nonW = pat::Jet();
       boostedJet.W1 = pat::Jet();
       boostedJet.W2 = pat::Jet();
+      boostedJet.isGoodTopJet = false;
     }
+
+    // Check if pT of three top subjets > 200 GeV -> good top jet
+    else if ((boostedJet.nonW.p4() +  boostedJet.W1.p4() + boostedJet.W2.p4()).pt() > iMinFatPt) boostedJet.isGoodTopJet = true;
 
     std::vector<pat::Jet> filterjets;
     for( std::vector<pat::Jet>::const_iterator itFilt = it->filterjets.begin(), edFilt = it->filterjets.end(); itFilt != edFilt; ++itFilt ){
       if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
     }
 
+    // Select Higgs Jet Part
     if(filterjets.size()<2){
       filterjets.clear();
+      boostedJet.isGoodHiggsJet = false;
+    }
+
+    // Check if pT of two filterjets with highest CSV > 200 GeV -> good Higgs jet
+    else {
+      std::vector<pat::Jet> sortedPtFilterjets = MiniAODHelper::GetSortedByPt(filterjets);
+      std::vector<pat::Jet> threeHardestFilterjets;
+      for ( std::vector<pat::Jet>::const_iterator itFilt2 = sortedPtFilterjets.begin(), edFilt2 = sortedPtFilterjets.end(); itFilt2 != edFilt2; ++itFilt2 ){
+        int iFilt2 = itFilt2 - sortedPtFilterjets.begin();
+        if (iFilt2 > 2) continue;
+        threeHardestFilterjets.push_back(*itFilt2);
+      }
+      std::vector<pat::Jet> sortedFilterjets = MiniAODHelper::GetSortedByCSV(threeHardestFilterjets);
+      if ((sortedFilterjets[0].p4() + sortedFilterjets[1].p4()).pt() > iMinFatPt) boostedJet.isGoodHiggsJet = true;
+      else boostedJet.isGoodHiggsJet = false;
     }
 
     boostedJet.filterjets = filterjets;
