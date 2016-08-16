@@ -8,10 +8,8 @@
 namespace boosted {
 
   enum JetType{ Top, Higgs, NA };
-<<<<<<< HEAD
-=======
   enum SubjetType{ SF_Sub, SF_Filter, Pruned, SD };
->>>>>>> CMSSW_8_0_8
+
 
   class BoostedJet {
 
@@ -41,11 +39,11 @@ namespace boosted {
         qWeight(-99),
         qEpsilon(-99),
         qSigmaM(-99),
+        isGoodTopJet(false),
+        isGoodHiggsJet(false),
         tau1Softdrop(-99),
         tau2Softdrop(-99),
-        tau3Softdrop(-99),
-        isGoodTopJet(false),
-        isGoodHiggsJet(false) {};
+        tau3Softdrop(-99) {};
 
       math::XYZTLorentzVector GetWJetVec() const{
 
@@ -86,30 +84,19 @@ namespace boosted {
       double ptForRoptCalc;
 
       double tau1Unfiltered;
-<<<<<<< HEAD
-	    double tau2Unfiltered;
-	    double tau3Unfiltered;
-	    double tau1Filtered;
-	    double tau2Filtered;
-	    double tau3Filtered;
-=======
       double tau2Unfiltered;
       double tau3Unfiltered;
       double tau1Filtered;
       double tau2Filtered;
       double tau3Filtered;
->>>>>>> CMSSW_8_0_8
 
       double qWeight;
       double qEpsilon;
       double qSigmaM;
 
-<<<<<<< HEAD
       bool isGoodTopJet;
       bool isGoodHiggsJet;
 
-=======
->>>>>>> CMSSW_8_0_8
       // Subjet Filterjet Information
       std::vector<pat::Jet> subjets;
       std::vector<pat::Jet> filterjets;
