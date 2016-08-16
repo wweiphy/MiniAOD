@@ -2417,7 +2417,7 @@ bool MiniAODHelper::jetdPtMatched(const pat::Jet& inputJet) {
 
   for( unsigned int i = 0 ; i < JER_etaMax.size() ; i ++){
 
-    if(jet_eta < JER_etaMax[i] && jet_eta > JER_etaMin[i] && useRho < JER_rhoMax[i] && useRho > JER_rhoMin[i] ) {
+    if(jet_eta < JER_etaMax[i] && jet_eta >= JER_etaMin[i] && useRho < JER_rhoMax[i] && useRho >= JER_rhoMin[i] ) {
 
       double jet_pt=inputJet.pt();
       if(jet_pt< JER_PtMin[i]){jet_pt=JER_PtMin[i];}
