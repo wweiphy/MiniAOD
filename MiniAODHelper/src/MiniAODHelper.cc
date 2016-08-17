@@ -742,8 +742,8 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
 
     boosted::BoostedJet boostedJet = *it;
 
-    // Select Fat Jet
-    //if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
+    boostedJet.isGoodTopJet = false;
+    boostedJet.isGoodHiggsJet = false;
 
     // Select Top Jet Part
     if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
@@ -760,6 +760,7 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
 
     // Check if pT of three top subjets > 200 GeV -> good top jet
     else if ((boostedJet.nonW.p4() +  boostedJet.W1.p4() + boostedJet.W2.p4()).pt() > iMinFatPt) boostedJet.isGoodTopJet = true;
+    else boostedJet.isGoodTopJet = false;
 
     std::vector<pat::Jet> filterjets;
     for( std::vector<pat::Jet>::const_iterator itFilt = it->filterjets.begin(), edFilt = it->filterjets.end(); itFilt != edFilt; ++itFilt ){
@@ -788,7 +789,7 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
 
     boostedJet.filterjets = filterjets;
 
-    selectedJets.push_back(boostedJet);
+    if (boostedJet.isGoodHiggsJet || boostedJet.isGoodTopJet) selectedJets.push_back(boostedJet);
   }
 
   return selectedJets;
