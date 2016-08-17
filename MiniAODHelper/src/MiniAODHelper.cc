@@ -2421,7 +2421,7 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<reco::GenJetCollection>& genjets, reco::GenJet& matched_genjet) {
 	
 	double dpt_min=99999;
-    double dpt;
+    	double dpt;
 	double dR;
 	int genjet_match = 0;
 
@@ -2434,12 +2434,12 @@ bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<rec
    		if (dR<(0.4/2)) {
    			if ( jetdPtMatched(inputJet,*iter) ) {
 				genjet_match = 1;	      			
-    			if (dpt <= dpt_min) {
-    				matched_genjet = *(iter);
-    				dpt_min = dpt;
+    				if (dpt <= dpt_min) {
+    					matched_genjet = *(iter);
+    					dpt_min = dpt;
+    				}
     			}
-    		}
-    	}  
+    		}  
 	}
 	
 	if (genjet_match==1)
