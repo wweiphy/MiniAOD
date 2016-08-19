@@ -11,8 +11,8 @@ LeptonSFHelper::LeptonSFHelper( ){
   SetMuonMuonHistos( );
   SetElectronMuonHistos( );
 
-  electronMaxPt = 200;
-  muonMaxPt = 120;
+  electronMaxPt = 199.0;
+  muonMaxPt = 119.0;
 
 }
 
@@ -349,7 +349,7 @@ float LeptonSFHelper::GetElectronMuonSF(  float electronEta , float muonEta , in
 
 void LeptonSFHelper::SetElectronHistos( ){
 
-  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "ScaleFactor_GsfElectronToRECO_passingTrigWP80.txt.egamma_SF2D.root";
+  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "eleid_runbcd_wp80_egammaeffi.txt_sf2d.root";
   std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "eleTrig_SF.root";
   std::string ISOinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "eleRECO.txt.egamma_SF2D.root";
   std::string GFSinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "eleGFSid_runbcd_egammaEffi.txt_SF2D.root";
