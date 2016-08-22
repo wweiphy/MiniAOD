@@ -810,6 +810,23 @@ bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
 
 }
 
+// ICHEP dataset medium ID 
+// https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Short_Term_Medium_Muon_Definitio
+bool MiniAODHelper::passesMuonPOGIdICHEPMedium(const pat::Muon& iMuon){
+  bool isLooseMuon=false;
+  isLooseMuon=(iMuon.isPFMuon() && (iMuon.isGlobalMuon() || iMuon.isTrackerMuon()));
+  
+  if(!isLooseMuon) return false;
+  
+  bool goodGlob = (iMuon.isGlobalMuon() && iMuon.globalTrack()->normalizedChi2() < 3 && iMuon.combinedQuality().chi2LocalPosition < 12 && iMuon.combinedQuality().trkKink < 20);  
+  
+  bool isMedium = (isLooseMuon && iMuon.innerTrack()->validFraction() > 0.49 && muon::segmentCompatibility(iMuon) > (goodGlob ? 0.303 : 0.451));
+  
+  if(!isMedium) return false;
+  return true;
+  
+}
+
 bool
 MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
@@ -907,6 +924,11 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
       passesID         = passesMuonPOGIdTight(iMuon);
       break;
 
+  case muonID::muonMediumICHEP:
+      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
+      passesID         = passesMuonPOGIdICHEPMedium(iMuon);
+      break;
 
   }
 
@@ -1051,6 +1073,15 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
+    
+  case electronID::electron80XCutBasedL:
+  case electronID::electron80XCutBasedM:
+  case electronID::electron80XCutBasedT:
+    passesID = PassElectron80XId(iElectron, iElectronID);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    break;
+    
 
 
   }
@@ -1496,6 +1527,130 @@ bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint)
   return false;
 }
 
+
+bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
+
+  double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
+  double absSCeta = fabs(SCeta);
+  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
+
+  bool isEB = ( absSCeta < 1.479 );
+
+  double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();
+//   double dEtaIn = fabs( iElectron.deltaEtaSuperClusterTrackAtVtx() );
+  double dEtaInSeed = iElectron.superCluster().isNonnull() && iElectron.superCluster()->seed().isNonnull() ? iElectron.deltaEtaSuperClusterTrackAtVtx() - iElectron.superCluster()->eta() + iElectron.superCluster()->seed()->eta() : std::numeric_limits<float>::max();
+  double fabsdEtaInSeed=fabs(dEtaInSeed);
+  double dPhiIn = fabs( iElectron.deltaPhiSuperClusterTrackAtVtx() );
+  double hOverE = iElectron.hcalOverEcal();
+
+  double ooEmooP = -999;
+  if( iElectron.ecalEnergy() == 0 ) ooEmooP = 1e30;
+  else if( !std::isfinite(iElectron.ecalEnergy()) ) ooEmooP = 1e30;
+  else ooEmooP = fabs(1.0/iElectron.ecalEnergy() - iElectron.eSuperClusterOverP()/iElectron.ecalEnergy() );
+
+//   double d0 = -999;
+//   double dZ = -999;
+  double expectedMissingInnerHits = 999;
+  if( iElectron.gsfTrack().isAvailable() ){
+//     d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
+//     dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
+    expectedMissingInnerHits = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
+  }
+
+  bool passConversionVeto = ( iElectron.passConversionVeto() );
+
+  bool pass = false;
+  switch(iElectronID){
+  case electronID::electron80XCutBasedL:
+    if( isEB ){
+      pass = ( full5x5_sigmaIetaIeta < 0.011 &&
+	       fabsdEtaInSeed < 0.00477 &&
+	       dPhiIn < 0.222 &&
+	       hOverE < 0.298 &&
+	       ooEmooP < 0.241 &&
+// 	       d0 < 0.035904 &&
+// 	       dZ < 0.075496 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.0994
+	       );
+    }
+    else{
+      pass = ( full5x5_sigmaIetaIeta < 0.0314 &&
+	       fabsdEtaInSeed < 0.00868 &&
+	       dPhiIn < 0.213 &&
+	       hOverE < 0.101 &&
+	       ooEmooP < 0.14 &&
+// 	       d0 < 0.035904 &&
+// 	       dZ < 0.075496 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.107
+	       );
+    }
+    break;
+  case electronID::electron80XCutBasedM:
+    if( isEB ){
+      pass = ( full5x5_sigmaIetaIeta < 0.00998 &&
+	       fabsdEtaInSeed < 0.00311 &&
+	       dPhiIn < 0.103 &&
+	       hOverE < 0.253 &&
+	       ooEmooP < 0.134 &&
+// 	       d0 < 0.035904 &&
+// 	       dZ < 0.075496 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.0695
+	       );
+    }
+    else{
+      pass = ( full5x5_sigmaIetaIeta < 0.0298 &&
+	       fabsdEtaInSeed < 0.00609 &&
+	       dPhiIn < 0.045 &&
+	       hOverE < 0.0878 &&
+	       ooEmooP < 0.13 &&
+// 	       d0 < 0.035904 &&
+// 	       dZ < 0.075496 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.0821
+	       );
+    }
+    break;
+    case electronID::electron80XCutBasedT:
+    if( isEB ){
+      pass = ( full5x5_sigmaIetaIeta < 0.00998 &&
+	       fabsdEtaInSeed < 0.00308 &&
+	       dPhiIn < 0.0816 &&
+	       hOverE < 0.0414 &&
+	       ooEmooP < 0.0129 &&
+// 	       d0 < 0.035904 &&
+// 	       dZ < 0.075496 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.0588
+	       );
+    }
+    else{
+      pass = ( full5x5_sigmaIetaIeta < 0.0292 &&
+	       fabsdEtaInSeed < 0.00605 &&
+	       dPhiIn < 0.0394 &&
+	       hOverE < 0.0641 &&
+	       ooEmooP < 0.0129 &&
+// 	       d0 < 0.035904 &&
+// 	       dZ < 0.075496 &&
+	       expectedMissingInnerHits <= 1 &&
+	       passConversionVeto &&
+	       relIso < 0.0571
+	       );
+    }
+    break;
+  default:
+    break;
+  }
+
+  return pass;
+}
 
 bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
 
