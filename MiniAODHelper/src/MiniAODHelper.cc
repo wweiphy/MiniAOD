@@ -1528,12 +1528,12 @@ bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint)
 }
 
 
-+bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
-+
-+  double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
-+  double absSCeta = fabs(SCeta);
-+  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
-+
+bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
+
+  double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
+  double absSCeta = fabs(SCeta);
+  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
+
   bool isEB = ( absSCeta < 1.479 );
 
   double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();

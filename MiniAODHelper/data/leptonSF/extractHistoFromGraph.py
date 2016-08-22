@@ -11,6 +11,8 @@ binsXhigh=[]
 binsXlow=[]
 
 binsY=[]
+errorYlow=[]
+errorYhigh=[]
 
 nP=g.GetN()
 
@@ -22,12 +24,17 @@ for iP in range(nP):
   
   xlow=g.GetErrorXlow(iP)
   xhigh=g.GetErrorXhigh(iP)
+  ylow=g.GetErrorYlow(iP)
+  yhigh=g.GetErrorYhigh(iP)
+  
   
   binsX.append(x)
   binsY.append(y)
   binsXhigh.append(x+xhigh)
   binsXlow.append(x-xlow)
-  print iP, xlow, xhigh, x, y
+  errorYhigh.append(yhigh)
+  errorYlow.append(ylow)
+  print iP, xlow, x, xhigh, ylow, y, yhigh
 
 l=binsXlow
 print l
@@ -40,6 +47,7 @@ print h.GetNbinsX()
 
 for iP in range(nP):
   h.SetBinContent(iP+1,binsY[iP])
+  h.SetBinError(iP+1,max(abs(errorYlow[iP]),abs(errorYhigh[iP])))
   print iP+1,binsY[iP]
 
 h.SaveAs("muon_HIP_ICHEP_HISTO.root")
