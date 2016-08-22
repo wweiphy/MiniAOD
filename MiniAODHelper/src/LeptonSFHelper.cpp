@@ -13,6 +13,8 @@ LeptonSFHelper::LeptonSFHelper( ){
 
   electronMaxPt = 199.0;
   muonMaxPt = 119.0;
+  muonMaxPtHigh = 499.0;
+
 
 }
 
@@ -41,6 +43,11 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   float MuonIDSF = 1.0;
   float MuonIDSF_Up = 1.0;
   float MuonIDSF_Down = 1.0;
+  
+  float MuonHIPSF = 1.0;
+  float MuonHIPSF_Up = 1.0;
+  float MuonHIPSF_Down = 1.0;
+  
   float MuonIsoSF = 1.0;
   float MuonIsoSF_Up = 1.0;
   float MuonIsoSF_Down = 1.0;
@@ -76,6 +83,10 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
     MuonIDSF = MuonIDSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "ID");
     MuonIDSF_Up = MuonIDSF_Up * GetMuonSF(Muon.pt(), Muon.eta(), 1, "ID");
     MuonIDSF_Down = MuonIDSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "ID");
+    
+    MuonHIPSF = MuonHIPSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "HIP");
+    MuonHIPSF_Up = MuonHIPSF_Up * GetMuonSF(Muon.pt(), Muon.eta(), 1, "HIP");
+    MuonHIPSF_Down = MuonHIPSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "HIP");
 
     MuonIsoSF = MuonIsoSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "Iso");
     MuonIsoSF_Up = MuonIsoSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1, "Iso");
@@ -132,6 +143,11 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   ScaleFactorMap["MuonSFID"] = MuonIDSF;
   ScaleFactorMap["MuonSFID_Up"] = MuonIDSF_Up;
   ScaleFactorMap["MuonSFID_Down"] = MuonIDSF_Down;
+  
+  ScaleFactorMap["MuonSFHIP"] = MuonHIPSF;
+  ScaleFactorMap["MuonSFHIP_Up"] = MuonHIPSF_Up;
+  ScaleFactorMap["MuonSFHIP_Down"] = MuonHIPSF_Down;
+  
   ScaleFactorMap["MuonSFIso"] = MuonIsoSF;
   ScaleFactorMap["MuonSFIso_Up"] = MuonIsoSF_Up;
   ScaleFactorMap["MuonSFIso_Down"] = MuonIsoSF_Down;
@@ -229,7 +245,9 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
 
   float searchEta=fabs( muonEta );
   float searchPt=TMath::Min( muonPt , muonMaxPt );
-
+  if (type=="Trigger"){
+    searchPt=TMath::Min( muonPt , muonMaxPtHigh );
+  }
   float nomval = 0;
   float error = 0;
   float upval = 0;
@@ -250,8 +268,8 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
   }
   else if ( type == "Trigger" ){
 
-    float mult4p2 = 0.2834;
-    float mult4p3 = 0.7166;
+    float mult4p2 = 0.0482;
+    float mult4p3 = 0.9518;
 
     thisBin = h_mu_TRIGGER_abseta_pt_ratio4p3->FindBin(searchEta,searchPt);
     float nomval4p3=h_mu_TRIGGER_abseta_pt_ratio4p3->GetBinContent(thisBin);
@@ -276,6 +294,19 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
     thisBin = h_mu_ISO_abseta_pt_ratio->FindBin( searchEta , searchPt );
     nomval=h_mu_ISO_abseta_pt_ratio->GetBinContent( thisBin );
     error=h_mu_ISO_abseta_pt_ratio->GetBinError( thisBin );
+    upval=( nomval+error );
+    downval=( nomval-error );
+    upval=upval*( 1.0+0.005 );
+    downval=downval*( 1.0-0.005 );
+
+
+  }
+  
+  else if ( type == "HIP" ){
+
+    thisBin = h_mu_HIP_eta_ratio->FindBin( searchEta );
+    nomval=h_mu_HIP_eta_ratio->GetBinContent( thisBin );
+    error=h_mu_HIP_eta_ratio->GetBinError( thisBin );
     upval=( nomval+error );
     downval=( nomval-error );
     upval=upval*( 1.0+0.005 );
@@ -368,17 +399,25 @@ void LeptonSFHelper::SetElectronHistos( ){
 
 void LeptonSFHelper::SetMuonHistos( ){
 
-  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "MuonID_Z_2016runB_2p6fb.root";
-  std::string TRIGGERinputFile =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "SingleMuonTrigger_Z_RunCD_Reco76X_Feb15.root";
-  std::string ISOinputFile =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "MuonISO_Z_2016runB_2p6fb.root";
+  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "MuonID_Z_RunBCD_prompt80X_7p65.root";
+  std::string TRIGGERinputFile =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "SingleMuonTrigger_Z_RunBCD_prompt80X_7p65.root";
+  std::string ISOinputFile =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "MuonIso_Z_RunBCD_prompt80X_7p65.root";
+  std::string HIPinputFile =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "muon_HIP_ICHEP_HISTO.root";
 
+  
   TFile *f_IDSF = new TFile(std::string(IDinputFile).c_str(),"READ");
+  TFile *f_HIPSF = new TFile(std::string(HIPinputFile).c_str(),"READ");
+
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
   TFile *f_ISOSF = new TFile(std::string(ISOinputFile).c_str(),"READ");
 
-  h_mu_ID_abseta_pt_ratio = (TH2F*)f_IDSF->Get("MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio");
-  h_mu_TRIGGER_abseta_pt_ratio4p3 = (TH2F*)f_TRIGGERSF->Get("runD_IsoMu20_OR_IsoTkMu20_HLTv4p3_PtEtaBins/abseta_pt_ratio");
-  h_mu_TRIGGER_abseta_pt_ratio4p2 = (TH2F*)f_TRIGGERSF->Get("runD_IsoMu20_OR_IsoTkMu20_HLTv4p2_PtEtaBins/abseta_pt_ratio");
+//   h_mu_ID_abseta_pt_ratio = (TH2F*)f_IDSF->Get("MC_NUM_TightIDandIPCut_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio");
+  h_mu_ID_abseta_pt_ratio = (TH2F*)f_IDSF->Get("MC_NUM_MediumID_DEN_genTracks_PAR_pt_spliteta_bin1/abseta_pt_ratio");
+  h_mu_HIP_eta_ratio = (TH1D*)f_HIPSF->Get("ratio_eta");
+ 
+  h_mu_TRIGGER_abseta_pt_ratio4p3 = (TH2F*)f_TRIGGERSF->Get("IsoMu22_OR_IsoTkMu22_PtEtaBins_Run273158_to_274093/efficienciesDATA/abseta_pt_DATA");
+  h_mu_TRIGGER_abseta_pt_ratio4p2 = (TH2F*)f_TRIGGERSF->Get("IsoMu22_OR_IsoTkMu22_PtEtaBins_Run274094_to_276097/efficienciesDATA/abseta_pt_DATA");
+  
   h_mu_ISO_abseta_pt_ratio = (TH2F*)f_ISOSF->Get("MC_NUM_TightRelIso_DEN_TightID_PAR_pt_spliteta_bin1/abseta_pt_ratio");
 
 }
