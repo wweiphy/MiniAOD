@@ -1077,7 +1077,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electron80XCutBasedL:
   case electronID::electron80XCutBasedM:
   case electronID::electron80XCutBasedT:
-    passesID = PassElectron80XId(iElectron, iElectronID);
+    passesID = PassElectron80XId(iElectron,iElectronID);
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
@@ -1528,12 +1528,12 @@ bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint)
 }
 
 
-bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
-
-  double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
-  double absSCeta = fabs(SCeta);
-  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
-
++bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
++
++  double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
++  double absSCeta = fabs(SCeta);
++  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
++
   bool isEB = ( absSCeta < 1.479 );
 
   double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();
@@ -1651,6 +1651,7 @@ bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const elec
 
   return pass;
 }
+
 
 bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
 
