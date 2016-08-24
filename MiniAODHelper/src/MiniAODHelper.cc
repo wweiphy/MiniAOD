@@ -402,7 +402,7 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
   if( doJER){
     double jerSF = 1.;
     reco::GenJet matched_genjet;
-    if ( GenJet_Match(outputJet, genjets, matched_genjet) ) {
+    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.4) ) {
     //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
@@ -470,7 +470,7 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
   if( doJER){
     double jerSF = 1.;
     reco::GenJet matched_genjet;
-    if ( GenJet_Match(outputJet, genjets, matched_genjet) ) {
+    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.4) ) {
     //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
@@ -534,7 +534,7 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
   if( doJER){
     double jerSF = 1.;
     reco::GenJet matched_genjet;
-    if ( GenJet_Match(outputJet, genjets, matched_genjet) ) {
+    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.8) ) {
     //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
@@ -601,7 +601,7 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
   if( doJER){
     double jerSF = 1.;
     reco::GenJet matched_genjet;
-    if ( GenJet_Match(outputJet, genjets, matched_genjet) ) {
+    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.8) ) {
     //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
@@ -2418,7 +2418,7 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 
 /// JER function
 
-bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<reco::GenJetCollection>& genjets, reco::GenJet& matched_genjet) {
+bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<reco::GenJetCollection>& genjets, reco::GenJet& matched_genjet, const double& Rcone) {
 	
 	double dpt_min=99999;
     	double dpt;
@@ -2431,7 +2431,7 @@ bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<rec
 	for (reco::GenJetCollection::const_iterator iter=genjets->begin();iter!=genjets->end();++iter){
       	dpt = fabs(inputJet.pt()-iter->pt());
       	dR  = DeltaR( &inputJet , iter );
-   		if (dR<(0.4/2)) {
+   		if (dR<(Rcone/2)) {
    			if ( jetdPtMatched(inputJet,*iter) ) {
 				genjet_match = 1;	      			
     				if (dpt <= dpt_min) {
