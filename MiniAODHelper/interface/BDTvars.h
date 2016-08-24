@@ -30,7 +30,7 @@
 #include "DataFormats/FWLite/interface/Handle.h"
 #include "DataFormats/FWLite/interface/Event.h"
 #include "DataFormats/FWLite/interface/ChainEvent.h"
-#include "CommonTools/Utils/interface/normalizedPhi.h"
+#include "DataFormats/Math/interface/normalizedPhi.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include "DataFormats/BeamSpot/interface/BeamSpot.h"

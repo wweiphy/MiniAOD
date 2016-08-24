@@ -10,7 +10,7 @@ MiniAODHelper::MiniAODHelper() {
   vertexIsSet = false;
   rhoIsSet = false;
   factorizedjetcorrectorIsSet = false;
-  
+
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
   CSVLwp = 0.460;//CSVv2 0.423; // 10.1716% DUSG mistag efficiency
@@ -19,6 +19,52 @@ MiniAODHelper::MiniAODHelper() {
 
   samplename = "blank";
 
+  { //  JER preparation
+
+    std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
+    std::ifstream infile( JER_file); 
+    if( ! infile ){
+      std::cerr << "Error: cannot open file(" << JER_file << ")" << endl;
+      exit(1);
+    }
+
+    double eta_min;
+    double eta_max;
+    double rho_min;
+    double rho_max;
+    double dummy;
+    double pt_min;
+    double pt_max;
+    double par0;
+    double par1;
+    double par2;
+    double par3;
+
+    JER_etaMin.clear();
+    JER_etaMax.clear();
+    JER_rhoMin.clear();
+    JER_rhoMax.clear();
+    JER_PtMin.clear();
+    JER_PtMax.clear();
+    JER_Par0.clear();
+    JER_Par1.clear();
+    JER_Par2.clear();
+    JER_Par3.clear();
+
+    while (infile>>eta_min>>eta_max>>rho_min>>rho_max>>dummy>>pt_min>>pt_max>>par0>>par1>>par2>>par3) {
+      JER_etaMin.push_back(eta_min);
+      JER_etaMax.push_back(eta_max);
+      JER_rhoMin.push_back(rho_min);
+      JER_rhoMax.push_back(rho_max);
+      JER_PtMin .push_back(pt_min);
+      JER_PtMax .push_back(pt_max);
+      JER_Par0  .push_back(par0);
+      JER_Par1  .push_back(par1);
+      JER_Par2  .push_back(par2);
+      JER_Par3  .push_back(par3);
+    }
+
+  } // end of JER preparation
 }
 
 // Destructor
@@ -103,14 +149,14 @@ void MiniAODHelper::SetPackedCandidates(const std::vector<pat::PackedCandidate> 
   for (const pat::PackedCandidate &p : all) {
     if (p.charge() == 0) {
       neutral_.push_back(&p);
-    } 
-    else { 
+    }
+    else {
 
       if ( (abs(p.pdgId()) == 211 ) || ( also_leptons && ((abs(p.pdgId()) == 11 ) || (abs(p.pdgId()) == 13 )) ) )  {
-	
+
 	if (p.fromPV() > fromPV_thresh && fabs(p.dz()) < dz_thresh ) {
 	  charged_.push_back(&p);
-	} 
+	}
 	else {
 	  pileup_.push_back(&p);
 	}
@@ -148,9 +194,22 @@ void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
 
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
-  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt";
 
+  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt";
+  if(jecUnc_ != nullptr) {
+    delete jecUnc_;
+  }
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+}
+
+void MiniAODHelper::SetJetCorrectorUncertainty(const edm::EventSetup& iSetup){
+  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+  iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl);
+  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+  if(jecUnc_ != nullptr) {
+    delete jecUnc_;
+  }
+  jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
 }
 
 void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& params)
@@ -160,21 +219,32 @@ void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& par
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
 
-  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Fall15_25nsV2_MC_Uncertainty_AK8PFchs.txt";
-
+  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK8PFchs.txt";
+  if(ak8jecUnc_ != nullptr) {
+    delete ak8jecUnc_;
+  }
   ak8jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+}
 
+void MiniAODHelper::SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup){
+  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+  iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
+  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+  if(ak8jecUnc_ != nullptr) {
+    delete ak8jecUnc_;
+  }
+  ak8jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
 }
 
 // Set up parameters one by one
 void MiniAODHelper::SetFactorizedJetCorrector(){
 
   // Create the JetCorrectorParameter objects, the order does not matter.
-  //JetCorrectorParameters *ResJetPar = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/"); 
-  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L3Absolute_AK4PFchs.txt");
-  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L2Relative_AK4PFchs.txt");
-  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/PLS170_V7AN1_L1FastJet_AK4PFchs.txt");
-  //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!! 
+  //JetCorrectorParameters *ResJetPar = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/");
+  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L3Absolute_AK4PFchs.txt");
+  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L2Relative_AK4PFchs.txt");
+  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L1FastJet_AK4PFchs.txt");
+  //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!!
   std::vector<JetCorrectorParameters> vPar;
   vPar.push_back(*L1JetPar);
   vPar.push_back(*L2JetPar);
@@ -184,15 +254,19 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
   useJetCorrector = new FactorizedJetCorrector(vPar);
 
   std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
-
+  if(jecUnc_ != nullptr) {
+    delete jecUnc_;
+  }
   jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
 
   factorizedjetcorrectorIsSet = true;
 }
 
+void MiniAODHelper::SetFactorizedJetCorrector(const edm::EventSetup& iSetup){
+  throw cms::Exception("FunctionNotDefined") << "Function SetFactorizedJetCorrector is not defined";
+}
 
-
-std::vector<pat::Muon> 
+std::vector<pat::Muon>
 MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const float iMaxEta){
 
   CheckSetUp();
@@ -207,7 +281,7 @@ MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const 
 }
 
 
-std::vector<pat::Electron> 
+std::vector<pat::Electron>
 MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElectrons, const float iMinPt, const electronID::electronID iElectronID, const float iMaxEta){
 
   CheckSetUp();
@@ -221,7 +295,7 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
   return selectedElectrons;
 }
 
-std::vector<pat::Tau> 
+std::vector<pat::Tau>
 MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const float iMinPt, const tau::ID id){
 
   CheckSetUp();
@@ -237,7 +311,7 @@ MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const flo
 
 
 
-std::vector<pat::Jet> 
+std::vector<pat::Jet>
 MiniAODHelper::GetSelectedJets(const std::vector<pat::Jet>& inputJets, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVwp){
 
   CheckSetUp();
@@ -256,18 +330,18 @@ std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
 	const std::vector<pat::Jet> &inputJets)
 {
 	CheckSetUp();
-	
+
 	std::vector<pat::Jet> outputJets;
 	outputJets.reserve(inputJets.size());
-	
+
 	for (std::vector<pat::Jet>::const_iterator it = inputJets.begin(),
 		ed = inputJets.end(); it != ed; ++it) {
-		
+
 		pat::Jet jet = (*it);
 		jet.setP4(it->correctedJet(0).p4());
 		outputJets.push_back(jet);
 	}
-	
+
 	return outputJets;
 }
 
@@ -277,23 +351,23 @@ std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
 	edm::Handle<pat::JetCollection> inputJets)
 {
 	CheckSetUp();
-	
+
 	std::vector<pat::Jet> outputJets;
 	outputJets.reserve(inputJets->size());
-	
+
 	for (pat::JetCollection::const_iterator it = inputJets->begin(),
 		ed = inputJets->end(); it != ed; ++it) {
-		
+
 		pat::Jet jet = (*it);
 		jet.setP4(it->correctedJet(0).p4());
 		outputJets.push_back(jet);
 	}
-	
+
 	return outputJets;
 }
 
 
-pat::Jet 
+pat::Jet
 MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputJet;
@@ -301,7 +375,7 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
   CheckSetUp();
 
   pat::Jet outputJet = inputJet;
-    
+
   /// JES
   if( doJES ){
     double scale = 1.;
@@ -312,33 +386,35 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
        edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
     }
 
+    outputJet.addUserFloat("HelperJES",scale);
+
     outputJet.scaleEnergy( scale*corrFactor );
 
-    if (iSysType == sysType::JESup || iSysType == sysType::JESdown) {
-       if (!jecUnc_) {
-          edm::LogError("MiniAODHelper") << "JEC Uncertainties not set!";
-       } else {
-          jecUnc_->setJetEta(outputJet.eta());
-          jecUnc_->setJetPt(outputJet.pt()); // here you must use the CORRECTED jet pt
-          double unc = 1;
-          double jes = 1;
-          if( iSysType==sysType::JESup ){
-             unc = jecUnc_->getUncertainty(true);
-             jes = 1 + (unc*uncFactor);
-          }
-          else if( iSysType==sysType::JESdown ){
-             unc = jecUnc_->getUncertainty(false);
-             jes = 1 - (unc*uncFactor);
-          }
-         outputJet.scaleEnergy( jes );
-       }
+    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+
+      jecUnc_->setJetEta(outputJet.eta());
+      jecUnc_->setJetPt(outputJet.pt()); // here you must use the CORRECTED jet pt
+      double unc = 1;
+      double jes = 1;
+      if( iSysType==sysType::JESup ){
+	      unc = jecUnc_->getUncertainty(true);
+	      jes = 1 + (unc*uncFactor);
+	      outputJet.addUserFloat("HelperJESUp",unc);
+      }
+      else if( iSysType==sysType::JESdown ){
+	      unc = jecUnc_->getUncertainty(false);
+	      jes = 1 - (unc*uncFactor);
+	      outputJet.addUserFloat("HelperJESDown",unc);
+      }
+
+      outputJet.scaleEnergy( jes );
     }
   }
 
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() ){
+    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
       }
@@ -359,17 +435,17 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
 }
 
 
-float 
+float
 MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
-  
+
   double factor = 1.;
-  
+
   if( !doJES && !doJER ) return factor;
 
   CheckSetUp();
 
   pat::Jet outputJet = inputJet;
-    
+
   /// JES
   if( doJES ){
     double scale = 1.;
@@ -382,7 +458,8 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
 
     outputJet.scaleEnergy( scale*corrFactor );
     factor *= scale*corrFactor;
-    
+
+
     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
 
       jecUnc_->setJetEta(outputJet.eta());
@@ -406,7 +483,7 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() ){
+    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
       }
@@ -428,7 +505,7 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
 }
 
 
-pat::Jet 
+pat::Jet
 MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputJet;
@@ -436,7 +513,7 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
   CheckSetUp();
 
   pat::Jet outputJet = inputJet;
-    
+
   /// JES
   if( doJES ){
     double scale = 1.;
@@ -471,7 +548,7 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() ){
+    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
       }
@@ -492,17 +569,17 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
 }
 
 
-float 
+float
 MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
-  
+
   double factor = 1.;
-  
+
   if( !doJES && !doJER ) return factor;
 
   CheckSetUp();
 
   pat::Jet outputJet = inputJet;
-  
+
   /// JES
   if( doJES ){
     double scale = 1.;
@@ -515,7 +592,7 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
 
     outputJet.scaleEnergy( scale*corrFactor );
     factor *= scale*corrFactor;
-    
+
     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
 
       ak8jecUnc_->setJetEta(outputJet.eta());
@@ -539,7 +616,7 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() ){
+    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
       }
@@ -561,7 +638,7 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
 }
 
 
-std::vector<pat::Jet> 
+std::vector<pat::Jet>
 MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputJets;
@@ -578,7 +655,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 }
 
 
-std::vector<pat::Jet> 
+std::vector<pat::Jet>
 MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sysType::sysType iSysType ){
 
   CheckSetUp();
@@ -598,7 +675,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
     useJetCorrector->setJetEta(it->eta());
     useJetCorrector->setJetPt(it->pt());
     useJetCorrector->setJetA(it->jetArea());
-    useJetCorrector->setRho(useRho); 
+    useJetCorrector->setRho(useRho);
 
     scale = useJetCorrector->getCorrection();
 
@@ -628,7 +705,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 }
 
 
-std::vector<boosted::BoostedJet> 
+std::vector<boosted::BoostedJet>
 MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& inputBoostedJets, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputBoostedJets;
@@ -639,25 +716,25 @@ MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& i
 
   for( std::vector<boosted::BoostedJet>::const_iterator it = inputBoostedJets.begin(), ed = inputBoostedJets.end(); it != ed; ++it ){
     boosted::BoostedJet outputBoostedJet = *it;
-    
+
     outputBoostedJet.fatjet = GetCorrectedAK8Jet(outputBoostedJet.fatjet,event,setup,iSysType,doJES,false,corrFactor,uncFactor);
-    
+
     outputBoostedJet.nonW = GetCorrectedJet(outputBoostedJet.nonW,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
     outputBoostedJet.W1   = GetCorrectedJet(outputBoostedJet.W1  ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
     outputBoostedJet.W2   = GetCorrectedJet(outputBoostedJet.W2  ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
-    
+
     outputBoostedJet.subjets    =  GetCorrectedJets(outputBoostedJet.subjets   ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
     outputBoostedJet.filterjets =  GetCorrectedJets(outputBoostedJet.filterjets,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
-    
+
     outputBoostedJet.topjet.setP4(outputBoostedJet.nonW.p4()+outputBoostedJet.W1.p4()+outputBoostedJet.W2.p4());
-    
+
     // Correction of pruned mass
     outputBoostedJet.prunedMass = outputBoostedJet.prunedMass * GetAK8JetCorrectionFactor(outputBoostedJet.fatjet,event,setup,iSysType,doJES,false,corrFactor,uncFactor);
-    
+
     // Recalculation of fRec
     double _mtmass = 172.3;
     double _mwmass = 80.4;
-    
+
     double mbw1 = (outputBoostedJet.nonW.p4() + outputBoostedJet.W1.p4()).M();
     double mbw2 = (outputBoostedJet.nonW.p4() + outputBoostedJet.W2.p4()).M();
     double mw   = (outputBoostedJet.W1.p4()   + outputBoostedJet.W2.p4()).M();
@@ -666,9 +743,9 @@ MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& i
     double fwbw1 = fabs( (mbw1/mtop) / (_mwmass/_mtmass) - 1);
     double fwbw2 = fabs( (mbw2/mtop) / (_mwmass/_mtmass) - 1);
     double fww   = fabs( (mw/mtop) / (_mwmass/_mtmass) - 1);
-  
-    outputBoostedJet.fRec = std::min(fww, std::min(fwbw1, fwbw2));  
-    
+
+    outputBoostedJet.fRec = std::min(fww, std::min(fwbw1, fwbw2));
+
     outputBoostedJets.push_back(outputBoostedJet);
   }
 
@@ -676,7 +753,7 @@ MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& i
 }
 
 
-std::vector<boosted::BoostedJet> 
+std::vector<boosted::BoostedJet>
 MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
 
   CheckSetUp();
@@ -684,12 +761,12 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
   std::vector<boosted::BoostedJet> selectedJets;
 
   for( std::vector<boosted::BoostedJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
-  
+
     boosted::BoostedJet boostedJet = *it;
-    
+
     // Select Fat Jet
     if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
-    
+
     // Select Top Jet Part
     if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
         isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
@@ -699,20 +776,20 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
       boostedJet.topjet = pat::Jet();
       boostedJet.nonW = pat::Jet();
       boostedJet.W1 = pat::Jet();
-      boostedJet.W2 = pat::Jet(); 
+      boostedJet.W2 = pat::Jet();
     }
-    
+
     std::vector<pat::Jet> filterjets;
     for( std::vector<pat::Jet>::const_iterator itFilt = it->filterjets.begin(), edFilt = it->filterjets.end(); itFilt != edFilt; ++itFilt ){
       if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
     }
-    
+
     if(filterjets.size()<2){
       filterjets.clear();
     }
-    
+
     boostedJet.filterjets = filterjets;
-    
+
     selectedJets.push_back(boostedJet);
   }
 
@@ -723,7 +800,7 @@ bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
 
     if( !iMuon.globalTrack().isAvailable() ) return false;
 
-    bool passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.) 
+    bool passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.)
 				 && (iMuon.globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
 				 );
     if(!passesGlobalTrackID) return false;
@@ -751,7 +828,7 @@ bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
 
 }
 
-bool 
+bool
 MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
 
   CheckVertexSetUp();
@@ -816,9 +893,9 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
     passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
     passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.200);
     isPFMuon         = iMuon.isPFMuon();
-    
+
     if( iMuon.globalTrack().isAvailable() ){
-      passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.) 
+      passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.)
 			      && (iMuon.globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
 			      );
     }
@@ -835,7 +912,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
     passesTrackerID = ( passesGlobalTrackID && passesMuonBestTrackID && passesInnerTrackID && passesTrackID && (iMuon.numberOfMatchedStations() > 1) );
 
     passesID        = (iMuon.isGlobalMuon() && isPFMuon && passesTrackerID);
-    
+
     break;
   case muonID::muonTight:
       passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
@@ -850,13 +927,13 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
 
 
   }
-  
+
   return (passesKinematics && passesIso && passesID);
 }
 
 
 
-bool 
+bool
 MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID){
 
   CheckVertexSetUp();
@@ -883,7 +960,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   //double eleID      = iElectron.electronID("eidTight");
   bool passMVAId53x = true;//( eleID>0.5 );  // For 2012_53x, tighter selection
 
-  bool d02 = false; 
+  bool d02 = false;
   bool d04 = false;
   bool dZ  = false;
   bool no_exp_inner_trkr_hits = true; //false; // see below
@@ -965,7 +1042,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electronEndOf15MVA80:
     passesID = PassesMVAid80(iElectron);
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
-    passesIso = true; // TODO: what is the correct isolation here?    
+    passesIso = true; // TODO: what is the correct isolation here?
     break;
   case electronID::electronEndOf15MVA90:
     passesID = PassesMVAid90(iElectron);
@@ -1052,21 +1129,21 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
   return passesKinematics && passesIsolation && passesID;
 }
 
-bool 
+bool
 MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint){
-  
-  CheckVertexSetUp();
-  
+
+//   CheckVertexSetUp();
+
   // Transverse momentum requirement
   if( iJet.pt() < iMinPt ) return false;
 
   // Absolute eta requirement
   if( fabs(iJet.eta()) > iMaxAbsEta ) return false;
-  
+
   // Jet ID
   bool loose = false;
   bool goodForMETCorrection = false;
-  
+
   if(iJetID!=jetID::none){
     loose = (
 		  iJet.neutralHadronEnergyFraction() < 0.99 &&
@@ -1074,23 +1151,23 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 		  iJet.neutralEmEnergyFraction() < 0.99 &&
 		  iJet.numberOfDaughters() > 1
 		  );
-      
+
     if( fabs(iJet.eta())<2.4 ){
       loose = ( loose &&
 	      iJet.chargedHadronEnergyFraction() > 0.0 &&
 	      iJet.chargedMultiplicity() > 0
 	      );
     }
-    
+
     if(iJetID==jetID::jetMETcorrection){ //only check this if asked, otherwise there could be problems
       goodForMETCorrection = (
-                  iJet.correctedJet(0).pt()>10.0 &&   
-		  (( !iJet.isPFJet() && iJet.emEnergyFraction()<0.9 ) || 
+                  iJet.correctedJet(0).pt()>10.0 &&
+		  (( !iJet.isPFJet() && iJet.emEnergyFraction()<0.9 ) ||
 		  ( iJet.isPFJet() && (iJet.neutralEmEnergyFraction() + iJet.chargedEmEnergyFraction())<0.9 ))
 		  );
     }
   }
-  
+
   switch(iJetID){
   case jetID::jetMETcorrection:
     if( !goodForMETCorrection ) return false;
@@ -1116,7 +1193,7 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
 float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
 {
-  float result = 9999; 
+  float result = 9999;
 
   double pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
   double pfIsoNeutral = iMuon.pfIsolationR03().sumNeutralHadronEt + iMuon.pfIsolationR03().sumPhotonEt;
@@ -1124,33 +1201,33 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
   double pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - 0.5*iMuon.pfIsolationR03().sumPUPt );
 
   result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
-  
+
   return result;
 }
 
 //overloaded
 float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::map<std::string,double> *miniIso_calculation_params) const
 {
-  
+
   // !!! NOTE !!! rho used with Phys14 should be: fixedGridRhoFastjetAll
   // !!! NOTE !!! rho used with Spring15 should be: fixedGridRhoFastjetCentralNeutral
-  
-  float result = 9999; 
-  
+
+  float result = 9999;
+
   double correction = 9999.;
   double EffArea = 9999.;
   double Eta = abs(iMuon.eta());
-  
+
   double pfIsoCharged;
   double pfIsoNeutral;
   double pfIsoPUSubtracted;
-  
+
   switch(iconeSize)
     {
     case coneSize::R04:
       pfIsoCharged = iMuon.pfIsolationR04().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR04().sumNeutralHadronEt + iMuon.pfIsolationR04().sumPhotonEt;
-      
+
       switch(icorrType)
 	{
 	case corrType::rhoEA:
@@ -1167,7 +1244,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	  correction =  0.5*iMuon.pfIsolationR04().sumPUPt;
 	  break;
 	}
-      
+
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
       break;
@@ -1175,7 +1252,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
     case coneSize::R03:
       pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR03().sumNeutralHadronEt + iMuon.pfIsolationR03().sumPhotonEt;
-      
+
       switch(icorrType)
 	{
 	case corrType::rhoEA:
@@ -1186,7 +1263,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	  // else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0728;
 	  // else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1177;
 
-	  //effective area based on R03 Spring15	  
+	  //effective area based on R03 Spring15
 	  if (abs(Eta) < 0.8) EffArea = 0.0735;
 	  else if (abs(Eta) < 1.3) EffArea = 0.0619;
 	  else if (abs(Eta) < 2.0) EffArea = 0.0465;
@@ -1199,7 +1276,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	  correction = 0.5*iMuon.pfIsolationR03().sumPUPt;
 	  break;
 	}
-      
+
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
       break;
@@ -1218,7 +1295,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	  // else if (abs(Eta) < 2.2) EffArea = 0.0728;
 	  // else EffArea = 0.1177;
 
-	  //effective area based on R03 Spring15	  
+	  //effective area based on R03 Spring15
 	  if (abs(Eta) < 0.8) EffArea = 0.0735;
 	  else if (abs(Eta) < 1.3) EffArea = 0.0619;
 	  else if (abs(Eta) < 2.0) EffArea = 0.0465;
@@ -1227,15 +1304,15 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
 	  break;
-	case corrType::deltaBeta: 
+	case corrType::deltaBeta:
 	  double miniAbsIsoPU = isoSumRaw(pileup_, iMuon, miniIsoR, 0.01, 0.5, SelfVetoPolicy::selfVetoAll);
 	  correction = 0.5*miniAbsIsoPU;
 	  break;
 	}
-      
+
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction);
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
-      
+
       if (miniIso_calculation_params) {
          miniIso_calculation_params->clear();
          (*miniIso_calculation_params)["miniAbsIsoCharged"] = pfIsoCharged;
@@ -1243,7 +1320,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
          (*miniIso_calculation_params)["rho"] = useRho;
          (*miniIso_calculation_params)["effArea"] = EffArea;
          (*miniIso_calculation_params)["miniIsoR"] = miniIsoR;
-         (*miniIso_calculation_params)["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted; 
+         (*miniIso_calculation_params)["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted;
       }
       break;
     }
@@ -1264,15 +1341,15 @@ void MiniAODHelper::AddMuonRelIso(std::vector<pat::Muon>& muons,const coneSize::
 
 float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron) const
 {
-  float result = 9999; 
-  
+  float result = 9999;
+
   double pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
   double pfIsoNeutral = iElectron.pfIsolationVariables().sumNeutralHadronEt + iElectron.pfIsolationVariables().sumPhotonEt;
-  
+
   double pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - 0.5*iElectron.pfIsolationVariables().sumPUPt );
-  
+
   result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
-  
+
   return result;
 }
 
@@ -1282,23 +1359,23 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
    //rho*EA corrections based on phys14
    //details here: https://www.dropbox.com/s/66lzhbro09diksa/effectiveareas-pog-121214.pdf?dl=0
   // !!! NOTE !!! rho used should be: fixedGridRhoFastjetAll
-  float result = 9999; 
-  
+  float result = 9999;
+
   double correction = 9999.;
   double EffArea = 9999.;
   double Eta = abs(iElectron.eta());
-  
+
   double pfIsoCharged;
   double pfIsoNeutral;
   double pfIsoPUSubtracted;
-  
+
   switch(iconeSize)
     {
     case coneSize::R04:
     case coneSize::R03:
       pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
       pfIsoNeutral = iElectron.pfIsolationVariables().sumNeutralHadronEt + iElectron.pfIsolationVariables().sumPhotonEt;
-      
+
       switch(icorrType)
 	{
 	case corrType::rhoEA:
@@ -1333,16 +1410,16 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       double innerR_nu;
       double miniIsoR = 10.0/min(max(float(iElectron.pt()), float(50.)),float(200.));
       if (iElectron.isEB())
-	{ 
+	{
 	  innerR_ch = 0.0;
 	  innerR_nu = 0.0;
-	} 
+	}
       else
 	{
 	  innerR_ch = 0.015;
 	  innerR_nu = 0.08;
 	}
-      
+
       pfIsoCharged = isoSumRaw(charged_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
       pfIsoNeutral = isoSumRaw(neutral_, iElectron, miniIsoR, innerR_nu, 0.0, SelfVetoPolicy::selfVetoNone, 22)+isoSumRaw(neutral_, iElectron, miniIsoR, 0.0, 0.0, SelfVetoPolicy::selfVetoNone, 130);
       switch(icorrType)
@@ -1372,7 +1449,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
 	  break;
-	case corrType::deltaBeta: 
+	case corrType::deltaBeta:
 	  double miniAbsIsoPU = isoSumRaw(pileup_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
 	  correction = 0.5*miniAbsIsoPU;
 	  break;
@@ -1407,16 +1484,16 @@ void MiniAODHelper::AddElectronRelIso(std::vector<pat::Electron>& electrons,cons
 
 
 float MiniAODHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername){
-  
+
   float defaultFailure = -.1;
-  
+
   float bTagVal = jet.bDiscriminator(taggername);
 
   if(isnan(bTagVal)) return defaultFailure;
-  
+
   if(bTagVal > 1.) return 1.;
   if(bTagVal < 0.) return defaultFailure;
-  
+
   return bTagVal;
 }
 
@@ -1568,23 +1645,23 @@ bool MiniAODHelper::PassElectronPhys14Id(const pat::Electron& iElectron, const e
 }
 
 bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const electronID::electronID iElectronID) const{
-    
+
     double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
     double absSCeta = fabs(SCeta);
-    
+
     bool isEB = ( absSCeta < 1.479 );
     double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
-    
+
     double full5x5_sigmaIetaIeta = iElectron.full5x5_sigmaIetaIeta();
     double dEtaIn = fabs( iElectron.deltaEtaSuperClusterTrackAtVtx() );
     double dPhiIn = fabs( iElectron.deltaPhiSuperClusterTrackAtVtx() );
     double hOverE = iElectron.hcalOverEcal();
-    
+
     double ooEmooP = -999;
     if( iElectron.ecalEnergy() == 0 ) ooEmooP = 1e30;
     else if( !std::isfinite(iElectron.ecalEnergy()) ) ooEmooP = 1e30;
     else ooEmooP = fabs(1.0/iElectron.ecalEnergy() - iElectron.eSuperClusterOverP()/iElectron.ecalEnergy() );
-    
+
     double d0 = -999;
     double dZ = -999;
     double expectedMissingInnerHits = -999;
@@ -1593,9 +1670,9 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
 	dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
 	expectedMissingInnerHits = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
     }
-    
+
     bool passConversionVeto = ( iElectron.passConversionVeto() );
-    
+
     bool pass = false;
     switch(iElectronID){
     case electronID::electronSpring15Veto:
@@ -1628,7 +1705,7 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
 		  );
 	}
 	break;
-	
+
     case electronID::electronSpring15L:
 	if( isEB ){
 	    pass=(
@@ -1659,7 +1736,7 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
 		  );
 	}
 	break;
-	
+
     case electronID::electronSpring15M:
 	if( isEB ){
 	    pass=(
@@ -1690,7 +1767,7 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
 		  );
 	}
 	break;
-	
+
     case electronID::electronSpring15T:
 	if( isEB ){
 	    pass=(
@@ -1721,11 +1798,11 @@ bool MiniAODHelper::PassElectronSpring15Id(const pat::Electron& iElectron, const
 		  );
 	}
 	break;
-	
+
     default:
 	break;
     }
-    
+
     return pass;
 }
 // adds electron mva output as user float to electrons
@@ -1756,19 +1833,19 @@ bool MiniAODHelper::InECALendcap(const pat::Electron& iElectron) const{
 bool MiniAODHelper::PassesMVAidPreselection(const pat::Electron& iElectron) const{
     if (iElectron.pt()<15) return false;
     if(InECALbarrel(iElectron)){
-	return (iElectron.full5x5_sigmaIetaIeta() < 0.012 
-		&& iElectron.hcalOverEcal() < 0.09 
-		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37 
-		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25 
-		&& (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18 
-		&& fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095 
+	return (iElectron.full5x5_sigmaIetaIeta() < 0.012
+		&& iElectron.hcalOverEcal() < 0.09
+		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.37
+		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.25
+		&& (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18
+		&& fabs(iElectron.deltaEtaSuperClusterTrackAtVtx()) < 0.0095
 		&& fabs(iElectron.deltaPhiSuperClusterTrackAtVtx()) < 0.065);
     }
     else if(InECALendcap(iElectron)){
-	return (iElectron.full5x5_sigmaIetaIeta() < 0.033 
-		&& iElectron.hcalOverEcal() <0.09 
-		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45 
-		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28 
+	return (iElectron.full5x5_sigmaIetaIeta() < 0.033
+		&& iElectron.hcalOverEcal() <0.09
+		&& (iElectron.ecalPFClusterIso() / iElectron.pt()) < 0.45
+		&& (iElectron.hcalPFClusterIso() / iElectron.pt()) < 0.28
 		&& (iElectron.dr03TkSumPt() / iElectron.pt()) < 0.18);
     }
     else return false;
@@ -1815,7 +1892,7 @@ void MiniAODHelper::clearVetos() {
 float MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId) const
 {
   float dR2 = dR*dR, innerR2 = innerR*innerR;
-  
+
   std::vector<const reco::Candidate *> vetos(vetos_);
   for (unsigned int i = 0, n = cand.numberOfSourceCandidatePtrs(); i < n; ++i) {
     if (selfVeto == SelfVetoPolicy::selfVetoNone) break;
@@ -1825,11 +1902,11 @@ float MiniAODHelper::isoSumRaw(const std::vector<const pat::PackedCandidate *> &
       if (selfVeto == SelfVetoPolicy::selfVetoFirst) break;
     }
   }
-  
+
   typedef std::vector<const pat::PackedCandidate *>::const_iterator IT;
   IT candsbegin = std::lower_bound(cands.begin(), cands.end(), cand.eta() - dR, ByEta());
   IT candsend = std::upper_bound(candsbegin, cands.end(), cand.eta() + dR, ByEta());
-  
+
   double isosum = 0;
   for (IT icharged = candsbegin; icharged < candsend; ++icharged) {
     // pdgId
@@ -1871,7 +1948,7 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
     std::map<int, int> cJetBeforeTopIds;
     // C jets with c hadrons after top quark decay
     std::map<int, int> cJetAfterTopIds;
-    
+
     // Counting number of specific hadrons in each b jet
     for(size_t hadronId = 0; hadronId < genBHadIndex.size(); ++hadronId) {
         // Flavour of the hadron's origin
@@ -1910,7 +1987,7 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
         //     else bJetAfterTopIds[jetIndex]++;
         // }
     }
-    
+
     // Counting number of specific hadrons in each c jet
     for(size_t hadronId = 0; hadronId < genCHadJetIndex.size(); ++hadronId) {
         // Skipping c hadrons that are coming from b hadrons
@@ -1937,7 +2014,7 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
         //     else cJetAfterTopIds[jetIndex]++;
         // }
     }
-    
+
     // Finding additional b jets (before top decay)
     std::vector<int> additionalBJetIds;
     for(std::map<int, int>::iterator it = bJetBeforeTopIds.begin(); it != bJetBeforeTopIds.end(); ++it) {
@@ -1969,8 +2046,8 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
         if(bJetFromTopIds.count(jetId) > 0) continue;
         pseudoadditionalCJetIds.push_back(jetId);
     }
-    
-    // Categorizing event based on number of additional b/c jets 
+
+    // Categorizing event based on number of additional b/c jets
     // and number of corresponding hadrons in each of them
     // int additionalJetEventId;
     int additionalJetEventId = bJetFromTopIds.size()*100;
@@ -2032,15 +2109,15 @@ int MiniAODHelper::ttHFCategorization(const std::vector<reco::GenJet>& genJets, 
 
 bool MiniAODHelper::checkIfRegisterd( const reco::Candidate * candidate , std::vector< const reco::Candidate * > list ){
 
-  for ( std::vector< const reco::Candidate * >::iterator it = list.begin() ; 
-	it != list.end() ; 
+  for ( std::vector< const reco::Candidate * >::iterator it = list.begin() ;
+	it != list.end() ;
 	it ++ ){
     if( candidate == * it  ) return true  ;
   }
-  
+
   return false ;
 
-} 
+}
 
 
 const reco::Candidate * MiniAODHelper::GetObjectJustBeforeDecay( const reco::Candidate * particle ){
@@ -2050,24 +2127,24 @@ const reco::Candidate * MiniAODHelper::GetObjectJustBeforeDecay( const reco::Can
 
       return GetObjectJustBeforeDecay( particle -> daughter (i) );
 
-    } // end if 
-  } // end for 
+    } // end if
+  } // end for
 
-  return particle ; 
+  return particle ;
 
 }
 
 
 void MiniAODHelper::FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
 						   struct _topquarkdecayobjects * topdecayobjects) {
-  
-  topdecayobjects -> top  = c ; 
-  topdecayobjects -> isWChild_tau = false ; 
+
+  topdecayobjects -> top  = c ;
+  topdecayobjects -> isWChild_tau = false ;
 
   c = GetObjectJustBeforeDecay( c );
 
   for ( unsigned int i = 0 ; i <  c -> numberOfDaughters(); i++ ){
-    if( abs( c -> daughter( i ) -> pdgId() ) == 5 || 
+    if( abs( c -> daughter( i ) -> pdgId() ) == 5 ||
 	abs( c -> daughter( i ) -> pdgId() ) == 3 ||
 	abs( c -> daughter( i ) -> pdgId() ) == 1 ){
       topdecayobjects -> bottom = c -> daughter( i );
@@ -2082,77 +2159,77 @@ void MiniAODHelper::FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
 
   // (case-1) In some MC, W boson decays but stays (example : W -> u+d+W)
   // (case-2) In other MC, W boson decays after some step (example : W->W->u+d)
-  //  In order to handle both case, 
+  //  In order to handle both case,
   //   - check if the W boson has fermion in ites daughter.
   //      -> if so (=case 1), this is the W boson to see.
   //      -> if not(=case 2), trackdown the W boson
   bool W_boson_decays  = false ;
-  for ( unsigned int i = 0 ; i <  W -> numberOfDaughters(); i++ ){  
-    if(       abs( W -> daughter( i ) -> pdgId() ) == 6 
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 4 
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 2 
+  for ( unsigned int i = 0 ; i <  W -> numberOfDaughters(); i++ ){
+    if(       abs( W -> daughter( i ) -> pdgId() ) == 6
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 4
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 2
 	      ||  abs( W -> daughter( i ) -> pdgId() ) == 12
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 14 
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 16 
-	      || abs( W -> daughter( i ) -> pdgId() ) == 5 
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 3 
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 1 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 14
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 16
+	      || abs( W -> daughter( i ) -> pdgId() ) == 5
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 3
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 1
 	      ||  abs( W -> daughter( i ) -> pdgId() ) == 11
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 13 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 13
 	      ||  abs( W -> daughter( i ) -> pdgId() ) == 15 ){
-      W_boson_decays = true ; 
-    } // end if 
+      W_boson_decays = true ;
+    } // end if
   }// end for-loop
   if( ! W_boson_decays ){
-    W = GetObjectJustBeforeDecay( W ) ; 
+    W = GetObjectJustBeforeDecay( W ) ;
   }
 
-  
+
   for ( unsigned int i = 0 ; i <  W -> numberOfDaughters(); i++ ){
 
-    if(       abs( W -> daughter( i ) -> pdgId() ) == 6 
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 4 
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 2 
+    if(       abs( W -> daughter( i ) -> pdgId() ) == 6
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 4
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 2
 	      ||  abs( W -> daughter( i ) -> pdgId() ) == 12
-	      ||  abs( W -> daughter( i ) -> pdgId() ) == 14 
+	      ||  abs( W -> daughter( i ) -> pdgId() ) == 14
 	      ||  abs( W -> daughter( i ) -> pdgId() ) == 16 ){
-      // --- up type 
+      // --- up type
       topdecayobjects -> WChild_up   =  W -> daughter( i );
-    }else if ( abs( W -> daughter( i ) -> pdgId() ) == 5 
-	       ||  abs( W -> daughter( i ) -> pdgId() ) == 3 
-	       ||  abs( W -> daughter( i ) -> pdgId() ) == 1 
+    }else if ( abs( W -> daughter( i ) -> pdgId() ) == 5
+	       ||  abs( W -> daughter( i ) -> pdgId() ) == 3
+	       ||  abs( W -> daughter( i ) -> pdgId() ) == 1
 	       ||  abs( W -> daughter( i ) -> pdgId() ) == 11
-	       ||  abs( W -> daughter( i ) -> pdgId() ) == 13 
+	       ||  abs( W -> daughter( i ) -> pdgId() ) == 13
 	       ||  abs( W -> daughter( i ) -> pdgId() ) == 15 ){
       // --- down type
       topdecayobjects -> WChild_down =   W -> daughter( i );
     }
 
     if( abs( W -> daughter( i ) -> pdgId() ) == 15 ){
-      topdecayobjects ->  isWChild_tau = true ; 
+      topdecayobjects ->  isWChild_tau = true ;
     }
 
   }// W boson loop
 
 
-  if( ! ( topdecayobjects ->  isWChild_tau ) ) return ; 
+  if( ! ( topdecayobjects ->  isWChild_tau ) ) return ;
 
   const reco::Candidate * tau = topdecayobjects -> WChild_down ;
-  // - - - - 
-  // track down until the Tau lepton decays 
-  // - - - - 
+  // - - - -
+  // track down until the Tau lepton decays
+  // - - - -
   for( bool ready = false; ! ready ; ){
-    ready = true ; 
+    ready = true ;
     for ( unsigned int i = 0 ; i <  tau -> numberOfDaughters(); i++ ){
       if( abs( tau -> daughter( i ) -> pdgId() ) == 15 ){
-	ready = false; 
+	ready = false;
 	tau = tau -> daughter( i ) ;
-	break ; 
+	break ;
       }
     }
-    
+
   }
-  
+
   for ( unsigned int i = 0 ; i <  tau -> numberOfDaughters(); i++ ){
 
     if ( abs( tau -> daughter( i ) -> pdgId() ) == 16 ){
@@ -2162,49 +2239,63 @@ void MiniAODHelper::FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
     }
 
   }// Tau loop
-  
+
 }
 
 
 
 
-MiniAODHelper::TTbarDecayMode MiniAODHelper::GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles){
+MiniAODHelper::TTbarDecayMode MiniAODHelper::GetTTbarDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles,
+							   TLorentzVector * topquark ,
+							   TLorentzVector * antitopquark ){
 
-  struct _topquarkdecayobjects topPosDecay = { }; 
-  struct _topquarkdecayobjects topNegDecay = { }; 
+  struct _topquarkdecayobjects topPosDecay = { };
+  struct _topquarkdecayobjects topNegDecay = { };
 
-  std::vector<const reco::Candidate * > idx_top_pos ; 
-  std::vector<const reco::Candidate * > idx_top_neg ; 
+  std::vector<const reco::Candidate * > idx_top_pos ;
+  std::vector<const reco::Candidate * > idx_top_neg ;
 
   for(size_t i=0; i<mcparticles->size();i++){
-    
+
     if( abs( (*mcparticles)[i].pdgId()  ) == 6 ){
-      const reco::Candidate * cand =  & (*mcparticles)[i] ; 
+      const reco::Candidate * cand =  & (*mcparticles)[i] ;
       cand = GetObjectJustBeforeDecay ( cand );
-      
+
       if ( cand -> pdgId() == 6  && !  checkIfRegisterd( cand , idx_top_pos ) ){
 	idx_top_pos  . push_back( cand );
 	FillTopQuarkDecayInfomration ( cand ,
 				       & topPosDecay ) ;
       }
-      
+
       if ( cand -> pdgId() == - 6 && !  checkIfRegisterd( cand , idx_top_neg ) ){
 	idx_top_neg  . push_back( cand );
-	FillTopQuarkDecayInfomration ( cand , 
+	FillTopQuarkDecayInfomration ( cand ,
 				       & topNegDecay ) ;
       }
-      
+
     } // end if : |PDGID|==6
-    
+
   }// end mcparticles-Loop.
-  
+
   if( idx_top_pos.size() != 1 || idx_top_neg.size() != 1 ) return ChNotDefined ;
 
-  if( (   topPosDecay . isLeptonicDecay() ) && ( ! topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ; 
-  if( ( ! topPosDecay . isLeptonicDecay() ) && (   topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ; 
+  if( topquark !=0 ){
+    topquark -> SetPtEtaPhiM( topPosDecay.top->pt(),
+			      topPosDecay.top->eta(),
+			      topPosDecay.top->phi(),
+			      topPosDecay.top->mass());
+  }
+  if(antitopquark != 0 ){
+    antitopquark -> SetPtEtaPhiM( topNegDecay.top->pt(),
+				  topNegDecay.top->eta(),
+				  topNegDecay.top->phi(),
+				  topNegDecay.top->mass());
+  }
+  if( (   topPosDecay . isLeptonicDecay() ) && ( ! topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ;
+  if( ( ! topPosDecay . isLeptonicDecay() ) && (   topNegDecay . isLeptonicDecay() ) ) return SingleLepCh ;
   if( (   topPosDecay . isLeptonicDecay() ) && (   topNegDecay . isLeptonicDecay() ) ) return DiLepCh ;
   if( ( ! topPosDecay . isLeptonicDecay() ) && ( ! topNegDecay . isLeptonicDecay() ) ) return FullHadCh ;
-  
+
   return ChNotDefined ;
 
 }
@@ -2217,11 +2308,11 @@ MiniAODHelper::TTbarDecayMode MiniAODHelper::GetTTbarDecay(edm::Handle<std::vect
 int MiniAODHelper::GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >& mcparticles){
 
   int Hdecay = -1;
-    
+
   if( mcparticles.isValid() ){
 
     Hdecay=0;
-  
+
     for( size_t k = 0; k < mcparticles->size(); k++ ){
       const reco::Candidate & mcParticle = (*mcparticles)[k];
 
@@ -2230,12 +2321,12 @@ int MiniAODHelper::GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >& m
       int absId  = abs( pdgId );
       int numdgt = mcParticle.numberOfDaughters();
 
-      //// must be a Higgs and status 62(pythia 8) 
+      //// must be a Higgs and status 62(pythia 8)
       if( absId!=25 || status!=62  ) continue;
       if (!(numdgt>1))continue;
-	  
+
       int d0=-99, d1=-99;
-      
+
       int ind0 = 0;
       int ind1 = 1;
 
@@ -2271,22 +2362,22 @@ int MiniAODHelper::GetHiggsDecay(edm::Handle<std::vector<reco::GenParticle> >& m
       if( d0==21 && d1==22) Hdecay = 9; //gy
       if( d0==22 && d1==21) Hdecay = 9; //gy
       if( d0==3 && d1==3) Hdecay = 10; //ss
-	
+
       if( d0==13 && d1==13) Hdecay = 11; //mumu
-      
+
       if( (Hdecay==0) && (d0==22 || d1==22)) Hdecay =12; //?y
       if( (Hdecay==0) && (d0==21 || d1==21)) Hdecay = 13; //?g
       if( (Hdecay==0) && (d0>100 || d1>100)) Hdecay = 14; //?Hadron
-      
+
       if( d0==1 && d1==1) Hdecay = 15; //uu
       if( d0==2 && d1==2) Hdecay = 16; //dd
       if( d0==6 && d1==6) Hdecay = 17; //tt
       if( d0==11 && d1==11) Hdecay = 18; //ee
 
     }
-    
+
   }
-  
+
 
   return Hdecay;
 }
@@ -2297,79 +2388,125 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 {
 	CheckSetUp();
 
-	
+
 	std::vector<pat::Jet> outputJets;
 
 	for( std::vector<pat::Jet>::const_iterator iJet = inputJets.begin(); iJet!=inputJets.end(); ++iJet ){
 
 	  bool isOverlap = false;
-	  
+
 	  TLorentzVector jet_p4;
 	  jet_p4.SetPxPyPzE(iJet->px(),iJet->py(),iJet->pz(),iJet->energy());
-	  
-	  for( std::vector<pat::Electron>::const_iterator iEle = inputElectrons.begin(); iEle != inputElectrons.end(); iEle++ ){ 
+
+	  for( std::vector<pat::Electron>::const_iterator iEle = inputElectrons.begin(); iEle != inputElectrons.end(); iEle++ ){
 	    TLorentzVector ele_p4;
 	    ele_p4.SetPxPyPzE(iEle->px(),iEle->py(),iEle->pz(),iEle->energy());
 	    double delta_tmp = jet_p4.DeltaR(ele_p4);
 	    if(delta_tmp < deltaRCut){
 	      isOverlap = true;
 	      break;
-	    } 
+	    }
 	  }
-	  
+
 	  if( isOverlap ) continue;
-	  
-	  for( std::vector<pat::Muon>::const_iterator iMuon = inputMuons.begin(); iMuon != inputMuons.end(); iMuon++ ){ 
+
+	  for( std::vector<pat::Muon>::const_iterator iMuon = inputMuons.begin(); iMuon != inputMuons.end(); iMuon++ ){
 	    TLorentzVector muon_p4;
 	    muon_p4.SetPxPyPzE(iMuon->px(),iMuon->py(),iMuon->pz(),iMuon->energy());
 	    double delta_tmp = jet_p4.DeltaR(muon_p4);
 	    if(delta_tmp < deltaRCut){
 	      isOverlap = true;
 	      break;
-	    } 
+	    }
 	  }
-	  
+
 	  if( isOverlap ) continue;
-	  
+
 	  outputJets.push_back(*iJet);
-	  
+
 	}
-	
-	
+
+
 	return outputJets;
 }
 
 
 /// JER function
+
+bool MiniAODHelper::jetdPtMatched(const pat::Jet& inputJet) {
+
+  const double jet_eta=inputJet.eta();
+
+  for( unsigned int i = 0 ; i < JER_etaMax.size() ; i ++){
+
+    if(jet_eta < JER_etaMax[i] && jet_eta >= JER_etaMin[i] && useRho < JER_rhoMax[i] && useRho >= JER_rhoMin[i] ) {
+
+      double jet_pt=inputJet.pt();
+      if(jet_pt< JER_PtMin[i]){jet_pt=JER_PtMin[i];}
+      if(jet_pt> JER_PtMax[i]){jet_pt=JER_PtMax[i];}
+
+      const double sigma_mc=sqrt( JER_Par0[i]*fabs(JER_Par0[i]) / (jet_pt*jet_pt)+JER_Par1[i]*JER_Par1[i]*pow(jet_pt,JER_Par3[i])+JER_Par2[i]*JER_Par2[i]);
+      const double genjet_pt=inputJet.genJet()->pt();
+      if(fabs(jet_pt-genjet_pt)<3*sigma_mc*jet_pt) {
+	//cout << "#############################################################" << endl;
+	//cout << "JER dPt condition is satisfied" << endl;
+	//cout << "#############################################################" << endl;
+	return true;
+      }
+    }
+    //i++;
+  }
+  //cout << "JER dPt conditon is not satisfied" << endl;
+  return false;
+}
+
 double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA, const double genjetPT, const double recojetPT){
 
   // CheckSetUp();
   // string samplename = GetSampleName();
   double factor = 1.;
-    
+
   double scale_JER = 1., scale_JERup = 1., scale_JERdown = 1.;
   double extrauncertainty=1.5;
   //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
-  if( jetAbsETA<0.8 ){ 
-    scale_JER = 1.061; scale_JERup = 1.061 + 0.023*extrauncertainty; scale_JERdown = 1.061 - 0.023*extrauncertainty;
+  if( jetAbsETA<0.5 ){
+    scale_JER = 1.122; scale_JERup = 1.122 + 0.026*extrauncertainty; scale_JERdown = 1.122 - 0.026*extrauncertainty;
   }
-  else if( jetAbsETA<1.3 ){ 
-    scale_JER = 1.088; scale_JERup = 1.088 + 0.029*extrauncertainty; scale_JERdown = 1.088 - 0.029*extrauncertainty;
+  else if( jetAbsETA<0.8 ){
+    scale_JER = 1.167; scale_JERup = 1.167 + 0.048*extrauncertainty; scale_JERdown = 1.167 - 0.048*extrauncertainty;
   }
-  else if( jetAbsETA<1.9 ){ 
-    scale_JER = 1.106; scale_JERup = 1.106 + 0.030*extrauncertainty; scale_JERdown = 1.106 - 0.030*extrauncertainty;
+  else if( jetAbsETA<1.1 ){
+    scale_JER = 1.168; scale_JERup = 1.168 + 0.046*extrauncertainty; scale_JERdown = 1.168 - 0.046*extrauncertainty;
   }
-  else if( jetAbsETA<2.5 ){ 
-    scale_JER = 1.126; scale_JERup = 1.126 + 0.094*extrauncertainty; scale_JERdown = 1.126 - 0.094*extrauncertainty;
+  else if( jetAbsETA<1.3 ){
+    scale_JER = 1.029; scale_JERup = 1.029 + 0.066*extrauncertainty; scale_JERdown = 1.029 - 0.066*extrauncertainty;
   }
-  else if( jetAbsETA<3.0 ){ 
-    scale_JER = 1.343; scale_JERup = 1.343 + 0.123*extrauncertainty; scale_JERdown = 1.343 - 0.123*extrauncertainty;
+  else if( jetAbsETA<1.7 ){
+    scale_JER = 1.115; scale_JERup = 1.115 + 0.030*extrauncertainty; scale_JERdown = 1.115 - 0.030*extrauncertainty;
   }
-  else if( jetAbsETA<3.2 ){ 
-    scale_JER = 1.303; scale_JERup = 1.303 + 0.111*extrauncertainty; scale_JERdown = 1.303 - 0.111*extrauncertainty;
+  else if( jetAbsETA<1.9 ){
+    scale_JER = 1.041; scale_JERup = 1.041 + 0.062*extrauncertainty; scale_JERdown = 1.041 - 0.062*extrauncertainty;
   }
-  else if( jetAbsETA<5.0 ){ 
-    scale_JER = 1.320; scale_JERup = 1.320 + 0.286*extrauncertainty; scale_JERdown = 1.320 - 0.286*extrauncertainty;
+  else if( jetAbsETA<2.1 ){
+    scale_JER = 1.167; scale_JERup = 1.167 + 0.086*extrauncertainty; scale_JERdown = 1.167 - 0.086*extrauncertainty;
+  }
+  else if( jetAbsETA<2.3 ){
+    scale_JER = 1.094; scale_JERup = 1.094 + 0.093*extrauncertainty; scale_JERdown = 1.094 - 0.093*extrauncertainty;
+  }
+  else if( jetAbsETA<2.5 ){
+    scale_JER = 1.168; scale_JERup = 1.168 + 0.120*extrauncertainty; scale_JERdown = 1.168 - 0.120*extrauncertainty;
+  }
+  else if( jetAbsETA<2.8 ){
+    scale_JER = 1.266; scale_JERup = 1.266 + 0.132*extrauncertainty; scale_JERdown = 1.266 - 0.132*extrauncertainty;
+  }
+  else if( jetAbsETA<3.0 ){
+    scale_JER = 1.595; scale_JERup = 1.595 + 0.175*extrauncertainty; scale_JERdown = 1.595 - 0.175*extrauncertainty;
+  }
+  else if( jetAbsETA<3.2 ){
+    scale_JER = 0.998; scale_JERup = 0.998 + 0.066*extrauncertainty; scale_JERdown = 0.998 - 0.066*extrauncertainty;
+  }
+  else if( jetAbsETA<5.0 ){
+    scale_JER = 1.226; scale_JERup = 1.226 + 0.145*extrauncertainty; scale_JERdown = 1.226 - 0.145*extrauncertainty;
   }
 
   double jetPt_JER = recojetPT;
@@ -2378,7 +2515,7 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
 
   double diff_recojet_genjet = recojetPT - genjetPT;
 
-  if( genjetPT>10. ){
+  if( genjetPT>0.001 ){
     jetPt_JER = std::max( 0., genjetPT + scale_JER * ( diff_recojet_genjet ) );
     jetPt_JERup = std::max( 0., genjetPT + scale_JERup * ( diff_recojet_genjet ) );
     jetPt_JERdown = std::max( 0., genjetPT + scale_JERdown * ( diff_recojet_genjet ) );
@@ -2388,7 +2525,7 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
   else if( returnType==-1 ) factor = jetPt_JERdown/recojetPT;
   else                      factor = jetPt_JER/recojetPT;
 
-  if( !(genjetPT>10.) ) factor = 1.;
+  if( !(genjetPT>0.001) ) factor = 1.;
 
   return factor;
 }
@@ -2399,7 +2536,7 @@ std::vector<pat::MET> MiniAODHelper::CorrectMET(const std::vector<pat::Jet>& old
   std::vector<pat::MET> outputMets;
 
   for(std::vector<pat::MET>::const_iterator oldMET=pfMETs.begin();oldMET!=pfMETs.end();++oldMET){
-    pat::MET outMET=*oldMET; 
+    pat::MET outMET=*oldMET;
 
     if(oldMET-pfMETs.begin() == 0){
     //get old MET p4
@@ -2423,11 +2560,10 @@ std::vector<pat::MET> MiniAODHelper::CorrectMET(const std::vector<pat::Jet>& old
     }
     outMET.setP4(reco::Candidate::LorentzVector(oldMETVec.Px(),oldMETVec.Py(),oldMETVec.Pz(),oldMETVec.E()));
     }
-    
+
     outputMets.push_back(outMET);
   }
 
   return outputMets;
 
 }
-
