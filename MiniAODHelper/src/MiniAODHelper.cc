@@ -782,8 +782,9 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
         if (iFilt2 > 2) continue;
         threeHardestFilterjets.push_back(*itFilt2);
       }
-      std::vector<pat::Jet> sortedFilterjets = MiniAODHelper::GetSortedByCSV(threeHardestFilterjets);
-      if ((sortedFilterjets[0].p4() + sortedFilterjets[1].p4()).pt() > iMinFatPt) boostedJet.isGoodHiggsJet = true;
+      //std::vector<pat::Jet> sortedFilterjets = MiniAODHelper::GetSortedByCSV(threeHardestFilterjets);
+      //if ((sortedFilterjets[0].p4() + sortedFilterjets[1].p4()).pt() > iMinFatPt) boostedJet.isGoodHiggsJet = true;
+      if ((threeHardestFilterjets[0].p4() + threeHardestFilterjets[1].p4() + threeHardestFilterjets[2].p4()).pt() > iMinFatPt) boostedJet.isGoodHiggsJet = true;
       else boostedJet.isGoodHiggsJet = false;
     }
 
