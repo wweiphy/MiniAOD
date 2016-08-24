@@ -224,7 +224,7 @@ class MiniAODHelper{
 			       TLorentzVector * top =0 ,
 			       TLorentzVector * antitop =0 );
 
-  bool GenJet_Match( const pat::Jet&, const edm::Handle<reco::GenJetCollection>&, reco::GenJet& );
+  bool GenJet_Match( const pat::Jet&, const edm::Handle<reco::GenJetCollection>&, reco::GenJet&, const double& );
   bool jetdPtMatched(const pat::Jet& inputJet, const reco::GenJet& genjet);
   double getJERfactor( const int, const double, const double, const double );
   std::vector<pat::MET> CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs);
