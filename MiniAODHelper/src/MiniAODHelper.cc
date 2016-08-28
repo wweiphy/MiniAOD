@@ -196,44 +196,32 @@ void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
   std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt";
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 }
 
 void MiniAODHelper::SetJetCorrectorUncertainty(const edm::EventSetup& iSetup){
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl);
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
 }
 
 void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& params)
 {
-   jecUnc_ = new JetCorrectionUncertainty(params);
+   jecUnc_.reset(new JetCorrectionUncertainty(params));
 }
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
 
   std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK8PFchs.txt";
-  if(ak8jecUnc_ != nullptr) {
-    delete ak8jecUnc_;
-  }
-  ak8jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  ak8jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 }
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup){
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-  if(ak8jecUnc_ != nullptr) {
-    delete ak8jecUnc_;
-  }
-  ak8jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  ak8jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
 }
 
 // Set up parameters one by one
@@ -254,10 +242,7 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
   useJetCorrector = new FactorizedJetCorrector(vPar);
 
   std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 
   factorizedjetcorrectorIsSet = true;
 }

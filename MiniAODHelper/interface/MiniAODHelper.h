@@ -268,8 +268,8 @@ class MiniAODHelper{
   const JetCorrector* corrector = 0;
   const JetCorrector* ak8corrector = 0;
   FactorizedJetCorrector* useJetCorrector;
-  JetCorrectionUncertainty *jecUnc_ = nullptr;
-  JetCorrectionUncertainty *ak8jecUnc_ = nullptr;
+  std::unique_ptr<JetCorrectionUncertainty> jecUnc_;
+  std::unique_ptr<JetCorrectionUncertainty> ak8jecUnc_;
   PUWeightProducer puWeightProducer_;
 
   inline void ThrowFatalError(const std::string& m) const { cerr << "[ERROR]\t" << m << " Cannot continue. Terminating..." << endl; exit(1); };
