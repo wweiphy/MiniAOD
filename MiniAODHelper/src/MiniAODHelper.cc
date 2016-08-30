@@ -3,13 +3,12 @@
 using namespace std;
 
 // Constructor
-MiniAODHelper::MiniAODHelper(){
+MiniAODHelper::MiniAODHelper() {
 
   isSetUp = false;
 
   vertexIsSet = false;
   rhoIsSet = false;
-  jetcorrectorIsSet = false;
   factorizedjetcorrectorIsSet = false;
 
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
@@ -172,62 +171,57 @@ void MiniAODHelper::SetPackedCandidates(const std::vector<pat::PackedCandidate> 
   clearVetos();
 }
 
+// Return packed cands collection
+std::vector<pat::PackedCandidate> MiniAODHelper::GetPackedCandidates(void){
+
+  std::vector<pat::PackedCandidate> packed_cands_collection = *allcands_;
+
+  if (packed_cands_collection.size() == 0) std::cout << "MiniAODHelper WARNING: packedCandidates are NOT set!" << std::endl;
+
+  return packed_cands_collection;
+}
 
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
-
   corrector = iCorrector;
-
-  jetcorrectorIsSet = true;
 }
 
 
 // Set up parameters one by one
 void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
-
   ak8corrector = iCorrector;
-
-  boostedjetcorrectorIsSet = true;
 }
 
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
   std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt";
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 }
 
 void MiniAODHelper::SetJetCorrectorUncertainty(const edm::EventSetup& iSetup){
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl);
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
+}
 
+void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& params)
+{
+   jecUnc_.reset(new JetCorrectionUncertainty(params));
 }
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
 
   std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK8PFchs.txt";
-  if(ak8jecUnc_ != nullptr) {
-    delete ak8jecUnc_;
-  }
-  ak8jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  ak8jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 }
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup){
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-  if(ak8jecUnc_ != nullptr) {
-    delete ak8jecUnc_;
-  }
-  ak8jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  ak8jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
 }
 
 // Set up parameters one by one
@@ -248,10 +242,7 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
   useJetCorrector = new FactorizedJetCorrector(vPar);
 
   std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 
   factorizedjetcorrectorIsSet = true;
 }
@@ -374,8 +365,11 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
   if( doJES ){
     double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = corrector->correction(outputJet, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+    if (corrector) {
+       scale = corrector->correction(outputJet, event, setup);
+    } else if (!use_corrected_jets) {
+       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+    }
 
     outputJet.addUserFloat("HelperJES",scale);
 
@@ -441,8 +435,11 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
   if( doJES ){
     double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = corrector->correction(outputJet, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+    if (corrector) {
+       scale = corrector->correction(outputJet, event, setup);
+    } else if (!use_corrected_jets) {
+       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+    }
 
     outputJet.scaleEnergy( scale*corrFactor );
     factor *= scale*corrFactor;
@@ -506,8 +503,11 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
   if( doJES ){
     double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = ak8corrector->correction(outputJet, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+    if (corrector) {
+       scale = ak8corrector->correction(outputJet, event, setup);
+    } else {
+       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+    }
 
     outputJet.scaleEnergy( scale*corrFactor );
 
@@ -569,8 +569,11 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
   if( doJES ){
     double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = ak8corrector->correction(outputJet, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+    if (ak8corrector) {
+       scale = ak8corrector->correction(outputJet, event, setup);
+    } else {
+       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+    }
 
     outputJet.scaleEnergy( scale*corrFactor );
     factor *= scale*corrFactor;
