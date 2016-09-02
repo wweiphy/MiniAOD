@@ -397,7 +397,7 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
   }
 
   /// JER
-  if( doJER){
+  if( doJER ){
     double jerSF = 1.;
     reco::GenJet matched_genjet;
     if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.4) ) {
@@ -414,7 +414,6 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
       // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
     }
     // else     std::cout << "    ==> can't find genJet" << std::endl;
-
     outputJet.scaleEnergy( jerSF*corrFactor );
   }
 
@@ -2427,6 +2426,8 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 
 bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<reco::GenJetCollection>& genjets, reco::GenJet& matched_genjet, const double& Rcone) {
 	
+        if( !genjets.isValid() )  return false;
+
 	double dpt_min=99999;
     	double dpt;
 	double dR;
