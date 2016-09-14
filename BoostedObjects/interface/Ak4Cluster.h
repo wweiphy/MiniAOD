@@ -12,13 +12,18 @@ namespace boosted {
     public:
 
       Ak4Cluster() :
-        fatjet(math::XYZTLorentzVector()){};
+        fatjet(math::XYZTLorentzVector()),
+        isGoodTopCluster(false),
+        isGoodHiggsCluster(false){};
 
       // Fatjet or cluster
       math::XYZTLorentzVector fatjet;
 
       // Subjets of the cluster
       std::vector<pat::Jet> ak4jets;
+
+      bool isGoodTopCluster; // TODO remove that variable if not used
+      bool isGoodHiggsCluster;
 
   };
 
