@@ -779,11 +779,13 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
         boostedJet.nonW = pat::Jet();
         boostedJet.W1 = pat::Jet();
         boostedJet.W2 = pat::Jet();
+        boostedJet.isGoodTopJet = false;
       }
       else boostedJet.isGoodTopJet = true;
 
       if(filterjets.size()<2){
         filterjets.clear();
+        boostedJet.isGoodHiggsJet = false;
       }
       else boostedJet.isGoodHiggsJet = true;
     }
