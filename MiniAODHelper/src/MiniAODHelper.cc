@@ -916,7 +916,11 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
       passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25);
       passesID         = passesMuonPOGIdTight(iMuon);
       break;
-
+  case muonID::none:
+      passesKinematics = true;
+      passesIso        = true;
+      passesID         = true;
+      break;
 
   }
 
@@ -1061,7 +1065,11 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
-
+  case electronID::none:
+    passesID = true;
+    passesKinematics = true;
+    passesIso=true;
+    break;
 
   }
 
