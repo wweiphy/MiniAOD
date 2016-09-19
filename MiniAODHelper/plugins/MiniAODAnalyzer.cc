@@ -97,6 +97,7 @@ class MiniAODAnalyzer : public edm::EDAnalyzer {
   edm::EDGetTokenT <pat::JetCollection> ak4jetToken;
   edm::EDGetTokenT <edm::View<pat::Jet> > ak8jetToken;
   edm::EDGetTokenT <reco::BeamSpot> beamspotToken;
+  edm::EDGetTokenT <reco::GenJetCollection> token_genjets;
 
   edm::EDGetTokenT <pat::JetCollection> ca12jetToken;
   edm::EDGetTokenT <pat::JetCollection> ca12filtjetToken;
@@ -226,7 +227,8 @@ MiniAODAnalyzer::MiniAODAnalyzer(const edm::ParameterSet& iConfig)
 
   heptopfatjetToken = consumes <pat::JetCollection> (edm::InputTag(std::string("selectedPatJetsHEPTopFatPF")));
   heptopsubjetToken = consumes <pat::JetCollection> (edm::InputTag(std::string("selectedPatJetsHEPTopSubPF")));
-
+ 
+  token_genjets = consumes<reco::GenJetCollection> (edm::InputTag(std::string("slimmedGenJets")));
 
 
   numEvents_         = 0;
@@ -446,7 +448,8 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   edm::Handle<pat::JetCollection> heptopsubpfjets;
   iEvent.getByToken(heptopsubjetToken,heptopsubpfjets);
 
-
+  edm::Handle<reco::GenJetCollection> genjets;
+  iEvent.getByToken(token_genjets, genjets);
 
   edm::Handle<edm::View<pat::Jet> > pfjetAK8Handle;
   iEvent.getByToken(ak8jetToken,pfjetAK8Handle);
@@ -758,7 +761,7 @@ MiniAODAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   std::vector<pat::Jet> rawJets = miniAODhelper.GetUncorrectedJets(*pfjets);
   std::vector<pat::Jet> jetsNoMu = miniAODhelper.RemoveOverlaps(selectedMuons, rawJets);
   std::vector<pat::Jet> jetsNoEle = miniAODhelper.RemoveOverlaps(selectedElectrons, jetsNoMu);
-  std::vector<pat::Jet> correctedJets = miniAODhelper.GetCorrectedJets(jetsNoEle, iEvent, iSetup);
+  std::vector<pat::Jet> correctedJets = miniAODhelper.GetCorrectedJets(jetsNoEle, iEvent, iSetup, genjets);
   std::vector<pat::Jet> cleanSelectedJets = miniAODhelper.GetSelectedJets(correctedJets, 30., 2.4, jetID::jetLoose, '-' );
 
   int nJet = 0;

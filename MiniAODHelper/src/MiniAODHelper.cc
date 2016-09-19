@@ -3,13 +3,12 @@
 using namespace std;
 
 // Constructor
-MiniAODHelper::MiniAODHelper(){
+MiniAODHelper::MiniAODHelper() {
 
   isSetUp = false;
 
   vertexIsSet = false;
   rhoIsSet = false;
-  jetcorrectorIsSet = false;
   factorizedjetcorrectorIsSet = false;
 
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
@@ -23,7 +22,7 @@ MiniAODHelper::MiniAODHelper(){
   { //  JER preparation
 
     std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
-    std::ifstream infile( JER_file); 
+    std::ifstream infile( JER_file);
     if( ! infile ){
       std::cerr << "Error: cannot open file(" << JER_file << ")" << endl;
       exit(1);
@@ -172,62 +171,57 @@ void MiniAODHelper::SetPackedCandidates(const std::vector<pat::PackedCandidate> 
   clearVetos();
 }
 
+// Return packed cands collection
+std::vector<pat::PackedCandidate> MiniAODHelper::GetPackedCandidates(void){
+
+  std::vector<pat::PackedCandidate> packed_cands_collection = *allcands_;
+
+  if (packed_cands_collection.size() == 0) std::cout << "MiniAODHelper WARNING: packedCandidates are NOT set!" << std::endl;
+
+  return packed_cands_collection;
+}
 
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrector(const JetCorrector* iCorrector){
-
   corrector = iCorrector;
-
-  jetcorrectorIsSet = true;
 }
 
 
 // Set up parameters one by one
 void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
-
   ak8corrector = iCorrector;
-
-  boostedjetcorrectorIsSet = true;
 }
 
 // Set up parameters one by one
 void MiniAODHelper::SetJetCorrectorUncertainty(){
 
   std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt";
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 }
 
 void MiniAODHelper::SetJetCorrectorUncertainty(const edm::EventSetup& iSetup){
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl);
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
+}
 
+void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& params)
+{
+   jecUnc_.reset(new JetCorrectionUncertainty(params));
 }
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
 
   std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK8PFchs.txt";
-  if(ak8jecUnc_ != nullptr) {
-    delete ak8jecUnc_;
-  }
-  ak8jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  ak8jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 }
 
 void MiniAODHelper::SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup){
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-  if(ak8jecUnc_ != nullptr) {
-    delete ak8jecUnc_;
-  }
-  ak8jecUnc_ = new JetCorrectionUncertainty(JetCorPar);
+  ak8jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
 }
 
 // Set up parameters one by one
@@ -248,10 +242,7 @@ void MiniAODHelper::SetFactorizedJetCorrector(){
   useJetCorrector = new FactorizedJetCorrector(vPar);
 
   std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
-  if(jecUnc_ != nullptr) {
-    delete jecUnc_;
-  }
-  jecUnc_ = new JetCorrectionUncertainty(inputJECfile);
+  jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
 
   factorizedjetcorrectorIsSet = true;
 }
@@ -362,7 +353,7 @@ std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
 
 
 pat::Jet
-MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputJet;
 
@@ -374,8 +365,11 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
   if( doJES ){
     double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = corrector->correction(outputJet, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+    if (corrector) {
+       scale = corrector->correction(outputJet, event, setup);
+    } else if (!use_corrected_jets) {
+       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+    }
 
     outputJet.addUserFloat("HelperJES",scale);
 
@@ -403,22 +397,23 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
   }
 
   /// JER
-  if( doJER){
+  if( doJER ){
     double jerSF = 1.;
-    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
+    reco::GenJet matched_genjet;
+    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.4) ) {
+    //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
-	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else if( iSysType == sysType::JERdown ){
-	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else {
-	      jerSF = getJERfactor(0, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(0, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
     }
     // else     std::cout << "    ==> can't find genJet" << std::endl;
-
     outputJet.scaleEnergy( jerSF*corrFactor );
   }
 
@@ -427,7 +422,7 @@ MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event
 
 
 float
-MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   double factor = 1.;
 
@@ -441,8 +436,11 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
   if( doJES ){
     double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = corrector->correction(outputJet, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+    if (corrector) {
+       scale = corrector->correction(outputJet, event, setup);
+    } else if (!use_corrected_jets) {
+       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+    }
 
     outputJet.scaleEnergy( scale*corrFactor );
     factor *= scale*corrFactor;
@@ -471,15 +469,17 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
+    reco::GenJet matched_genjet;
+    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.4) ) {
+    //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
-	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else if( iSysType == sysType::JERdown ){
-	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else {
-	      jerSF = getJERfactor(0, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(0, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
     }
@@ -494,7 +494,7 @@ MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event
 
 
 pat::Jet
-MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputJet;
 
@@ -506,8 +506,11 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
   if( doJES ){
     double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = ak8corrector->correction(outputJet, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+    if (corrector) {
+       scale = ak8corrector->correction(outputJet, event, setup);
+    } else {
+       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+    }
 
     outputJet.scaleEnergy( scale*corrFactor );
 
@@ -533,15 +536,17 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
+    reco::GenJet matched_genjet;
+    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.8) ) {
+    //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
-	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else if( iSysType == sysType::JERdown ){
-	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else {
-	      jerSF = getJERfactor(0, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(0, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
     }
@@ -555,7 +560,7 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
 
 
 float
-MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   double factor = 1.;
 
@@ -569,8 +574,11 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
   if( doJES ){
     double scale = 1.;
 
-    if( jetcorrectorIsSet ) scale = ak8corrector->correction(outputJet, event, setup);
-    else std::cout << " !! ERROR !! Trying to use Full Framework GetCorrectedJets without setting jet corrector !" << std::endl;
+    if (ak8corrector) {
+       scale = ak8corrector->correction(outputJet, event, setup);
+    } else {
+       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+    }
 
     outputJet.scaleEnergy( scale*corrFactor );
     factor *= scale*corrFactor;
@@ -598,15 +606,17 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
   /// JER
   if( doJER){
     double jerSF = 1.;
-    if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
+    reco::GenJet matched_genjet;
+    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.8) ) {
+    //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
       if( iSysType == sysType::JERup ){
-	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else if( iSysType == sysType::JERdown ){
-	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else {
-	      jerSF = getJERfactor(0, fabs(outputJet.eta()), outputJet.genJet()->pt(), outputJet.pt());
+	      jerSF = getJERfactor(0, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
     }
@@ -621,7 +631,7 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
 
 
 std::vector<pat::Jet>
-MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputJets;
 
@@ -630,7 +640,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
   std::vector<pat::Jet> outputJets;
 
   for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
-    outputJets.push_back(GetCorrectedJet(*it,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor));
+    outputJets.push_back(GetCorrectedJet(*it,event,setup, genjets, iSysType,doJES,doJER,corrFactor,uncFactor));
   }
 
   return outputJets;
@@ -688,7 +698,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sy
 
 
 std::vector<boosted::BoostedJet>
-MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& inputBoostedJets, const edm::Event& event, const edm::EventSetup& setup, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& inputBoostedJets, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputBoostedJets;
 
@@ -699,19 +709,19 @@ MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& i
   for( std::vector<boosted::BoostedJet>::const_iterator it = inputBoostedJets.begin(), ed = inputBoostedJets.end(); it != ed; ++it ){
     boosted::BoostedJet outputBoostedJet = *it;
 
-    outputBoostedJet.fatjet = GetCorrectedAK8Jet(outputBoostedJet.fatjet,event,setup,iSysType,doJES,false,corrFactor,uncFactor);
+    outputBoostedJet.fatjet = GetCorrectedAK8Jet(outputBoostedJet.fatjet,event,setup,genjets,iSysType,doJES,false,corrFactor,uncFactor);
 
-    outputBoostedJet.nonW = GetCorrectedJet(outputBoostedJet.nonW,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
-    outputBoostedJet.W1   = GetCorrectedJet(outputBoostedJet.W1  ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
-    outputBoostedJet.W2   = GetCorrectedJet(outputBoostedJet.W2  ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
+    outputBoostedJet.nonW = GetCorrectedJet(outputBoostedJet.nonW,event,setup,genjets,iSysType,doJES,doJER,corrFactor,uncFactor);
+    outputBoostedJet.W1   = GetCorrectedJet(outputBoostedJet.W1  ,event,setup,genjets,iSysType,doJES,doJER,corrFactor,uncFactor);
+    outputBoostedJet.W2   = GetCorrectedJet(outputBoostedJet.W2  ,event,setup,genjets,iSysType,doJES,doJER,corrFactor,uncFactor);
 
-    outputBoostedJet.subjets    =  GetCorrectedJets(outputBoostedJet.subjets   ,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
-    outputBoostedJet.filterjets =  GetCorrectedJets(outputBoostedJet.filterjets,event,setup,iSysType,doJES,doJER,corrFactor,uncFactor);
+    outputBoostedJet.subjets    =  GetCorrectedJets(outputBoostedJet.subjets   ,event,setup,genjets,iSysType,doJES,doJER,corrFactor,uncFactor);
+    outputBoostedJet.filterjets =  GetCorrectedJets(outputBoostedJet.filterjets,event,setup,genjets,iSysType,doJES,doJER,corrFactor,uncFactor);
 
     outputBoostedJet.topjet.setP4(outputBoostedJet.nonW.p4()+outputBoostedJet.W1.p4()+outputBoostedJet.W2.p4());
 
     // Correction of pruned mass
-    outputBoostedJet.prunedMass = outputBoostedJet.prunedMass * GetAK8JetCorrectionFactor(outputBoostedJet.fatjet,event,setup,iSysType,doJES,false,corrFactor,uncFactor);
+    outputBoostedJet.prunedMass = outputBoostedJet.prunedMass * GetAK8JetCorrectionFactor(outputBoostedJet.fatjet,event,setup,genjets,iSysType,doJES,false,corrFactor,uncFactor);
 
     // Recalculation of fRec
     double _mtmass = 172.3;
@@ -736,43 +746,101 @@ MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& i
 
 
 std::vector<boosted::BoostedJet>
-MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID, const string mode="A"){
 
   CheckSetUp();
 
   std::vector<boosted::BoostedJet> selectedJets;
 
   for( std::vector<boosted::BoostedJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
-
     boosted::BoostedJet boostedJet = *it;
-
-    // Select Fat Jet
-    if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
-
-    // Select Top Jet Part
-    if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
-        isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
-        isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
-      )
-    {
-      boostedJet.topjet = pat::Jet();
-      boostedJet.nonW = pat::Jet();
-      boostedJet.W1 = pat::Jet();
-      boostedJet.W2 = pat::Jet();
-    }
 
     std::vector<pat::Jet> filterjets;
     for( std::vector<pat::Jet>::const_iterator itFilt = it->filterjets.begin(), edFilt = it->filterjets.end(); itFilt != edFilt; ++itFilt ){
       if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
     }
 
-    if(filterjets.size()<2){
-      filterjets.clear();
+    boostedJet.isGoodTopJet = false;
+    boostedJet.isGoodHiggsJet = false;
+
+    if(mode=="C"){
+      // mode C: pT cut on fatjet
+
+      // Select Fat Jet
+      if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
+
+      // Select Top Jet Part
+      if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+          isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+          isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
+        )
+      {
+        boostedJet.topjet = pat::Jet();
+        boostedJet.nonW = pat::Jet();
+        boostedJet.W1 = pat::Jet();
+        boostedJet.W2 = pat::Jet();
+        boostedJet.isGoodTopJet = false;
+      }
+      else boostedJet.isGoodTopJet = true;
+
+      if(filterjets.size()<2){
+        filterjets.clear();
+        boostedJet.isGoodHiggsJet = false;
+      }
+      else boostedJet.isGoodHiggsJet = true;
     }
+    else if(mode == "A" || mode == "B"){
+      // mode A: pT cut on two filterjets with best CSV out of the three hardest subjets
+      // mode B: pT cut on three hardest filterjets
+
+      // Select Top Jet Part
+      if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+          isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+          isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
+        )
+      {
+        boostedJet.topjet = pat::Jet();
+        boostedJet.nonW = pat::Jet();
+        boostedJet.W1 = pat::Jet();
+        boostedJet.W2 = pat::Jet();
+        boostedJet.isGoodTopJet = false;
+      }
+
+      // Check if pT of three top subjets > 200 GeV -> good top jet
+      else if ((boostedJet.nonW.p4() +  boostedJet.W1.p4() + boostedJet.W2.p4()).pt() > iMinFatPt) boostedJet.isGoodTopJet = true;
+      else boostedJet.isGoodTopJet = false;
+
+      // Select Higgs Jet Part
+      if(filterjets.size()<2){
+        filterjets.clear();
+        boostedJet.isGoodHiggsJet = false;
+      }
+
+      // Check if pT of two filterjets with highest CSV > 200 GeV -> good Higgs jet
+      else {
+        std::vector<pat::Jet> sortedPtFilterjets = MiniAODHelper::GetSortedByPt(filterjets);
+        std::vector<pat::Jet> threeHardestFilterjets;
+        for ( std::vector<pat::Jet>::const_iterator itFilt2 = sortedPtFilterjets.begin(), edFilt2 = sortedPtFilterjets.end(); itFilt2 != edFilt2; ++itFilt2 ){
+          int iFilt2 = itFilt2 - sortedPtFilterjets.begin();
+          if (iFilt2 > 2) continue;
+          threeHardestFilterjets.push_back(*itFilt2);
+        }
+        if(mode=="A"){
+          std::vector<pat::Jet> sortedFilterjets = MiniAODHelper::GetSortedByCSV(threeHardestFilterjets);
+          if ((sortedFilterjets[0].p4() + sortedFilterjets[1].p4()).pt() > iMinFatPt) boostedJet.isGoodHiggsJet = true;
+          else boostedJet.isGoodHiggsJet = false;
+        }
+        else if(mode=="B"){
+          if ((threeHardestFilterjets[0].p4() + threeHardestFilterjets[1].p4() + threeHardestFilterjets[2].p4()).pt() > iMinFatPt) boostedJet.isGoodHiggsJet = true;
+          else boostedJet.isGoodHiggsJet = false;
+        }
+      }
+    }
+    else cout << "Error in GetSelectedBoostedJets: No valid selection mode.";
 
     boostedJet.filterjets = filterjets;
 
-    selectedJets.push_back(boostedJet);
+    if (boostedJet.isGoodHiggsJet || boostedJet.isGoodTopJet) selectedJets.push_back(boostedJet);
   }
 
   return selectedJets;
@@ -2568,10 +2636,41 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 	return outputJets;
 }
 
-
 /// JER function
 
-bool MiniAODHelper::jetdPtMatched(const pat::Jet& inputJet) {
+bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<reco::GenJetCollection>& genjets, reco::GenJet& matched_genjet, const double& Rcone) {
+
+        if( !genjets.isValid() )  return false;
+
+	double dpt_min=99999;
+    	double dpt;
+	double dR;
+	int genjet_match = 0;
+
+	// checking which genjets have dR < 0.2 and dpT < 3*sigma_mc for this particular jet
+	// if multiple genjets found satisfying this, then select the one with dpT minimum
+
+	for (reco::GenJetCollection::const_iterator iter=genjets->begin();iter!=genjets->end();++iter){
+      	dpt = fabs(inputJet.pt()-iter->pt());
+      	dR  = DeltaR( &inputJet , iter );
+   		if (dR<(Rcone/2)) {
+   			if ( jetdPtMatched(inputJet,*iter) ) {
+				genjet_match = 1;
+    				if (dpt <= dpt_min) {
+    					matched_genjet = *(iter);
+    					dpt_min = dpt;
+    				}
+    			}
+    		}
+	}
+
+	if (genjet_match==1)
+		return true;
+	else
+		return false;
+}
+
+bool MiniAODHelper::jetdPtMatched(const pat::Jet& inputJet, const reco::GenJet& genjet) {
 
   const double jet_eta=inputJet.eta();
 
@@ -2584,7 +2683,7 @@ bool MiniAODHelper::jetdPtMatched(const pat::Jet& inputJet) {
       if(jet_pt> JER_PtMax[i]){jet_pt=JER_PtMax[i];}
 
       const double sigma_mc=sqrt( JER_Par0[i]*fabs(JER_Par0[i]) / (jet_pt*jet_pt)+JER_Par1[i]*JER_Par1[i]*pow(jet_pt,JER_Par3[i])+JER_Par2[i]*JER_Par2[i]);
-      const double genjet_pt=inputJet.genJet()->pt();
+      const double genjet_pt=genjet.pt();
       if(fabs(jet_pt-genjet_pt)<3*sigma_mc*jet_pt) {
 	//cout << "#############################################################" << endl;
 	//cout << "JER dPt condition is satisfied" << endl;

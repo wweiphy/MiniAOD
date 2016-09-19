@@ -97,7 +97,7 @@ class SkimDilep : public edm::EDFilter {
   edm::EDGetTokenT <pat::ElectronCollection> electronToken;
   edm::EDGetTokenT <pat::MuonCollection> muonToken;
   edm::EDGetTokenT <pat::JetCollection> ak4jetToken;
-
+  edm::EDGetTokenT<reco::GenJetCollection> token_genjets;
 
   // HLTConfigProvider hlt_config_;
   // HLTConfigProvider filter_config_;
@@ -133,6 +133,7 @@ SkimDilep::SkimDilep(const edm::ParameterSet& iConfig)
   electronToken = consumes <pat::ElectronCollection> (edm::InputTag(std::string("slimmedElectrons")));
   muonToken = consumes <pat::MuonCollection> (edm::InputTag(std::string("slimmedMuons")));
   ak4jetToken = consumes <pat::JetCollection> (edm::InputTag(std::string("slimmedJets")));
+  token_genjets = consumes<reco::GenJetCollection> (edm::InputTag(std::string("slimmedGenJets")));
 
 
   // //Check to make sure we're not doing anything in consistent
@@ -192,6 +193,9 @@ SkimDilep::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
   edm::Handle<pat::JetCollection> pfjets;
   iEvent.getByToken(ak4jetToken,pfjets);
+
+  edm::Handle<reco::GenJetCollection> genjets;
+  iEvent.getByToken(token_genjets, genjets);
 
   // edm::Handle<edm::TriggerResults> triggerResults;
   // iEvent.getByToken(triggerResultsToken, triggerResults);
@@ -279,7 +283,7 @@ SkimDilep::filter(edm::Event& iEvent, const edm::EventSetup& iSetup)
   std::vector<pat::Jet> rawJets = miniAODhelper.GetUncorrectedJets(*pfjets);
   std::vector<pat::Jet> jetsNoMu = miniAODhelper.RemoveOverlaps(selectedMuonsLoose, rawJets);
   std::vector<pat::Jet> jetsNoEle = miniAODhelper.RemoveOverlaps(selectedElectronsLoose, jetsNoMu);
-  std::vector<pat::Jet> correctedJets = miniAODhelper.GetCorrectedJets(jetsNoEle, iEvent, iSetup);
+  std::vector<pat::Jet> correctedJets = miniAODhelper.GetCorrectedJets(jetsNoEle, iEvent, iSetup, genjets);
   std::vector<pat::Jet> cleanSelectedJets = miniAODhelper.GetSelectedJets(correctedJets, 15., 2.4, jetID::jetLoose, '-' ); // pt set to 15GeV
 
   // at least two jets
