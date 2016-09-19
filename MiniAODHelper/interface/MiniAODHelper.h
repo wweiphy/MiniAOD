@@ -208,9 +208,12 @@ class MiniAODHelper{
   bool InECALbarrel(const pat::Electron&) const;
   bool InECALendcap(const pat::Electron&) const;
   bool PassesMVAidPreselection(const pat::Electron&) const;
-  bool PassesMVAidCuts(const pat::Electron& el, float cut0, float cut1, float cut2) const;
+  bool PassesMVAidCuts(const pat::Electron& el, float cut0, float cut1, float cut2, bool b_requirePreselection = true ) const;
   bool PassesMVAid80(const pat::Electron&) const;
   bool PassesMVAid90(const pat::Electron&) const;
+  bool PassesNonTrigMVAid80(const pat::Electron& el) const;
+  bool PassesNonTrigMVAid90(const pat::Electron& el) const;
+
   void addVetos(const reco::Candidate &cand);
   void clearVetos();
   float isoSumRaw(const std::vector<const pat::PackedCandidate *> & cands, const reco::Candidate &cand, float dR, float innerR, float threshold, SelfVetoPolicy::SelfVetoPolicy selfVeto, int pdgId=-1) const;
