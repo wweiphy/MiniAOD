@@ -114,7 +114,7 @@ namespace electronID{
       electron2lss,
       electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T,
       electronEndOf15MVA80, electronEndOf15MVA90, electronEndOf15MVA80iso0p1, electronEndOf15MVA80iso0p15, electronEndOf15MVA90iso0p1, electronEndOf15MVA90iso0p15,
-      electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT
+      electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electronNonTrigMVAid90,electronNonTrigMVAid80
    };
 }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }

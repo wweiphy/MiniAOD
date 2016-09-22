@@ -23,7 +23,7 @@ MiniAODHelper::MiniAODHelper(){
   { //  JER preparation
 
     std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
-    std::ifstream infile( JER_file); 
+    std::ifstream infile( JER_file);
     if( ! infile ){
       std::cerr << "Error: cannot open file(" << JER_file << ")" << endl;
       exit(1);
@@ -810,21 +810,21 @@ bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
 
 }
 
-// ICHEP dataset medium ID 
+// ICHEP dataset medium ID
 // https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Short_Term_Medium_Muon_Definitio
 bool MiniAODHelper::passesMuonPOGIdICHEPMedium(const pat::Muon& iMuon){
   bool isLooseMuon=false;
   isLooseMuon=(iMuon.isPFMuon() && (iMuon.isGlobalMuon() || iMuon.isTrackerMuon()));
-  
+
   if(!isLooseMuon) return false;
-  
-  bool goodGlob = (iMuon.isGlobalMuon() && iMuon.globalTrack()->normalizedChi2() < 3 && iMuon.combinedQuality().chi2LocalPosition < 12 && iMuon.combinedQuality().trkKink < 20);  
-  
+
+  bool goodGlob = (iMuon.isGlobalMuon() && iMuon.globalTrack()->normalizedChi2() < 3 && iMuon.combinedQuality().chi2LocalPosition < 12 && iMuon.combinedQuality().trkKink < 20);
+
   bool isMedium = (isLooseMuon && iMuon.innerTrack()->validFraction() > 0.49 && muon::segmentCompatibility(iMuon) > (goodGlob ? 0.303 : 0.451));
-  
+
   if(!isMedium) return false;
   return true;
-  
+
 }
 
 bool
@@ -1073,7 +1073,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
-    
+
   case electronID::electron80XCutBasedL:
   case electronID::electron80XCutBasedM:
   case electronID::electron80XCutBasedT:
@@ -1081,7 +1081,16 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
-    
+  case electronID::electronNonTrigMVAid80:
+    passesID = PassesNonTrigMVAid80(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = 0.15; //TODO: Isolation for non trigger ID
+    break;
+  case electronID::electronNonTrigMVAid90:
+    passesID = PassesNonTrigMVAid90(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = 0.15; //TODO: Isolation for non trigger ID
+    break;
 
 
   }
@@ -2002,7 +2011,7 @@ bool MiniAODHelper::PassesMVAidCuts(const pat::Electron& el, float cut0, float c
         case 0: pass=value>cut0; break;
         case 1: pass=value>cut1; break;
         case 2: pass=value>cut2; break;
-        default: std::cout << "unkown electron mva category" << std::endl;
+        default: std::cout << "unknown electron mva category" << std::endl;
     }
     return pass;
 }
