@@ -790,6 +790,7 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
 
 bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
 
+    if( !iMuon.isGlobalMuon()) return false;
     if( !iMuon.globalTrack().isAvailable() ) return false;
 
     bool passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.)
@@ -1094,12 +1095,12 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electronNonTrigMVAid80:
     passesID = PassesNonTrigMVAid80(iElectron);
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
-    passesIso = 0.15; //TODO: Isolation for non trigger ID
+    passesIso = 0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
   case electronID::electronNonTrigMVAid90:
     passesID = PassesNonTrigMVAid90(iElectron);
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
-    passesIso = 0.15; //TODO: Isolation for non trigger ID
+    passesIso = 0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
 
 
@@ -2017,11 +2018,17 @@ bool MiniAODHelper::PassesMVAidCuts(const pat::Electron& el, float cut0, float c
     bool pass=false;
     int category =el.userInt("mvaCategory");
     float value= el.userFloat("mvaValue");
+//     std::cout<<el.pt()<<" "<<el.eta()<<" "<<category<<" "<<value<<std::endl;
+    // the categories 0 1 and 2 are for low pT electrons.
     switch(category){
-        case 0: pass=value>cut0; break;
-        case 1: pass=value>cut1; break;
-        case 2: pass=value>cut2; break;
-        default: std::cout << "unknown electron mva category" << std::endl;
+	case 0: pass=false; break;
+	case 1: pass=false; break;
+	case 2: pass=false; break;
+        case 3: pass=value>cut0; break;
+        case 4: pass=value>cut1; break;
+        case 5: pass=value>cut2; break;
+	
+        default: std::cout << "unknown electron mva category pT eta "<< el.pt()<<" "<<el.eta() << std::endl;
     }
     return pass;
 }
