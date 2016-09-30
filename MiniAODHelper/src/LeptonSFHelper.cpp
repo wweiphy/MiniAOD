@@ -264,8 +264,8 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
     error=h_mu_ID_abseta_pt_ratio->GetBinError( thisBin );
     upval=( nomval+error );
     downval=( nomval-error );
-    upval=upval*( 1.0+0.01 );
-    downval=downval*( 1.0-0.01 );
+    upval=upval*( 1.0+sqrt(0.01*0.01+0.005+0.005) );
+    downval=downval*( 1.0-sqrt(0.01*0.01+0.005+0.005) );
 
 
 
@@ -298,8 +298,8 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
     error=h_mu_HIP_eta_ratio->GetBinError( thisBin );
     upval=( nomval+error );
     downval=( nomval-error );
-    upval=upval*( 1.0+0.005 );
-    downval=downval*( 1.0-0.005 );
+//     upval=upval*( 1.0+0.005 );
+//     downval=downval*( 1.0-0.005 );
 
 
   }
