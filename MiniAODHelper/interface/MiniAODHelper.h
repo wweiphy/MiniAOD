@@ -152,12 +152,7 @@ class MiniAODHelper{
   /**
   * \deprecated
   **/
-  void SetJetCorrectorUncertainty();
-  void SetJetCorrectorUncertainty(const JetCorrectorParameters&);
-  /**
-  * \deprecated
-  **/
-  void SetBoostedJetCorrectorUncertainty();
+  //  void SetBoostedJetCorrectorUncertainty();
   /**
   * \deprecated
   **/
@@ -165,8 +160,18 @@ class MiniAODHelper{
   /**
   *
   **/
-  void SetJetCorrectorUncertainty(const edm::EventSetup& iSetup);
-  void SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup);
+
+  void SetJetCorrectorUncertainty(const std::string& inputJECUncertaintyFile,
+				  const std::string& uncertaintyLabel = "");
+  void SetJetCorrectorUncertainty(const edm::EventSetup& iSetup,
+				  const std::string& jetTypeLabel,
+				  const std::string& uncertaintyLabel = "Uncertainty");
+
+  // temporary construction...
+  void SetAK8JetCorrectorUncertainty(const edm::EventSetup& iSetup, 
+				     const std::string& uncertaintyLabel = "Uncertainty");
+
+
   void SetFactorizedJetCorrector(const edm::EventSetup& iSetup);
 
 

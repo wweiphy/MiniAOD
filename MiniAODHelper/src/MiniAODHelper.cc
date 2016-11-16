@@ -193,36 +193,56 @@ void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
 }
 
 // Set up parameters one by one
-void MiniAODHelper::SetJetCorrectorUncertainty(){
 
-  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK4PFchs.txt";
-  jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
-}
 
-void MiniAODHelper::SetJetCorrectorUncertainty(const edm::EventSetup& iSetup){
-  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-  iSetup.get<JetCorrectionsRecord>().get("AK4PFchs",JetCorParColl);
-  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+// uncertaintyLabel: the uncertainty source. Default is "" (empty string), referring to the total JEC uncertainty
+// when using the <some label>_Uncertainty_AK4PFchs.txt file. To access the individual sources, use
+// the corresponding <some label>_UncertaintySources_AK4PFchs.txt file and specify a label (in that case,
+// "Total" is the label for the total uncertainty (equivalent to the empty string above)).
+//
+// See also: https://cmssdt.cern.ch/SDT/doxygen/CMSSW_8_0_23/doc/html/dc/d33/classJetCorrectorParametersCollection.html#afb3d4c6fd711ca23d89e0625a22dc483 for a list of in principle valid labels. Whether the uncertainty
+// exists in the specific inputJECUncertaintyFile depends on the particular payload.
+void MiniAODHelper::SetJetCorrectorUncertainty(const std::string& inputJECUncertaintyFile,
+					       const std::string& uncertaintyLabel) {
+  JetCorrectorParameters JetCorPar(inputJECUncertaintyFile,uncertaintyLabel);
   jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
 }
 
-void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& params)
-{
-   jecUnc_.reset(new JetCorrectionUncertainty(params));
+
+// jetTypeLabel: the jet type, e.g. "AK4PFchs". Must be one of the valid names used in the JEC records or
+// txt files
+//
+// uncertaintyLabel: the uncertainty source. Default is "Uncertainty", referring to the total JEC uncertainty
+//
+// See also: https://cmssdt.cern.ch/SDT/doxygen/CMSSW_8_0_23/doc/html/dc/d33/classJetCorrectorParametersCollection.html#afb3d4c6fd711ca23d89e0625a22dc483 for a list of in principle valid labels. Whether the uncertainty
+// exists in the specific case depends on the particular payload in the used GT.
+void MiniAODHelper::SetJetCorrectorUncertainty(const edm::EventSetup& iSetup, 
+ 					       const std::string& jetTypeLabel,
+					       const std::string& uncertaintyLabel) {
+  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+  iSetup.get<JetCorrectionsRecord>().get(jetTypeLabel,JetCorParColl);
+  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)[uncertaintyLabel];
+  jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
 }
-
-void MiniAODHelper::SetBoostedJetCorrectorUncertainty(){
-
-  std::string inputJECfile = string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_Uncertainty_AK8PFchs.txt";
-  ak8jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
-}
-
-void MiniAODHelper::SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup){
+void MiniAODHelper::SetAK8JetCorrectorUncertainty(const edm::EventSetup& iSetup, 
+						  const std::string& uncertaintyLabel) {
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
-  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)[uncertaintyLabel];
   ak8jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
 }
+
+// void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& params)
+// {
+//   jecUnc_.reset(new JetCorrectionUncertainty(params));
+// }
+
+// void MiniAODHelper::SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup){
+//   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+//   iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
+//   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
+//   ak8jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
+// }
 
 // Set up parameters one by one
 void MiniAODHelper::SetFactorizedJetCorrector(){
