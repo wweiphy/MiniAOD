@@ -88,6 +88,7 @@ namespace muonID{
    enum muonID{
       muonPreselection,
       muonSide, muonSideLooseMVA, muonSideTightMVA,
+      muonFakeable,
       muonLoose, muonTight,
       muonTightDL,
       muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly,
@@ -100,6 +101,7 @@ namespace electronID{
    enum electronID{
       electronPreselection,
       electronSide, electronSideLooseMVA, electronSideTightMVA,
+      electronFakeable,
       electronLoose, electronTight,
       electronTightMinusTrigPresel, electronLooseMinusTrigPresel,
       electronRaw,

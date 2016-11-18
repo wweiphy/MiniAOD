@@ -805,6 +805,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
   case muonID::muonSide:
   case muonID::muonSideLooseMVA:
   case muonID::muonSideTightMVA:
+  case muonID::muonFakeable:
   case muonID::muonPtOnly:
   case muonID::muonPtEtaOnly:
   case muonID::muonPtEtaIsoOnly:
@@ -934,6 +935,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electronRaw:
   case electronID::electronCutBased:
   case electronID::electron2lss:
+  case electronID::electronFakeable:
   case electronID::electronLoose:
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso        = (GetElectronRelIso(iElectron) < 0.200);
