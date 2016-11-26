@@ -1,9 +1,13 @@
 #include "../interface/MiniAODHelper.h"
 
+#include "FWCore/Utilities/interface/Exception.h"
+
 using namespace std;
 
 // Constructor
-MiniAODHelper::MiniAODHelper() {
+MiniAODHelper::MiniAODHelper() 
+  : jetTypeLabelForJECUncertainty_("AK4PFchs"),
+    jecUncertaintyTxtFileName_("") {
 
   isSetUp = false;
 
@@ -18,6 +22,10 @@ MiniAODHelper::MiniAODHelper() {
   CSVTwp = 0.935;//CSVv2 0.941; // 0.1144% DUSG mistag efficiency
 
   samplename = "blank";
+
+  // JEC uncertainties
+  jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Fall15_25nsV2_MC_UncertaintySources_AK4PFchs.txt";
+
 
   { //  JER preparation
 
@@ -195,80 +203,88 @@ void MiniAODHelper::SetBoostedJetCorrector(const JetCorrector* iCorrector){
 // Set up parameters one by one
 
 
-// uncertaintyLabel: the uncertainty source. Default is "" (empty string), referring to the total JEC uncertainty
-// when using the <some label>_Uncertainty_AK4PFchs.txt file. To access the individual sources, use
-// the corresponding <some label>_UncertaintySources_AK4PFchs.txt file and specify a label (in that case,
-// "Total" is the label for the total uncertainty (equivalent to the empty string above)).
+// Create a new instance of JetCorrectionUncertainty
 //
-// See also: https://cmssdt.cern.ch/SDT/doxygen/CMSSW_8_0_23/doc/html/dc/d33/classJetCorrectorParametersCollection.html#afb3d4c6fd711ca23d89e0625a22dc483 for a list of in principle valid labels. Whether the uncertainty
-// exists in the specific inputJECUncertaintyFile depends on the particular payload.
-void MiniAODHelper::SetJetCorrectorUncertainty(const std::string& inputJECUncertaintyFile,
-					       const std::string& uncertaintyLabel) {
-  JetCorrectorParameters JetCorPar(inputJECUncertaintyFile,uncertaintyLabel);
-  jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
+// jetTypeLabel: the jet type, e.g. "AK4PFchs". Must be one of the valid names used
+// in the JEC records or txt files
+//
+// uncertaintyLabel: the uncertainty source. See also: https://cmssdt.cern.ch/SDT/doxygen/CMSSW_8_0_23/doc/html/dc/d33/classJetCorrectorParametersCollection.html#afb3d4c6fd711ca23d89e0625a22dc483 for a list of in principle valid labels.
+// Whether the uncertainty exists in the specific case depends on the particular payload
+JetCorrectionUncertainty*
+MiniAODHelper::CreateJetCorrectorUncertainty(const edm::EventSetup& iSetup, 
+					     const std::string& jetTypeLabel,
+					     const std::string& uncertaintyLabel) const {
+  try {
+    JetCorrectorParameters jetCorPar;
+    if( jecUncertaintyTxtFileName_ != "" ) {
+      if( uncertaintyLabel == "Uncertainty" ) {// this is the key in the database but not in txt...
+	jetCorPar = JetCorrectorParameters(jecUncertaintyTxtFileName_,"Total");
+      } else {
+	jetCorPar = JetCorrectorParameters(jecUncertaintyTxtFileName_,uncertaintyLabel);
+      }
+    } else {
+      edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
+      iSetup.get<JetCorrectionsRecord>().get(jetTypeLabel,JetCorParColl);
+      //JetCorrectorParameters const & JetCorPar = (*JetCorParColl)[uncertaintyLabel];
+      jetCorPar = (*JetCorParColl)[uncertaintyLabel];
+    }
+    return new JetCorrectionUncertainty(jetCorPar);
+  } catch (cms::Exception& e) {
+    throw cms::Exception("InvalidJECUncertaintyLabel") << "No JEC uncertainty with label '" << uncertaintyLabel << "' found in event setup";
+  }
+  return 0;
+}
+
+// Add a new JetCorrectionUncertainty of type uncertaintyLabel to the list of
+// considered uncertainties.
+//
+// Note: will be called automatically if a new uncertainty type previously not
+// in the list is requested by GetCorrectedJet --> avoid having to initialize
+// unused types
+void
+MiniAODHelper::AddJetCorrectorUncertainty(const edm::EventSetup& iSetup, const std::string& uncertaintyLabel) {
+  jecUncertainties_[uncertaintyLabel] = std::unique_ptr<JetCorrectionUncertainty>( CreateJetCorrectorUncertainty(iSetup,jetTypeLabelForJECUncertainty_,uncertaintyLabel) );
+}
+
+// Upate the JetCorrectionUncertainty instances for all considered types of
+// JEC uncertainties. Call when a new payload is required, e.g. at the begin
+// of a new run (=possibly new IOV).
+void
+MiniAODHelper::UpdateJetCorrectorUncertainties(const edm::EventSetup& iSetup) {
+  for(auto& jecUncIt: jecUncertainties_) {
+    jecUncIt.second.reset( CreateJetCorrectorUncertainty(iSetup,jetTypeLabelForJECUncertainty_,jecUncIt.first) );
+  }
+}
+
+// Return the JEC uncertainty value
+// 
+// Scale JES by (1+value) to apply uncertainty
+//
+// Note: for JEC down, value will internally be multiplied by -1
+// --> *always* scale JES by (1+value).
+double
+MiniAODHelper::GetJECUncertainty(const pat::Jet& jet, const edm::EventSetup& iSetup, const sysType::sysType iSysType) {
+  const std::string uncertaintyLabel = sysType::GetJECUncertaintyLabel(iSysType);
+  std::map< std::string, std::unique_ptr<JetCorrectionUncertainty> >::iterator jecUncIt = jecUncertainties_.find(uncertaintyLabel);
+  if( jecUncIt == jecUncertainties_.end() ) { // Lazy initialization
+    AddJetCorrectorUncertainty(iSetup,uncertaintyLabel);
+    jecUncIt = jecUncertainties_.find(uncertaintyLabel);
+  }
+  JetCorrectionUncertainty* unc = jecUncIt->second.get();
+
+  unc->setJetEta(jet.eta());
+  unc->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
+  if( sysType::isJECUncertaintyUp(iSysType) ) return +1. * unc->getUncertainty(true);
+  else                                        return -1. * unc->getUncertainty(false);
 }
 
 
-// jetTypeLabel: the jet type, e.g. "AK4PFchs". Must be one of the valid names used in the JEC records or
-// txt files
-//
-// uncertaintyLabel: the uncertainty source. Default is "Uncertainty", referring to the total JEC uncertainty
-//
-// See also: https://cmssdt.cern.ch/SDT/doxygen/CMSSW_8_0_23/doc/html/dc/d33/classJetCorrectorParametersCollection.html#afb3d4c6fd711ca23d89e0625a22dc483 for a list of in principle valid labels. Whether the uncertainty
-// exists in the specific case depends on the particular payload in the used GT.
-void MiniAODHelper::SetJetCorrectorUncertainty(const edm::EventSetup& iSetup, 
- 					       const std::string& jetTypeLabel,
-					       const std::string& uncertaintyLabel) {
-  edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-  iSetup.get<JetCorrectionsRecord>().get(jetTypeLabel,JetCorParColl);
-  JetCorrectorParameters const & JetCorPar = (*JetCorParColl)[uncertaintyLabel];
-  jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
-}
 void MiniAODHelper::SetAK8JetCorrectorUncertainty(const edm::EventSetup& iSetup, 
 						  const std::string& uncertaintyLabel) {
   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
   iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)[uncertaintyLabel];
   ak8jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
-}
-
-// void MiniAODHelper::SetJetCorrectorUncertainty(const JetCorrectorParameters& params)
-// {
-//   jecUnc_.reset(new JetCorrectionUncertainty(params));
-// }
-
-// void MiniAODHelper::SetBoostedJetCorrectorUncertainty(const edm::EventSetup& iSetup){
-//   edm::ESHandle<JetCorrectorParametersCollection> JetCorParColl;
-//   iSetup.get<JetCorrectionsRecord>().get("AK8PFchs",JetCorParColl);
-//   JetCorrectorParameters const & JetCorPar = (*JetCorParColl)["Uncertainty"];
-//   ak8jecUnc_.reset(new JetCorrectionUncertainty(JetCorPar));
-// }
-
-// Set up parameters one by one
-void MiniAODHelper::SetFactorizedJetCorrector(){
-
-  // Create the JetCorrectorParameter objects, the order does not matter.
-  //JetCorrectorParameters *ResJetPar = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/");
-  JetCorrectorParameters *L3JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L3Absolute_AK4PFchs.txt");
-  JetCorrectorParameters *L2JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L2Relative_AK4PFchs.txt");
-  JetCorrectorParameters *L1JetPar  = new JetCorrectorParameters(string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_L1FastJet_AK4PFchs.txt");
-  //  Load the JetCorrectorParameter objects into a vector, IMPORTANT: THE ORDER MATTERS HERE !!!!
-  std::vector<JetCorrectorParameters> vPar;
-  vPar.push_back(*L1JetPar);
-  vPar.push_back(*L2JetPar);
-  vPar.push_back(*L3JetPar);
-  //vPar->push_back(ResJetPar);
-
-  useJetCorrector = new FactorizedJetCorrector(vPar);
-
-  std::string inputJECfile = ( isData ) ? string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_DATA_Uncertainty_AK5PFchs.txt" : string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Summer13_V5_MC_Uncertainty_AK5PFchs.txt";
-  jecUnc_.reset(new JetCorrectionUncertainty(inputJECfile));
-
-  factorizedjetcorrectorIsSet = true;
-}
-
-void MiniAODHelper::SetFactorizedJetCorrector(const edm::EventSetup& iSetup){
-  throw cms::Exception("FunctionNotDefined") << "Function SetFactorizedJetCorrector is not defined";
 }
 
 std::vector<pat::Muon>
@@ -372,144 +388,125 @@ std::vector<pat::Jet> MiniAODHelper::GetUncorrectedJets(
 }
 
 
-pat::Jet
-MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+pat::Jet MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet,
+					const edm::Event& event,
+					const edm::EventSetup& setup,
+					const edm::Handle<reco::GenJetCollection>& genjets,
+					const sysType::sysType iSysType,
+					const bool doJES,
+					const bool doJER,
+					const float corrFactor,
+					const float uncFactor) {
 
-  if( !doJES && !doJER ) return inputJet;
-
-  CheckSetUp();
-
+  double factor = 1.;
   pat::Jet outputJet = inputJet;
-
-  /// JES
-  if( doJES ){
-    double scale = 1.;
-
-    if (corrector) {
-       scale = corrector->correction(outputJet, event, setup);
-    } else if (!use_corrected_jets) {
-       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
-    }
-
-    outputJet.addUserFloat("HelperJES",scale);
-
-    outputJet.scaleEnergy( scale*corrFactor );
-
-    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
-
-      jecUnc_->setJetEta(outputJet.eta());
-      jecUnc_->setJetPt(outputJet.pt()); // here you must use the CORRECTED jet pt
-      double unc = 1;
-      double jes = 1;
-      if( iSysType==sysType::JESup ){
-	      unc = jecUnc_->getUncertainty(true);
-	      jes = 1 + (unc*uncFactor);
-	      outputJet.addUserFloat("HelperJESUp",unc);
-      }
-      else if( iSysType==sysType::JESdown ){
-	      unc = jecUnc_->getUncertainty(false);
-	      jes = 1 - (unc*uncFactor);
-	      outputJet.addUserFloat("HelperJESDown",unc);
-      }
-
-      outputJet.scaleEnergy( jes );
-    }
-  }
-
-  /// JER
-  if( doJER ){
-    double jerSF = 1.;
-    reco::GenJet matched_genjet;
-    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.4) ) {
-    //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
-      if( iSysType == sysType::JERup ){
-	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
-      }
-      else if( iSysType == sysType::JERdown ){
-	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
-      }
-      else {
-	      jerSF = getJERfactor(0, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
-      }
-      // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
-    }
-    // else     std::cout << "    ==> can't find genJet" << std::endl;
-    outputJet.scaleEnergy( jerSF*corrFactor );
-  }
+  ApplyJetEnergyCorrection(outputJet,
+			   factor,
+			   event,
+			   setup,
+			   genjets,
+			   iSysType,
+			   doJES,
+			   doJER,
+			   true, // addUserFloats
+			   corrFactor,
+			   uncFactor);
 
   return outputJet;
 }
 
 
-float
-MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+float MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet,
+					    const edm::Event& event,
+					    const edm::EventSetup& setup,
+					    const edm::Handle<reco::GenJetCollection>& genjets,
+					    const sysType::sysType iSysType,
+					    const bool doJES,
+					    const bool doJER,
+					    const float corrFactor,
+					    const float uncFactor) {
 
   double factor = 1.;
-
-  if( !doJES && !doJER ) return factor;
-
-  CheckSetUp();
-
   pat::Jet outputJet = inputJet;
-
-  /// JES
-  if( doJES ){
-    double scale = 1.;
-
-    if (corrector) {
-       scale = corrector->correction(outputJet, event, setup);
-    } else if (!use_corrected_jets) {
-       edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
-    }
-
-    outputJet.scaleEnergy( scale*corrFactor );
-    factor *= scale*corrFactor;
-
-
-    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
-
-      jecUnc_->setJetEta(outputJet.eta());
-      jecUnc_->setJetPt(outputJet.pt()); // here you must use the CORRECTED jet pt
-      double unc = 1;
-      double jes = 1;
-      if( iSysType==sysType::JESup ){
-	      unc = jecUnc_->getUncertainty(true);
-	      jes = 1 + (unc*uncFactor);
-      }
-      else if( iSysType==sysType::JESdown ){
-	      unc = jecUnc_->getUncertainty(false);
-	      jes = 1 - (unc*uncFactor);
-      }
-
-      outputJet.scaleEnergy( jes );
-      factor *= jes;
-    }
-  }
-
-  /// JER
-  if( doJER){
-    double jerSF = 1.;
-    reco::GenJet matched_genjet;
-    if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.4) ) {
-    //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
-      if( iSysType == sysType::JERup ){
-	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
-      }
-      else if( iSysType == sysType::JERdown ){
-	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
-      }
-      else {
-	      jerSF = getJERfactor(0, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
-      }
-      // std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
-    }
-    // else     std::cout << "    ==> can't find genJet" << std::endl;
-
-    outputJet.scaleEnergy( jerSF*corrFactor );
-    factor *= jerSF*corrFactor;
-  }
+  ApplyJetEnergyCorrection(outputJet,
+			   factor,
+			   event,
+			   setup,
+			   genjets,
+			   iSysType,
+			   doJES,
+			   doJER,
+			   false, // addUserFloats: does not make sense to add them to intermediate outputJet
+			   corrFactor,
+			   uncFactor);
 
   return factor;
+}
+
+
+void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
+					     double& totalCorrFactor,
+					     const edm::Event& event,
+					     const edm::EventSetup& setup,
+					     const edm::Handle<reco::GenJetCollection>& genjets,
+					     const sysType::sysType iSysType,
+					     const bool doJES,
+					     const bool doJER,
+					     const bool addUserFloats,
+					     const float corrFactor,
+					     const float uncFactor) {
+  totalCorrFactor = 1.;
+
+  if( doJES || doJER ) {
+    CheckSetUp();
+
+    /// JES
+    if( doJES ){
+      double scale = 1.;
+      if (corrector) {
+	scale = corrector->correction(jet, event, setup);
+      } else if (!use_corrected_jets) {
+	edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
+      }
+      if( addUserFloats ) jet.addUserFloat("HelperJES",scale);
+      const double jec = scale*corrFactor;
+      jet.scaleEnergy( jec );
+      totalCorrFactor *= jec;
+
+      if( sysType::isJECUncertainty(iSysType) ) {
+	const double unc = GetJECUncertainty(jet,setup,iSysType);
+	if( addUserFloats ) {
+	  if( sysType::isJECUncertaintyUp(iSysType) ) jet.addUserFloat("HelperJESUp",std::abs(unc));
+	  else                                        jet.addUserFloat("HelperJESDown",std::abs(unc));
+	}
+	const double jecvar = 1. + (unc*uncFactor);
+	jet.scaleEnergy( jecvar );
+	totalCorrFactor *= jecvar;
+      }
+    }
+
+    /// JER
+    if( doJER ){
+      double jerSF = 1.;
+      reco::GenJet matched_genjet;
+      if ( GenJet_Match(jet, genjets, matched_genjet, 0.4) ) {
+	//if( jet.genJet() && deltaR(jet,*jet.genJet())<0.4/2 && jetdPtMatched(jet)){
+	if( iSysType == sysType::JERup ){
+	  jerSF = getJERfactor(uncFactor, fabs(jet.eta()), matched_genjet.pt(), jet.pt());
+	} else if( iSysType == sysType::JERdown ){
+	  jerSF = getJERfactor(-uncFactor, fabs(jet.eta()), matched_genjet.pt(), jet.pt());
+	} else {
+	  jerSF = getJERfactor(0, fabs(jet.eta()), matched_genjet.pt(), jet.pt());
+	}
+	// std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
+      }
+      // else     std::cout << "    ==> can't find genJet" << std::endl;
+      const double jervar = jerSF*corrFactor;
+      jet.scaleEnergy( jervar );
+      totalCorrFactor *= jervar;
+    }
+
+  }
 }
 
 
@@ -667,54 +664,54 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 }
 
 
-std::vector<pat::Jet>
-MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sysType::sysType iSysType ){
+// std::vector<pat::Jet>
+// MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sysType::sysType iSysType ){
 
-  CheckSetUp();
+//   CheckSetUp();
 
-  std::vector<pat::Jet> outputJets;
+//   std::vector<pat::Jet> outputJets;
 
-  if( !(factorizedjetcorrectorIsSet && rhoIsSet) ){
-   std::cout << " !! ERROR !! Trying to use FWLite Framework GetCorrectedJets without setting factorized jet corrector !" << std::endl;
+//   if( !(factorizedjetcorrectorIsSet && rhoIsSet) ){
+//    std::cout << " !! ERROR !! Trying to use FWLite Framework GetCorrectedJets without setting factorized jet corrector !" << std::endl;
 
-     return inputJets;
-  }
+//      return inputJets;
+//   }
 
-  for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
-    pat::Jet jet = (*it);
-    double scale = 1.;
+//   for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
+//     pat::Jet jet = (*it);
+//     double scale = 1.;
 
-    useJetCorrector->setJetEta(it->eta());
-    useJetCorrector->setJetPt(it->pt());
-    useJetCorrector->setJetA(it->jetArea());
-    useJetCorrector->setRho(useRho);
+//     useJetCorrector->setJetEta(it->eta());
+//     useJetCorrector->setJetPt(it->pt());
+//     useJetCorrector->setJetA(it->jetArea());
+//     useJetCorrector->setRho(useRho);
 
-    scale = useJetCorrector->getCorrection();
+//     scale = useJetCorrector->getCorrection();
 
-    jet.scaleEnergy( scale );
+//     jet.scaleEnergy( scale );
 
-    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
-      jecUnc_->setJetEta(jet.eta());
-      jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
-      double unc = 1;
-      double jes = 1;
-      if( iSysType==sysType::JESup ){
-	unc = jecUnc_->getUncertainty(true);
-	jes = 1 + unc;
-      }
-      else if( iSysType==sysType::JESdown ){
-	unc = jecUnc_->getUncertainty(false);
-	jes = 1 - unc;
-      }
+//     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+//       jecUnc_->setJetEta(jet.eta());
+//       jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
+//       double unc = 1;
+//       double jes = 1;
+//       if( iSysType==sysType::JESup ){
+// 	unc = jecUnc_->getUncertainty(true);
+// 	jes = 1 + unc;
+//       }
+//       else if( iSysType==sysType::JESdown ){
+// 	unc = jecUnc_->getUncertainty(false);
+// 	jes = 1 - unc;
+//       }
 
-      jet.scaleEnergy( jes );
-    }
+//       jet.scaleEnergy( jes );
+//     }
 
-    outputJets.push_back(jet);
-  }
+//     outputJets.push_back(jet);
+//   }
 
-  return outputJets;
-}
+//   return outputJets;
+// }
 
 
 std::vector<boosted::BoostedJet>
@@ -2791,5 +2788,5 @@ std::vector<pat::MET> MiniAODHelper::CorrectMET(const std::vector<pat::Jet>& old
   }
 
   return outputMets;
-
+  
 }

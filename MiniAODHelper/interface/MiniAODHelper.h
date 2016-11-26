@@ -72,6 +72,8 @@
 
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 
+#include "MiniAOD/MiniAODHelper/interface/Systematics.h"
+
 #endif
 
 typedef std::map<std::string, std::string> mparams;
@@ -84,7 +86,6 @@ typedef std::vector<double> vdouble;
 typedef std::vector<int> vint;
 
 namespace analysisType{ enum analysisType{ LJ, DIL, TauLJ, TauDIL }; }
-namespace sysType{enum sysType{NA, JERup, JERdown, JESup, JESdown, hfSFup, hfSFdown, lfSFdown, lfSFup, TESup, TESdown, CSVLFup, CSVLFdown, CSVHFup, CSVHFdown, CSVHFStats1up, CSVHFStats1down, CSVLFStats1up, CSVLFStats1down, CSVHFStats2up, CSVHFStats2down, CSVLFStats2up, CSVLFStats2down, CSVCErr1up, CSVCErr1down, CSVCErr2up, CSVCErr2down }; }
 namespace jetID{		enum jetID{			none, jetPU, jetMinimal, jetLooseAOD, jetLoose, jetTight, jetMETcorrection }; }
 namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight }; }
 namespace tau { enum ID { nonIso, loose, medium, tight }; }
@@ -149,31 +150,12 @@ class MiniAODHelper{
   void SetJetCorrector(const JetCorrector*);
   void SetBoostedJetCorrector(const JetCorrector*);
 
-  /**
-  * \deprecated
-  **/
-  //  void SetBoostedJetCorrectorUncertainty();
-  /**
-  * \deprecated
-  **/
-  void SetFactorizedJetCorrector();
-  /**
-  *
-  **/
+  void UpdateJetCorrectorUncertainties(const edm::EventSetup& iSetup);
 
-  void SetJetCorrectorUncertainty(const std::string& inputJECUncertaintyFile,
-				  const std::string& uncertaintyLabel = "");
-  void SetJetCorrectorUncertainty(const edm::EventSetup& iSetup,
-				  const std::string& jetTypeLabel,
-				  const std::string& uncertaintyLabel = "Uncertainty");
 
   // temporary construction...
   void SetAK8JetCorrectorUncertainty(const edm::EventSetup& iSetup, 
 				     const std::string& uncertaintyLabel = "Uncertainty");
-
-
-  void SetFactorizedJetCorrector(const edm::EventSetup& iSetup);
-
 
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
   
@@ -183,12 +165,12 @@ class MiniAODHelper{
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetUncorrectedJets(edm::Handle<pat::JetCollection>);
-  pat::Jet GetCorrectedJet(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
-  float GetJetCorrectionFactor(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
+  pat::Jet GetCorrectedJet(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const sysType::sysType iSysType=sysType::NA, const bool doJES=true, const bool doJER=true, const float corrFactor = 1, const float uncFactor = 1);
+  float GetJetCorrectionFactor(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const sysType::sysType iSysType=sysType::NA, const bool doJES=true, const bool doJER=true, const float corrFactor = 1, const float uncFactor = 1);
   pat::Jet GetCorrectedAK8Jet(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
   float GetAK8JetCorrectionFactor(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
   std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
-  std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
+  //  std::vector<pat::Jet> GetCorrectedJets(const std::vector<pat::Jet>&, const sysType::sysType iSysType=sysType::NA);
   std::vector<boosted::BoostedJet> GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& inputBoostedJets, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const sysType::sysType iSysType=sysType::NA, const bool& doJES=true, const bool& doJER=true, const float& corrFactor = 1, const float& uncFactor = 1);
   std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID);
   std::vector<pat::PackedCandidate> GetPackedCandidates(void);
@@ -286,7 +268,8 @@ class MiniAODHelper{
   const JetCorrector* corrector = 0;
   const JetCorrector* ak8corrector = 0;
   FactorizedJetCorrector* useJetCorrector;
-  std::unique_ptr<JetCorrectionUncertainty> jecUnc_;
+  //  std::unique_ptr<JetCorrectionUncertainty> jecUnc_;
+  std::map< std::string, std::unique_ptr<JetCorrectionUncertainty> > jecUncertainties_;
   std::unique_ptr<JetCorrectionUncertainty> ak8jecUnc_;
   PUWeightProducer puWeightProducer_;
 
@@ -318,6 +301,26 @@ class MiniAODHelper{
     }
 
   }; // end structure .
+
+  void ApplyJetEnergyCorrection(pat::Jet& jet,
+				double& totalCorrFactor,
+				const edm::Event& event,
+				const edm::EventSetup& setup,
+				const edm::Handle<reco::GenJetCollection>& genjets,
+				const sysType::sysType iSysType,
+				const bool doJES,
+				const bool doJER,
+				const bool addUserFloats,
+				const float corrFactor,
+				const float uncFactor);
+  
+  std::string jetTypeLabelForJECUncertainty_;
+  std::string jecUncertaintyTxtFileName_;
+  JetCorrectionUncertainty* CreateJetCorrectorUncertainty(const edm::EventSetup& iSetup, 
+							  const std::string& jetTypeLabel,
+							  const std::string& uncertaintyLabel) const;
+  void AddJetCorrectorUncertainty(const edm::EventSetup& iSetup, const std::string& uncertaintyLabel);
+  double GetJECUncertainty(const pat::Jet& jet, const edm::EventSetup& iSetup, const sysType::sysType iSysType);
 
 
   void FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
