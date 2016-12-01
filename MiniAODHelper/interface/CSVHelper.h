@@ -31,9 +31,17 @@ public:
 		      double &csvWgtLF,
 		      double &csvWgtCF) const;
 
+  // If there is no SF for a jet because it is out of acceptance
+  // of SF, an SF of 1 is used for this jet. Intended when running
+  // on MC with a more inclusive selection.
+  // USE WITH CARE!
+  void allowJetsOutOfBinning(const bool allow) { allowJetsOutOfBinning_ = allow; }
+
+
 private:
   bool isInit_;
   int nHFptBins_;
+  bool allowJetsOutOfBinning_;
 
   std::vector< std::vector<TH1*> > h_csv_wgt_hf;
   std::vector< std::vector<TH1*> > c_csv_wgt_hf;

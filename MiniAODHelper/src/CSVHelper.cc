@@ -9,11 +9,11 @@
 #include "MiniAOD/MiniAODHelper/interface/CSVHelper.h"
 
 CSVHelper::CSVHelper()
-  : isInit_(false), nHFptBins_(0) {}
+  : isInit_(false), nHFptBins_(0), allowJetsOutOfBinning_(false) {}
 
 
 CSVHelper::CSVHelper(const std::string& hf, const std::string& lf, const int nHFptBins)
-  : isInit_(false), nHFptBins_(0) {
+  : isInit_(false), nHFptBins_(0), allowJetsOutOfBinning_(false) {
   init(hf,lf,nHFptBins);
 }
 
@@ -290,8 +290,10 @@ CSVHelper::getCSVWeight(const std::vector<double>& jetPts,
     else if (jetAbsEta >= 1.6 && jetAbsEta < 2.41)
       iEta = 2;
     
-    if (iPt < 0 || iEta < 0)
+    if (iPt < 0 || iEta < 0) {
+      if( allowJetsOutOfBinning_ ) continue;
       throw cms::Exception("BadCSVWeightAccess") << "couldn't find Pt, Eta bins for this b-flavor jet, jetPt = " << jetPt << ", jetAbsEta = " << jetAbsEta;
+    }
     
     if (abs(flavor) == 5) {
       // RESET iPt to maximum pt bin (only 5 bins for new SFs)
