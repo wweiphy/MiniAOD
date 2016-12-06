@@ -205,6 +205,8 @@ class MiniAODHelper{
   bool PassesMVAid90(const pat::Electron&) const;
   bool PassesNonTrigMVAid80(const pat::Electron& el) const;
   bool PassesNonTrigMVAid90(const pat::Electron& el) const;
+  bool PassesGeneralPurposeMVA2016WP80(const pat::Electron& el) const;
+  bool PassesGeneralPurposeMVA2016WP90(const pat::Electron& el) const;
 
   void addVetos(const reco::Candidate &cand);
   void clearVetos();

@@ -2060,6 +2060,18 @@ bool MiniAODHelper::PassesMVAid90(const pat::Electron& el) const{
 }
 
 
+
+bool MiniAODHelper::PassesGeneralPurposeMVA2016WP80(const pat::Electron& el) const{
+  const bool DO_NOT_REQUIRE_PRESELECTION = false;
+  return PassesMVAidCuts(el, 0.941 , 0.899 , 0.758 , DO_NOT_REQUIRE_PRESELECTION );// Values from : https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=26
+}
+
+bool MiniAODHelper::PassesGeneralPurposeMVA2016WP90(const pat::Electron& el) const{
+  const bool DO_NOT_REQUIRE_PRESELECTION = false;
+  return PassesMVAidCuts(el, 0.837, 0.715, 0.357 , DO_NOT_REQUIRE_PRESELECTION );// Values from : https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=26
+}
+
+
 bool MiniAODHelper::PassesNonTrigMVAid80(const pat::Electron& el) const{
   const bool DO_NOT_REQUIRE_PRESELECTION = false;
   return PassesMVAidCuts(el,0.967083,0.929117,0.726311, DO_NOT_REQUIRE_PRESELECTION );// Values from : https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=26
