@@ -43,6 +43,7 @@ sysType::sysType sysType::get(const std::string& name) {
   if( name == "JESSubTotalScaleup" ) return JESSubTotalScaleup;
   if( name == "JESSubTotalMCup" ) return JESSubTotalMCup;
   if( name == "JESSubTotalAbsoluteup" ) return JESSubTotalAbsoluteup;
+  if( name == "JESTotalNoFlavorup" ) return JESTotalNoFlavorup;
   
   if( name == "JESdown"                ) return JESdown;
   if( name == "JESAbsoluteStatdown" ) return JESAbsoluteStatdown;
@@ -80,6 +81,7 @@ sysType::sysType sysType::get(const std::string& name) {
   if( name == "JESSubTotalScaledown" ) return JESSubTotalScaledown;
   if( name == "JESSubTotalMCdown" ) return JESSubTotalMCdown;
   if( name == "JESSubTotalAbsolutedown" ) return JESSubTotalAbsolutedown;
+  if( name == "JESTotalNoFlavordown" ) return JESTotalNoFlavordown;
 
   throw cms::Exception("InvalidUncertaintyName") << "No uncertainty with name '" << name << "'";
   return sysType::NA;
@@ -128,6 +130,7 @@ std::string sysType::toString(const sysType type) {
   if( type == JESSubTotalScaleup ) return "JESSubTotalScaleup";
   if( type == JESSubTotalMCup ) return "JESSubTotalMCup";
   if( type == JESSubTotalAbsoluteup ) return "JESSubTotalAbsoluteup";
+  if( type == JESTotalNoFlavorup ) return "JESTotalNoFlavorup";
 
   if( type == JESdown                ) return "JESdown";
   if( type == JESAbsoluteStatdown ) return "JESAbsoluteStatdown";
@@ -165,6 +168,7 @@ std::string sysType::toString(const sysType type) {
   if( type == JESSubTotalScaledown ) return "JESSubTotalScaledown";
   if( type == JESSubTotalMCdown ) return "JESSubTotalMCdown";
   if( type == JESSubTotalAbsolutedown ) return "JESSubTotalAbsolutedown";
+  if( type == JESTotalNoFlavordown ) return "JESTotalNoFlavordown";
 
   throw cms::Exception("InvalidUncertaintyType") << "No uncertainty with index '" << type << "'";
   return "";
@@ -209,6 +213,7 @@ bool sysType::isJECUncertaintyUp(const sysType type) {
   if( type == JESSubTotalScaleup ) return true;
   if( type == JESSubTotalMCup ) return true;
   if( type == JESSubTotalAbsoluteup ) return true;
+  if( type == JESTotalNoFlavorup ) return true;
 
   else return false;
 }
@@ -251,6 +256,7 @@ bool sysType::isJECUncertaintyDown(const sysType type) {
   if( type == JESSubTotalScaledown ) return true;
   if( type == JESSubTotalMCdown ) return true;
   if( type == JESSubTotalAbsolutedown ) return true;
+  if( type == JESTotalNoFlavordown ) return true;
 
   else return false;
 }
@@ -297,6 +303,7 @@ std::string sysType::GetJECUncertaintyLabel(const sysType type) {
   if( type == JESSubTotalScaleup || type == JESSubTotalScaledown ) return "SubTotalScale";
   if( type == JESSubTotalMCup || type == JESSubTotalMCdown ) return "SubTotalMC";
   if( type == JESSubTotalAbsoluteup || type == JESSubTotalAbsolutedown ) return "SubTotalAbsolute";
+  if( type == JESTotalNoFlavorup || type == JESTotalNoFlavordown ) return "TotalNoFlavor";
 
   else return "";
 }

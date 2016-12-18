@@ -47,6 +47,7 @@ namespace sysType {
     JESSubTotalScaleup,
     JESSubTotalMCup,
     JESSubTotalAbsoluteup,
+    JESTotalNoFlavorup,
     
     // individual JEC uncertainties down
     JESAbsoluteStatdown,
@@ -84,6 +85,7 @@ namespace sysType {
     JESSubTotalScaledown,
     JESSubTotalMCdown,
     JESSubTotalAbsolutedown,
+    JESTotalNoFlavordown,
 
     // JER uncertainty
     JERup,			
