@@ -92,7 +92,7 @@ void MiniAODHelper::SetUp(string iEra, int iSampleNumber, const analysisType::an
   isData       = iIsData;
 
   // Error checking here
-  if((era != "2011") && (era != "2012_52x") && (era != "2012_53x") && (era != "2015_72x") && (era != "2015_73x") && (era != "2015_74x")){ ThrowFatalError("era set to '" + era + "' but it has to be either 2011, 2012_52x, 2012_53x, 2015_72x, 2015_73x, or 2015_74x"); }
+  if((era != "NA") && (era != "2011") && (era != "2012_52x") && (era != "2012_53x") && (era != "2015_72x") && (era != "2015_73x") && (era != "2015_74x")){ ThrowFatalError("era set to '" + era + "' but it has to be either 2011, 2012_52x, 2012_53x, 2015_72x, 2015_73x, 2015_74x, or NA"); }
   if(sampleNumber==0){ ThrowFatalError("'sampleNumber' cannot be '0'."); }
 
   // Setup PU reweighing
@@ -1119,7 +1119,16 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso = 0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
-
+  case electronID::electronGeneralPurposeMVA2016WP80:
+    passesID = PassesGeneralPurposeMVA2016WP80(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = 0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::summer16);
+    break;
+  case electronID::electronGeneralPurposeMVA2016WP90:
+    passesID = PassesGeneralPurposeMVA2016WP90(iElectron);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = 0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::summer16);
+    break;
 
   }
 
@@ -1445,6 +1454,16 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
 	    else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
 	  }
+	  else if (ieffAreaType==effAreaType::summer16){
+	    if (Eta >= 0.0000 && Eta < 1.0000) EffArea = 0.1703;
+	    else if (Eta >= 1.0000 && Eta < 1.4790) EffArea = 0.1715;
+	    else if (Eta >= 1.4790 && Eta < 2.0000) EffArea = 0.1213;
+	    else if (Eta >= 2.0000 && Eta < 2.2000) EffArea = 0.1230;
+	    else if (Eta >= 2.2000 && Eta < 2.3000) EffArea = 0.1635;
+	    else if (Eta >= 2.3000 && Eta < 2.4000) EffArea = 0.1937;
+	    else if (Eta >= 2.4000 && Eta < 5.0000) EffArea = 0.2393;
+	  }
+
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea;
 	  break;
