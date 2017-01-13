@@ -17,9 +17,9 @@ MiniAODHelper::MiniAODHelper()
 
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
-  CSVLwp = 0.460;//CSVv2 0.423; // 10.1716% DUSG mistag efficiency
-  CSVMwp = 0.800;//CSVv2 0.814; // 1.0623% DUSG mistag efficiency
-  CSVTwp = 0.935;//CSVv2 0.941; // 0.1144% DUSG mistag efficiency
+  CSVLwp = 0.5426; // 0.460;//CSVv2 0.423; // 10.1716% DUSG mistag efficiency
+  CSVMwp = 0.8484; // 0.800;//CSVv2 0.814; // 1.0623% DUSG mistag efficiency
+  CSVTwp = 0.9535; // 0.935;//CSVv2 0.941; // 0.1144% DUSG mistag efficiency
 
   samplename = "blank";
 
@@ -486,7 +486,7 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
     }
 
     /// JER
-    if( doJER ){
+    if( doJER && !isData ){
       double jerSF = 1.;
       reco::GenJet matched_genjet;
       if ( GenJet_Match(jet, genjets, matched_genjet, 0.4) ) {
@@ -1107,7 +1107,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electron80XCutBasedT:
     passesID = PassElectron80XId(iElectron,iElectronID);
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
-    passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring16);
     break;
   case electronID::electronNonTrigMVAid80:
     passesID = PassesNonTrigMVAid80(iElectron);
@@ -1445,6 +1445,16 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
 	    else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
 	  }
+	  else if (ieffAreaType==effAreaType::spring16){
+	    if (Eta >= 0. && Eta < 1.0) EffArea = 0.1703;
+	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1715;
+	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1213;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1230;
+	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1635;
+	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1937;
+	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.2393;
+	  }
+
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea;
 	  break;
@@ -1569,7 +1579,7 @@ bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const elec
 
   double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
   double absSCeta = fabs(SCeta);
-  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA);
+  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA, effAreaType::spring16);
 
   bool isEB = ( absSCeta < 1.479 );
 
@@ -1585,12 +1595,12 @@ bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const elec
   else if( !std::isfinite(iElectron.ecalEnergy()) ) ooEmooP = 1e30;
   else ooEmooP = fabs(1.0/iElectron.ecalEnergy() - iElectron.eSuperClusterOverP()/iElectron.ecalEnergy() );
 
-//   double d0 = -999;
-//   double dZ = -999;
+  double d0 = -999;
+  double dZ = -999;
   double expectedMissingInnerHits = 999;
   if( iElectron.gsfTrack().isAvailable() ){
-//     d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
-//     dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
+    d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
+    dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
     expectedMissingInnerHits = iElectron.gsfTrack()->hitPattern().numberOfHits(reco::HitPattern::MISSING_INNER_HITS);
   }
 
@@ -1633,8 +1643,8 @@ bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const elec
 	       dPhiIn < 0.103 &&
 	       hOverE < 0.253 &&
 	       ooEmooP < 0.134 &&
-// 	       d0 < 0.035904 &&
-// 	       dZ < 0.075496 &&
+	       d0 < 0.05 &&
+	       dZ < 0.10 &&
 	       expectedMissingInnerHits <= 1 &&
 	       passConversionVeto &&
 	       relIso < 0.0695
@@ -1646,8 +1656,8 @@ bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const elec
 	       dPhiIn < 0.045 &&
 	       hOverE < 0.0878 &&
 	       ooEmooP < 0.13 &&
-// 	       d0 < 0.035904 &&
-// 	       dZ < 0.075496 &&
+	       d0 < 0.10 &&
+	       dZ < 0.20 &&
 	       expectedMissingInnerHits <= 1 &&
 	       passConversionVeto &&
 	       relIso < 0.0821
@@ -2705,43 +2715,43 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
   double extrauncertainty=1.5;
   //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
   if( jetAbsETA<0.5 ){
-    scale_JER = 1.122; scale_JERup = 1.122 + 0.026*extrauncertainty; scale_JERdown = 1.122 - 0.026*extrauncertainty;
+    scale_JER = 1.109; scale_JERup = 1.109 + 0.008*extrauncertainty; scale_JERdown = 1.109 - 0.008*extrauncertainty;
   }
   else if( jetAbsETA<0.8 ){
-    scale_JER = 1.167; scale_JERup = 1.167 + 0.048*extrauncertainty; scale_JERdown = 1.167 - 0.048*extrauncertainty;
+    scale_JER = 1.138; scale_JERup = 1.138 + 0.013*extrauncertainty; scale_JERdown = 1.138 - 0.013*extrauncertainty;
   }
   else if( jetAbsETA<1.1 ){
-    scale_JER = 1.168; scale_JERup = 1.168 + 0.046*extrauncertainty; scale_JERdown = 1.168 - 0.046*extrauncertainty;
+    scale_JER = 1.114; scale_JERup = 1.114 + 0.013*extrauncertainty; scale_JERdown = 1.114 - 0.013*extrauncertainty;
   }
   else if( jetAbsETA<1.3 ){
-    scale_JER = 1.029; scale_JERup = 1.029 + 0.066*extrauncertainty; scale_JERdown = 1.029 - 0.066*extrauncertainty;
+    scale_JER = 1.123; scale_JERup = 1.123 + 0.024*extrauncertainty; scale_JERdown = 1.123 - 0.024*extrauncertainty;
   }
   else if( jetAbsETA<1.7 ){
-    scale_JER = 1.115; scale_JERup = 1.115 + 0.030*extrauncertainty; scale_JERdown = 1.115 - 0.030*extrauncertainty;
+    scale_JER = 1.084; scale_JERup = 1.084 + 0.011*extrauncertainty; scale_JERdown = 1.084 - 0.011*extrauncertainty;
   }
   else if( jetAbsETA<1.9 ){
-    scale_JER = 1.041; scale_JERup = 1.041 + 0.062*extrauncertainty; scale_JERdown = 1.041 - 0.062*extrauncertainty;
+    scale_JER = 1.082; scale_JERup = 1.082 + 0.035*extrauncertainty; scale_JERdown = 1.082 - 0.035*extrauncertainty;
   }
   else if( jetAbsETA<2.1 ){
-    scale_JER = 1.167; scale_JERup = 1.167 + 0.086*extrauncertainty; scale_JERdown = 1.167 - 0.086*extrauncertainty;
+    scale_JER = 1.140; scale_JERup = 1.140 + 0.047*extrauncertainty; scale_JERdown = 1.140 - 0.047*extrauncertainty;
   }
   else if( jetAbsETA<2.3 ){
-    scale_JER = 1.094; scale_JERup = 1.094 + 0.093*extrauncertainty; scale_JERdown = 1.094 - 0.093*extrauncertainty;
+    scale_JER = 1.067; scale_JERup = 1.067 + 0.053*extrauncertainty; scale_JERdown = 1.067 - 0.053*extrauncertainty;
   }
   else if( jetAbsETA<2.5 ){
-    scale_JER = 1.168; scale_JERup = 1.168 + 0.120*extrauncertainty; scale_JERdown = 1.168 - 0.120*extrauncertainty;
+    scale_JER = 1.177; scale_JERup = 1.177 + 0.041*extrauncertainty; scale_JERdown = 1.177 - 0.041*extrauncertainty;
   }
   else if( jetAbsETA<2.8 ){
-    scale_JER = 1.266; scale_JERup = 1.266 + 0.132*extrauncertainty; scale_JERdown = 1.266 - 0.132*extrauncertainty;
+    scale_JER = 1.364; scale_JERup = 1.364 + 0.039*extrauncertainty; scale_JERdown = 1.364 - 0.039*extrauncertainty;
   }
   else if( jetAbsETA<3.0 ){
-    scale_JER = 1.595; scale_JERup = 1.595 + 0.175*extrauncertainty; scale_JERdown = 1.595 - 0.175*extrauncertainty;
+    scale_JER = 1.857; scale_JERup = 1.857 + 0.071*extrauncertainty; scale_JERdown = 1.857 - 0.071*extrauncertainty;
   }
   else if( jetAbsETA<3.2 ){
-    scale_JER = 0.998; scale_JERup = 0.998 + 0.066*extrauncertainty; scale_JERdown = 0.998 - 0.066*extrauncertainty;
+    scale_JER = 1.328; scale_JERup = 1.328 + 0.022*extrauncertainty; scale_JERdown = 1.328 - 0.022*extrauncertainty;
   }
   else if( jetAbsETA<5.0 ){
-    scale_JER = 1.226; scale_JERup = 1.226 + 0.145*extrauncertainty; scale_JERdown = 1.226 - 0.145*extrauncertainty;
+    scale_JER = 1.16; scale_JERup = 1.16 + 0.029*extrauncertainty; scale_JERdown = 1.16 - 0.029*extrauncertainty;
   }
 
   double jetPt_JER = recojetPT;
