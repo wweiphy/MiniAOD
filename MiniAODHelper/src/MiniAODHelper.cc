@@ -486,7 +486,7 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
     }
 
     /// JER
-    if( doJER ){
+    if( doJER && !isData ){
       double jerSF = 1.;
       reco::GenJet matched_genjet;
       if ( GenJet_Match(jet, genjets, matched_genjet, 0.4) ) {
@@ -1107,7 +1107,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electron80XCutBasedT:
     passesID = PassElectron80XId(iElectron,iElectronID);
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
-    passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
+    passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring16);
     break;
   case electronID::electronNonTrigMVAid80:
     passesID = PassesNonTrigMVAid80(iElectron);
@@ -1454,14 +1454,14 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
 	    else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
 	  }
-	  else if (ieffAreaType==effAreaType::summer16){
-	    if (Eta >= 0.0000 && Eta < 1.0000) EffArea = 0.1703;
-	    else if (Eta >= 1.0000 && Eta < 1.4790) EffArea = 0.1715;
-	    else if (Eta >= 1.4790 && Eta < 2.0000) EffArea = 0.1213;
-	    else if (Eta >= 2.0000 && Eta < 2.2000) EffArea = 0.1230;
-	    else if (Eta >= 2.2000 && Eta < 2.3000) EffArea = 0.1635;
-	    else if (Eta >= 2.3000 && Eta < 2.4000) EffArea = 0.1937;
-	    else if (Eta >= 2.4000 && Eta < 5.0000) EffArea = 0.2393;
+	  else if (ieffAreaType==effAreaType::spring16){
+	    if (Eta >= 0. && Eta < 1.0) EffArea = 0.1703;
+	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1715;
+	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1213;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1230;
+	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1635;
+	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1937;
+	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.2393;
 	  }
 
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
@@ -1588,7 +1588,7 @@ bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const elec
 
   double SCeta = (iElectron.superCluster().isAvailable()) ? iElectron.superCluster()->position().eta() : -99;
   double absSCeta = fabs(SCeta);
-  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::summer16);
+  double relIso = GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA, effAreaType::spring16);
 
   bool isEB = ( absSCeta < 1.479 );
 
@@ -2718,43 +2718,43 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
   double extrauncertainty=1.5;
   //// nominal SFs have changed since run1, and the new up/down SFs are still unknown???
   if( jetAbsETA<0.5 ){
-    scale_JER = 1.122; scale_JERup = 1.122 + 0.026*extrauncertainty; scale_JERdown = 1.122 - 0.026*extrauncertainty;
+    scale_JER = 1.109; scale_JERup = 1.109 + 0.008*extrauncertainty; scale_JERdown = 1.109 - 0.008*extrauncertainty;
   }
   else if( jetAbsETA<0.8 ){
-    scale_JER = 1.167; scale_JERup = 1.167 + 0.048*extrauncertainty; scale_JERdown = 1.167 - 0.048*extrauncertainty;
+    scale_JER = 1.138; scale_JERup = 1.138 + 0.013*extrauncertainty; scale_JERdown = 1.138 - 0.013*extrauncertainty;
   }
   else if( jetAbsETA<1.1 ){
-    scale_JER = 1.168; scale_JERup = 1.168 + 0.046*extrauncertainty; scale_JERdown = 1.168 - 0.046*extrauncertainty;
+    scale_JER = 1.114; scale_JERup = 1.114 + 0.013*extrauncertainty; scale_JERdown = 1.114 - 0.013*extrauncertainty;
   }
   else if( jetAbsETA<1.3 ){
-    scale_JER = 1.029; scale_JERup = 1.029 + 0.066*extrauncertainty; scale_JERdown = 1.029 - 0.066*extrauncertainty;
+    scale_JER = 1.123; scale_JERup = 1.123 + 0.024*extrauncertainty; scale_JERdown = 1.123 - 0.024*extrauncertainty;
   }
   else if( jetAbsETA<1.7 ){
-    scale_JER = 1.115; scale_JERup = 1.115 + 0.030*extrauncertainty; scale_JERdown = 1.115 - 0.030*extrauncertainty;
+    scale_JER = 1.084; scale_JERup = 1.084 + 0.011*extrauncertainty; scale_JERdown = 1.084 - 0.011*extrauncertainty;
   }
   else if( jetAbsETA<1.9 ){
-    scale_JER = 1.041; scale_JERup = 1.041 + 0.062*extrauncertainty; scale_JERdown = 1.041 - 0.062*extrauncertainty;
+    scale_JER = 1.082; scale_JERup = 1.082 + 0.035*extrauncertainty; scale_JERdown = 1.082 - 0.035*extrauncertainty;
   }
   else if( jetAbsETA<2.1 ){
-    scale_JER = 1.167; scale_JERup = 1.167 + 0.086*extrauncertainty; scale_JERdown = 1.167 - 0.086*extrauncertainty;
+    scale_JER = 1.140; scale_JERup = 1.140 + 0.047*extrauncertainty; scale_JERdown = 1.140 - 0.047*extrauncertainty;
   }
   else if( jetAbsETA<2.3 ){
-    scale_JER = 1.094; scale_JERup = 1.094 + 0.093*extrauncertainty; scale_JERdown = 1.094 - 0.093*extrauncertainty;
+    scale_JER = 1.067; scale_JERup = 1.067 + 0.053*extrauncertainty; scale_JERdown = 1.067 - 0.053*extrauncertainty;
   }
   else if( jetAbsETA<2.5 ){
-    scale_JER = 1.168; scale_JERup = 1.168 + 0.120*extrauncertainty; scale_JERdown = 1.168 - 0.120*extrauncertainty;
+    scale_JER = 1.177; scale_JERup = 1.177 + 0.041*extrauncertainty; scale_JERdown = 1.177 - 0.041*extrauncertainty;
   }
   else if( jetAbsETA<2.8 ){
-    scale_JER = 1.266; scale_JERup = 1.266 + 0.132*extrauncertainty; scale_JERdown = 1.266 - 0.132*extrauncertainty;
+    scale_JER = 1.364; scale_JERup = 1.364 + 0.039*extrauncertainty; scale_JERdown = 1.364 - 0.039*extrauncertainty;
   }
   else if( jetAbsETA<3.0 ){
-    scale_JER = 1.595; scale_JERup = 1.595 + 0.175*extrauncertainty; scale_JERdown = 1.595 - 0.175*extrauncertainty;
+    scale_JER = 1.857; scale_JERup = 1.857 + 0.071*extrauncertainty; scale_JERdown = 1.857 - 0.071*extrauncertainty;
   }
   else if( jetAbsETA<3.2 ){
-    scale_JER = 0.998; scale_JERup = 0.998 + 0.066*extrauncertainty; scale_JERdown = 0.998 - 0.066*extrauncertainty;
+    scale_JER = 1.328; scale_JERup = 1.328 + 0.022*extrauncertainty; scale_JERdown = 1.328 - 0.022*extrauncertainty;
   }
   else if( jetAbsETA<5.0 ){
-    scale_JER = 1.226; scale_JERup = 1.226 + 0.145*extrauncertainty; scale_JERdown = 1.226 - 0.145*extrauncertainty;
+    scale_JER = 1.16; scale_JERup = 1.16 + 0.029*extrauncertainty; scale_JERdown = 1.16 - 0.029*extrauncertainty;
   }
 
   double jetPt_JER = recojetPT;
