@@ -123,7 +123,7 @@ namespace electronID{
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
-namespace effAreaType{ enum effAreaType{spring15,phys14};}
+namespace effAreaType{ enum effAreaType{spring16,spring15,phys14};}
 
 using namespace std;
 
