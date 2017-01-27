@@ -468,17 +468,22 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
       } else if (!use_corrected_jets) {
 	edm::LogError("MiniAODHelper") << "Trying to use Full Framework GetCorrectedJets without setting jet corrector!";
       }
-      if( addUserFloats ) jet.addUserFloat("HelperJES",scale);
+      if( addUserFloats ) {
+	  jet.addUserFloat("HelperJES",scale);
+	  const double uncUp = GetJECUncertainty(jet,setup,sysType::JESup);
+	  const double uncDown = GetJECUncertainty(jet,setup,sysType::JESdown);
+	  const double jecvarUp = 1. + (uncUp);
+	  const double jecvarDown = 1. + (uncDown);
+	  jet.addUserFloat("HelperJESUp",jecvarUp);
+	  jet.addUserFloat("HelperJESDown",jecvarDown);
+      }
+
       const double jec = scale*corrFactor;
       jet.scaleEnergy( jec );
       totalCorrFactor *= jec;
 
       if( sysType::isJECUncertainty(iSysType) ) {
 	const double unc = GetJECUncertainty(jet,setup,iSysType);
-	if( addUserFloats ) {
-	  if( sysType::isJECUncertaintyUp(iSysType) ) jet.addUserFloat("HelperJESUp",std::abs(unc));
-	  else                                        jet.addUserFloat("HelperJESDown",std::abs(unc));
-	}
 	const double jecvar = 1. + (unc*uncFactor);
 	jet.scaleEnergy( jecvar );
 	totalCorrFactor *= jecvar;
