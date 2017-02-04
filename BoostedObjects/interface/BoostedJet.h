@@ -38,6 +38,8 @@ namespace boosted {
         qWeight(-99),
         qEpsilon(-99),
         qSigmaM(-99),
+        isGoodTopJet(false),
+        isGoodHiggsJet(false),
         tau1Softdrop(-99),
         tau2Softdrop(-99),
         tau3Softdrop(-99) {};
@@ -90,6 +92,9 @@ namespace boosted {
       double qWeight;
       double qEpsilon;
       double qSigmaM;
+
+      bool isGoodTopJet;
+      bool isGoodHiggsJet;
 
       // Subjet Filterjet Information
       std::vector<pat::Jet> subjets;
