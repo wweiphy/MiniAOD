@@ -18,6 +18,7 @@
 <use name="SimDataFormats/PileupSummaryInfo"/>
 <use name="HLTrigger/HLTcore"/>
 <use name="JetMETCorrections/Objects"/>
+<use name="JetMETCorrections/Modules"/>
 <use name="CondFormats/JetMETObjects"/>
 <use name="RecoEgamma/EgammaTools"/>
 <export>

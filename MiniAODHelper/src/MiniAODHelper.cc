@@ -80,6 +80,19 @@ MiniAODHelper::~MiniAODHelper(){
 
 }
 
+
+
+
+void MiniAODHelper::SetJER_SF_Tool(const edm::EventSetup& iSetup){
+
+  // Accessing from Global Tag
+  JER_ak4_resolution = JME::JetResolution::get(iSetup, "AK4PFchs_pt");
+  JER_ak4_resolutionSF = JME::JetResolutionScaleFactor::get(iSetup, "AK4PFchs");
+
+}
+
+
+
 // Set up parameters one by one
 void MiniAODHelper::SetUp(string iEra, int iSampleNumber, const analysisType::analysisType iAnalysis, bool iIsData){
   // Make sure we don't set up more than once
@@ -487,23 +500,66 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
 
     /// JER
     if( doJER && !isData ){
-      double jerSF = 1.;
+
+      // - - - 
+      // instruction from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyResolution?rev=15#CMSSW_7_6_X_and_CMSSW_8_0X
+      // - - -
+      double rescaleFactor = 0.0 ; 
+
+      JME::JetParameters jer_param = { {JME::Binning::JetEta, jet.eta()} } ;
+
+      const double JET_core_resolution_scale_factor 
+	= (iSysType == sysType::JERup   ) ?     JER_ak4_resolutionSF .getScaleFactor(jer_param, Variation::UP)  
+	: (    iSysType == sysType::JERdown ) ? JER_ak4_resolutionSF .getScaleFactor(jer_param, Variation::DOWN)  
+	:                                       JER_ak4_resolutionSF .getScaleFactor(jer_param); ;
+
+
       reco::GenJet matched_genjet;
-      if ( GenJet_Match(jet, genjets, matched_genjet, 0.4) ) {
-	//if( jet.genJet() && deltaR(jet,*jet.genJet())<0.4/2 && jetdPtMatched(jet)){
-	if( iSysType == sysType::JERup ){
-	  jerSF = getJERfactor(uncFactor, fabs(jet.eta()), matched_genjet.pt(), jet.pt());
-	} else if( iSysType == sysType::JERdown ){
-	  jerSF = getJERfactor(-uncFactor, fabs(jet.eta()), matched_genjet.pt(), jet.pt());
-	} else {
-	  jerSF = getJERfactor(0, fabs(jet.eta()), matched_genjet.pt(), jet.pt());
-	}
-	// std::cout << "----->checking gen Jet pt " << jet.genJet()->pt() << ",  jerSF is" << jerSF << std::endl;
+      if ( GenJet_Match(jet, genjets, matched_genjet, 0.4) ) { // = Failuer in either dR(jet-gen) or delta_Pt within 3 sigma.
+	rescaleFactor = max( 0.0,
+			     1.0 + ( JET_core_resolution_scale_factor - 1.0  ) * ( jet.pt() - matched_genjet.pt() ) / jet.pt() ) ;
+	// Reference of this equation : https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_25/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L237
+
+      }else{
+	// in case of no matching, perform stochastic smearing.
+
+	JME::JetParameters parameter; 
+	parameter.setJetPt(jet.pt());
+	parameter.setJetEta(jet.eta()); 
+	parameter.setRho( useRho ) ; 
+
+	const double resolution = JER_ak4_resolution.getResolution( parameter );
+
+	rescaleFactor = max( 0.0,
+			     1.0
+			     + JERRandumGenerator.Gaus( 0.0, resolution ) // mean = zero, sigma = resolution
+			     * sqrt( max ( 0.0 , - 1.0 + JET_core_resolution_scale_factor * JET_core_resolution_scale_factor) )
+			     );
+			     //
+			     // equation from https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyResolution?rev=15#CMSSW_7_6_X_and_CMSSW_8_0X
+			     // 
+			     // note : distribution of Gaus( 0, sigma ) * A and Gaus( 0, sigma * A ) result in the same.
+			     //  
       }
-      // else     std::cout << "    ==> can't find genJet" << std::endl;
-      const double jervar = jerSF*corrFactor;
-      jet.scaleEnergy( jervar );
-      totalCorrFactor *= jervar;
+      
+      // - - - - - - - - - - 
+      // Rescale factor is so large that the direction of the jet is flipped. 
+      //  This is not the JER is supposed to do.
+      //  JET people recommend to put a limit.
+      // 
+      const double MIN_JET_ENERGY = 1e-2; //  https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_25/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L283
+      if( jet.energy() * rescaleFactor < MIN_JET_ENERGY ){
+	rescaleFactor =  MIN_JET_ENERGY / jet.energy() ;
+	jet.scaleEnergy(  rescaleFactor );
+      }
+
+      // - - - - - - - - - -      
+      // - apply thre prepared rescale factor to the jet.
+      // - - - - - - - - - -      
+
+      jet.scaleEnergy(  rescaleFactor );
+      totalCorrFactor *= rescaleFactor ;
+
     }
 
   }
@@ -2680,28 +2736,16 @@ bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<rec
 
 bool MiniAODHelper::jetdPtMatched(const pat::Jet& inputJet, const reco::GenJet& genjet) {
 
-  const double jet_eta=inputJet.eta();
+  JME::JetParameters param;
+  param.setJetPt (inputJet.pt());
+  param.setJetEta(inputJet.eta());
+  param.setRho( useRho );
 
-  for( unsigned int i = 0 ; i < JER_etaMax.size() ; i ++){
-
-    if(jet_eta < JER_etaMax[i] && jet_eta >= JER_etaMin[i] && useRho < JER_rhoMax[i] && useRho >= JER_rhoMin[i] ) {
-
-      double jet_pt=inputJet.pt();
-      if(jet_pt< JER_PtMin[i]){jet_pt=JER_PtMin[i];}
-      if(jet_pt> JER_PtMax[i]){jet_pt=JER_PtMax[i];}
-
-      const double sigma_mc=sqrt( JER_Par0[i]*fabs(JER_Par0[i]) / (jet_pt*jet_pt)+JER_Par1[i]*JER_Par1[i]*pow(jet_pt,JER_Par3[i])+JER_Par2[i]*JER_Par2[i]);
-      const double genjet_pt=genjet.pt();
-      if(fabs(jet_pt-genjet_pt)<3*sigma_mc*jet_pt) {
-	//cout << "#############################################################" << endl;
-	//cout << "JER dPt condition is satisfied" << endl;
-	//cout << "#############################################################" << endl;
-	return true;
-      }
-    }
-    //i++;
+  const float reso = JER_ak4_resolution.getResolution( param );
+  // check if the delta_pt is within 3-sigma.
+  if( fabs( inputJet.pt() - genjet.pt() ) < 3 * reso * inputJet.pt() ) {
+    return true;
   }
-  //cout << "JER dPt conditon is not satisfied" << endl;
   return false;
 }
 

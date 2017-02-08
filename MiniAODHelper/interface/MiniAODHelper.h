@@ -21,6 +21,7 @@
 #include "TMVA/Reader.h"
 #include "TMVA/MethodCuts.h"
 
+#include <TRandom3.h>
 
 #ifdef __MAKECINT__
 #pragma link C++ class std::vector< TLorentzVector >+;
@@ -73,6 +74,8 @@
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 
 #include "MiniAOD/MiniAODHelper/interface/Systematics.h"
+
+#include "JetMETCorrections/Modules/interface/JetResolution.h"
 
 #endif
 
@@ -152,6 +155,7 @@ class MiniAODHelper{
 
   void UpdateJetCorrectorUncertainties(const edm::EventSetup& iSetup);
 
+  void SetJER_SF_Tool(const edm::EventSetup& iSetup );
 
   // temporary construction...
   void SetAK8JetCorrectorUncertainty(const edm::EventSetup& iSetup, 
@@ -325,6 +329,7 @@ class MiniAODHelper{
   double GetJECUncertainty(const pat::Jet& jet, const edm::EventSetup& iSetup, const sysType::sysType iSysType);
 
 
+
   void FillTopQuarkDecayInfomration ( const reco::Candidate * c ,
 				      struct _topquarkdecayobjects * topdecayobjects) ;
 
@@ -342,6 +347,10 @@ class MiniAODHelper{
   std::vector<double>    JER_Par1;
   std::vector<double>    JER_Par2;
   std::vector<double>    JER_Par3;
+
+  JME::JetResolution            JER_ak4_resolution ;
+  JME::JetResolutionScaleFactor JER_ak4_resolutionSF ;
+  TRandom3 JERRandumGenerator ;
 
 }; // End of class prototype
 
