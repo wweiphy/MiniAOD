@@ -767,43 +767,101 @@ MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& i
 
 
 std::vector<boosted::BoostedJet>
-MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID){
+MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& inputJets, const float iMinFatPt, const float iMaxAbsFatEta, const float iMinSubPt, const float iMaxAbsSubEta, const jetID::jetID iJetID, const string mode="A"){
 
   CheckSetUp();
 
   std::vector<boosted::BoostedJet> selectedJets;
 
   for( std::vector<boosted::BoostedJet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
-
     boosted::BoostedJet boostedJet = *it;
-
-    // Select Fat Jet
-    if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
-
-    // Select Top Jet Part
-    if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
-        isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
-        isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
-      )
-    {
-      boostedJet.topjet = pat::Jet();
-      boostedJet.nonW = pat::Jet();
-      boostedJet.W1 = pat::Jet();
-      boostedJet.W2 = pat::Jet();
-    }
 
     std::vector<pat::Jet> filterjets;
     for( std::vector<pat::Jet>::const_iterator itFilt = it->filterjets.begin(), edFilt = it->filterjets.end(); itFilt != edFilt; ++itFilt ){
       if( isGoodJet(*itFilt, iMinSubPt, iMaxAbsSubEta, iJetID, '-') ) filterjets.push_back(*itFilt);
     }
 
-    if(filterjets.size()<2){
-      filterjets.clear();
+    boostedJet.isGoodTopJet = false;
+    boostedJet.isGoodHiggsJet = false;
+
+    if(mode=="C"){
+      // mode C: pT cut on fatjet
+
+      // Select Fat Jet
+      if( ! isGoodJet(it->fatjet, iMinFatPt, iMaxAbsFatEta, jetID::none, '-')) continue;
+
+      // Select Top Jet Part
+      if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+          isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+          isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
+        )
+      {
+        boostedJet.topjet = pat::Jet();
+        boostedJet.nonW = pat::Jet();
+        boostedJet.W1 = pat::Jet();
+        boostedJet.W2 = pat::Jet();
+        boostedJet.isGoodTopJet = false;
+      }
+      else boostedJet.isGoodTopJet = true;
+
+      if(filterjets.size()<2){
+        filterjets.clear();
+        boostedJet.isGoodHiggsJet = false;
+      }
+      else boostedJet.isGoodHiggsJet = true;
     }
+    else if(mode == "A" || mode == "B"){
+      // mode A: pT cut on two filterjets with best CSV out of the three hardest subjets
+      // mode B: pT cut on three hardest filterjets
+
+      // Select Top Jet Part
+      if( !(isGoodJet(it->nonW, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+          isGoodJet(it->W1, iMinSubPt, iMaxAbsSubEta, jetID::none, '-') &&
+          isGoodJet(it->W2, iMinSubPt, iMaxAbsSubEta, jetID::none, '-'))
+        )
+      {
+        boostedJet.topjet = pat::Jet();
+        boostedJet.nonW = pat::Jet();
+        boostedJet.W1 = pat::Jet();
+        boostedJet.W2 = pat::Jet();
+        boostedJet.isGoodTopJet = false;
+      }
+
+      // Check if pT of three top subjets > 200 GeV -> good top jet
+      else if ((boostedJet.nonW.p4() +  boostedJet.W1.p4() + boostedJet.W2.p4()).pt() > iMinFatPt) boostedJet.isGoodTopJet = true;
+      else boostedJet.isGoodTopJet = false;
+
+      // Select Higgs Jet Part
+      if(filterjets.size()<2){
+        filterjets.clear();
+        boostedJet.isGoodHiggsJet = false;
+      }
+
+      // Check if pT of two filterjets with highest CSV > 200 GeV -> good Higgs jet
+      else {
+        std::vector<pat::Jet> sortedPtFilterjets = MiniAODHelper::GetSortedByPt(filterjets);
+        std::vector<pat::Jet> threeHardestFilterjets;
+        for ( std::vector<pat::Jet>::const_iterator itFilt2 = sortedPtFilterjets.begin(), edFilt2 = sortedPtFilterjets.end(); itFilt2 != edFilt2; ++itFilt2 ){
+          int iFilt2 = itFilt2 - sortedPtFilterjets.begin();
+          if (iFilt2 > 2) continue;
+          threeHardestFilterjets.push_back(*itFilt2);
+        }
+        if(mode=="A"){
+          std::vector<pat::Jet> sortedFilterjets = MiniAODHelper::GetSortedByCSV(threeHardestFilterjets);
+          if ((sortedFilterjets[0].p4() + sortedFilterjets[1].p4()).pt() > iMinFatPt) boostedJet.isGoodHiggsJet = true;
+          else boostedJet.isGoodHiggsJet = false;
+        }
+        else if(mode=="B"){
+          if ((threeHardestFilterjets[0].p4() + threeHardestFilterjets[1].p4() + threeHardestFilterjets[2].p4()).pt() > iMinFatPt) boostedJet.isGoodHiggsJet = true;
+          else boostedJet.isGoodHiggsJet = false;
+        }
+      }
+    }
+    else cout << "Error in GetSelectedBoostedJets: No valid selection mode.";
 
     boostedJet.filterjets = filterjets;
 
-    selectedJets.push_back(boostedJet);
+    if (boostedJet.isGoodHiggsJet || boostedJet.isGoodTopJet) selectedJets.push_back(boostedJet);
   }
 
   return selectedJets;
@@ -2654,7 +2712,7 @@ std::vector<pat::Jet> MiniAODHelper::GetDeltaRCleanedJets(
 /// JER function
 
 bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<reco::GenJetCollection>& genjets, reco::GenJet& matched_genjet, const double& Rcone) {
-	
+
         if( !genjets.isValid() )  return false;
 
 	double dpt_min=99999;
@@ -2670,18 +2728,18 @@ bool MiniAODHelper::GenJet_Match(const pat::Jet& inputJet, const edm::Handle<rec
       	dR  = DeltaR( &inputJet , iter );
    		if (dR<(Rcone/2)) {
    			if ( jetdPtMatched(inputJet,*iter) ) {
-				genjet_match = 1;	      			
+				genjet_match = 1;
     				if (dpt <= dpt_min) {
     					matched_genjet = *(iter);
     					dpt_min = dpt;
     				}
     			}
-    		}  
+    		}
 	}
-	
+
 	if (genjet_match==1)
 		return true;
-	else 
+	else
 		return false;
 }
 
