@@ -24,7 +24,7 @@ MiniAODHelper::MiniAODHelper()
   samplename = "blank";
 
   // JEC uncertainties
-  jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Summer16_23Sep2016V3_MC_UncertaintySources_AK4PFchs.txt";
+  jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt";
 
   { //  JER preparation
 
