@@ -1,6 +1,8 @@
 #include "../interface/MiniAODHelper.h"
+#include "../interface/utils.h"
 
 #include "FWCore/Utilities/interface/Exception.h"
+
 
 using namespace std;
 
@@ -25,14 +27,17 @@ MiniAODHelper::MiniAODHelper()
 
   // JEC uncertainties
   jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt";
+  if( jecUncertaintyTxtFileName_ != "" ) {
+    if( !utils::fileExists(jecUncertaintyTxtFileName_) ) { // check if JEC uncertainty file exists
+      throw cms::Exception("InvalidJECUncertaintyFile") << "No JEC uncertainty file '" << jecUncertaintyTxtFileName_ << "' found";
+    }
+  }
 
   { //  JER preparation
 
-    std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
-    std::ifstream infile( JER_file);
-    if( ! infile ){
-      std::cerr << "Error: cannot open file(" << JER_file << ")" << endl;
-      exit(1);
+    const std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
+    if( !utils::fileExists(JER_file) ) {
+      throw cms::Exception("InvalidJERCorrectionFile") << "No JER correction file '" << JER_file << "' found";
     }
 
     double eta_min;
@@ -58,6 +63,7 @@ MiniAODHelper::MiniAODHelper()
     JER_Par2.clear();
     JER_Par3.clear();
 
+    std::ifstream infile( JER_file);
     while (infile>>eta_min>>eta_max>>rho_min>>rho_max>>dummy>>pt_min>>pt_max>>par0>>par1>>par2>>par3) {
       JER_etaMin.push_back(eta_min);
       JER_etaMax.push_back(eta_max);
@@ -72,6 +78,7 @@ MiniAODHelper::MiniAODHelper()
     }
 
   } // end of JER preparation
+  
 }
 
 // Destructor
