@@ -7,9 +7,9 @@ BDTvars::BDTvars(){
 
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
-  CSVLwp = 0.423; // 10.1716% DUSG mistag efficiency
-  CSVMwp = 0.814; // 1.0623% DUSG mistag efficiency
-  CSVTwp = 0.941; // 0.1144% DUSG mistag efficiency
+  CSVLwp = 0.5426; // 10.1716% DUSG mistag efficiency
+  CSVMwp = 0.8484; // 1.0623% DUSG mistag efficiency
+  CSVTwp = 0.9535; // 0.1144% DUSG mistag efficiency
 
 
 }
