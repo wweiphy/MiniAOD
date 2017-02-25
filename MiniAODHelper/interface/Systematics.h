@@ -1,10 +1,12 @@
 #ifndef SYSTEMATICS_H
 #define SYSTEMATICS_H
 
+#include <map>
 #include <string>
 
-namespace sysType {
-  enum sysType{
+class Systematics {
+public:
+  enum Type {
     NA,
 
     // total JEC uncertainties
@@ -20,8 +22,7 @@ namespace sysType {
     JESSinglePionECALup,
     JESSinglePionHCALup,
     JESFlavorQCDup,
-    JESTimeEtaup,
-    JESTimePtup,
+    JESTimePtEtaup,
     JESRelativeJEREC1up,
     JESRelativeJEREC2up,
     JESRelativeJERHFup,
@@ -29,6 +30,7 @@ namespace sysType {
     JESRelativePtEC1up,
     JESRelativePtEC2up,
     JESRelativePtHFup,
+    JESRelativeBalup,
     JESRelativeFSRup,
     JESRelativeStatFSRup,
     JESRelativeStatECup,
@@ -45,9 +47,27 @@ namespace sysType {
     JESSubTotalRelativeup,
     JESSubTotalPtup,
     JESSubTotalScaleup,
-    JESSubTotalMCup,
     JESSubTotalAbsoluteup,
+    JESSubTotalMCup,
+    JESTotalup,
     JESTotalNoFlavorup,
+    JESTotalNoTimeup,
+    JESTotalNoFlavorNoTimeup,
+    JESFlavorZJetup,
+    JESFlavorPhotonJetup,
+    JESFlavorPureGluonup,
+    JESFlavorPureQuarkup,
+    JESFlavorPureCharmup,
+    JESFlavorPureBottomup,
+    JESTimeRunBCDup,
+    JESTimeRunEFup,
+    JESTimeRunGup,
+    JESTimeRunHup,
+    JESCorrelationGroupMPFInSituup,
+    JESCorrelationGroupIntercalibrationup,
+    JESCorrelationGroupbJESup,
+    JESCorrelationGroupFlavorup,
+    JESCorrelationGroupUncorrelatedup,
     
     // individual JEC uncertainties down
     JESAbsoluteStatdown,
@@ -58,8 +78,7 @@ namespace sysType {
     JESSinglePionECALdown,
     JESSinglePionHCALdown,
     JESFlavorQCDdown,
-    JESTimeEtadown,
-    JESTimePtdown,
+    JESTimePtEtadown,
     JESRelativeJEREC1down,
     JESRelativeJEREC2down,
     JESRelativeJERHFdown,
@@ -67,6 +86,7 @@ namespace sysType {
     JESRelativePtEC1down,
     JESRelativePtEC2down,
     JESRelativePtHFdown,
+    JESRelativeBaldown,
     JESRelativeFSRdown,
     JESRelativeStatFSRdown,
     JESRelativeStatECdown,
@@ -83,10 +103,28 @@ namespace sysType {
     JESSubTotalRelativedown,
     JESSubTotalPtdown,
     JESSubTotalScaledown,
-    JESSubTotalMCdown,
     JESSubTotalAbsolutedown,
+    JESSubTotalMCdown,
+    JESTotaldown,
     JESTotalNoFlavordown,
-
+    JESTotalNoTimedown,
+    JESTotalNoFlavorNoTimedown,
+    JESFlavorZJetdown,
+    JESFlavorPhotonJetdown,
+    JESFlavorPureGluondown,
+    JESFlavorPureQuarkdown,
+    JESFlavorPureCharmdown,
+    JESFlavorPureBottomdown,
+    JESTimeRunBCDdown,
+    JESTimeRunEFdown,
+    JESTimeRunGdown,
+    JESTimeRunHdown,
+    JESCorrelationGroupMPFInSitudown,
+    JESCorrelationGroupIntercalibrationdown,
+    JESCorrelationGroupbJESdown,
+    JESCorrelationGroupFlavordown,
+    JESCorrelationGroupUncorrelateddown,
+    
     // JER uncertainty
     JERup,			
     JERdown,
@@ -118,22 +156,32 @@ namespace sysType {
   };
 
   // convert between string and int representation
-  sysType get(const std::string& name);
-  std::string toString(const sysType type);
+  static Type get(const std::string& name);
+  static std::string toString(const Type type);
 
   // true if type is one of the JEC-related uncertainties and up
-  bool isJECUncertaintyUp(const sysType type);
+  static bool isJECUncertaintyUp(const Type type);
 
   // true if type is one of the JEC-related uncertainties and down
-  bool isJECUncertaintyDown(const sysType type);
+  static bool isJECUncertaintyDown(const Type type);
 
   // true if type is one of the JEC-related uncertainties
-  bool isJECUncertainty(const sysType type);
+  static bool isJECUncertainty(const Type type);
 
   // return the label that is used by JetCorrectorParametersCollection
   // to label the uncertainty type. See also:
   // https://cmssdt.cern.ch/SDT/doxygen/CMSSW_8_0_23/doc/html/dc/d33/classJetCorrectorParametersCollection.html#afb3d4c6fd711ca23d89e0625a22dc483 for a list of in principle valid labels. Whether the uncertainty
-  std::string GetJECUncertaintyLabel(const sysType type);
+  static std::string GetJECUncertaintyLabel(const Type type);
+
+
+private:
+  static std::map<Type,std::string> typeStringMap_;
+  static std::map<std::string,Type> stringTypeMap_;
+  static std::map<Type,std::string> typeLabelMap_;
+
+  static void init();
+  static bool isInit();
+  static void add(Systematics::Type typeUp, Systematics::Type typeDn, const std::string& name, const std::string& label);
 };
 
 

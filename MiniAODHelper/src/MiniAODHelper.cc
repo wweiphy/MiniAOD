@@ -282,8 +282,8 @@ MiniAODHelper::UpdateJetCorrectorUncertainties(const edm::EventSetup& iSetup) {
 // Note: for JEC down, value will internally be multiplied by -1
 // --> *always* scale JES by (1+value).
 double
-MiniAODHelper::GetJECUncertainty(const pat::Jet& jet, const edm::EventSetup& iSetup, const sysType::sysType iSysType) {
-  const std::string uncertaintyLabel = sysType::GetJECUncertaintyLabel(iSysType);
+MiniAODHelper::GetJECUncertainty(const pat::Jet& jet, const edm::EventSetup& iSetup, const Systematics::Type iSysType) {
+  const std::string uncertaintyLabel = Systematics::GetJECUncertaintyLabel(iSysType);
   std::map< std::string, std::unique_ptr<JetCorrectionUncertainty> >::iterator jecUncIt = jecUncertainties_.find(uncertaintyLabel);
   if( jecUncIt == jecUncertainties_.end() ) { // Lazy initialization
     AddJetCorrectorUncertainty(iSetup,uncertaintyLabel);
@@ -293,7 +293,7 @@ MiniAODHelper::GetJECUncertainty(const pat::Jet& jet, const edm::EventSetup& iSe
 
   unc->setJetEta(jet.eta());
   unc->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
-  if( sysType::isJECUncertaintyUp(iSysType) ) return +1. * unc->getUncertainty(true);
+  if( Systematics::isJECUncertaintyUp(iSysType) ) return +1. * unc->getUncertainty(true);
   else                                        return -1. * unc->getUncertainty(false);
 }
 
@@ -411,7 +411,7 @@ pat::Jet MiniAODHelper::GetCorrectedJet(const pat::Jet& inputJet,
 					const edm::Event& event,
 					const edm::EventSetup& setup,
 					const edm::Handle<reco::GenJetCollection>& genjets,
-					const sysType::sysType iSysType,
+					const Systematics::Type iSysType,
 					const bool doJES,
 					const bool doJER,
 					const float corrFactor,
@@ -439,7 +439,7 @@ float MiniAODHelper::GetJetCorrectionFactor(const pat::Jet& inputJet,
 					    const edm::Event& event,
 					    const edm::EventSetup& setup,
 					    const edm::Handle<reco::GenJetCollection>& genjets,
-					    const sysType::sysType iSysType,
+					    const Systematics::Type iSysType,
 					    const bool doJES,
 					    const bool doJER,
 					    const float corrFactor,
@@ -468,7 +468,7 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
 					     const edm::Event& event,
 					     const edm::EventSetup& setup,
 					     const edm::Handle<reco::GenJetCollection>& genjets,
-					     const sysType::sysType iSysType,
+					     const Systematics::Type iSysType,
 					     const bool doJES,
 					     const bool doJER,
 					     const bool addUserFloats,
@@ -489,8 +489,8 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
       }
       if( addUserFloats ) {
 	  jet.addUserFloat("HelperJES",scale);
-	  const double uncUp = GetJECUncertainty(jet,setup,sysType::JESup);
-	  const double uncDown = GetJECUncertainty(jet,setup,sysType::JESdown);
+	  const double uncUp = GetJECUncertainty(jet,setup,Systematics::JESup);
+	  const double uncDown = GetJECUncertainty(jet,setup,Systematics::JESdown);
 	  const double jecvarUp = 1. + (uncUp);
 	  const double jecvarDown = 1. + (uncDown);
 	  jet.addUserFloat("HelperJESUp",jecvarUp);
@@ -501,7 +501,7 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
       jet.scaleEnergy( jec );
       totalCorrFactor *= jec;
 
-      if( sysType::isJECUncertainty(iSysType) ) {
+      if( Systematics::isJECUncertainty(iSysType) ) {
 	const double unc = GetJECUncertainty(jet,setup,iSysType);
 	const double jecvar = 1. + (unc*uncFactor);
 	jet.scaleEnergy( jecvar );
@@ -520,8 +520,8 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
       JME::JetParameters jer_param = { {JME::Binning::JetEta, jet.eta()} } ;
 
       const double JET_core_resolution_scale_factor 
-	= (iSysType == sysType::JERup   ) ?     JER_ak4_resolutionSF .getScaleFactor(jer_param, Variation::UP)  
-	: (    iSysType == sysType::JERdown ) ? JER_ak4_resolutionSF .getScaleFactor(jer_param, Variation::DOWN)  
+	= (iSysType == Systematics::JERup   ) ?     JER_ak4_resolutionSF .getScaleFactor(jer_param, Variation::UP)  
+	: (    iSysType == Systematics::JERdown ) ? JER_ak4_resolutionSF .getScaleFactor(jer_param, Variation::DOWN)  
 	:                                       JER_ak4_resolutionSF .getScaleFactor(jer_param); ;
 
 
@@ -578,7 +578,7 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
 
 
 pat::Jet
-MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const Systematics::Type iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputJet;
 
@@ -598,17 +598,17 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
 
     outputJet.scaleEnergy( scale*corrFactor );
 
-    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+    if( iSysType == Systematics::JESup || iSysType == Systematics::JESdown ){
 
       ak8jecUnc_->setJetEta(outputJet.eta());
       ak8jecUnc_->setJetPt(outputJet.pt()); // here you must use the CORRECTED jet pt
       double unc = 1;
       double jes = 1;
-      if( iSysType==sysType::JESup ){
+      if( iSysType==Systematics::JESup ){
 	      unc = ak8jecUnc_->getUncertainty(true);
 	      jes = 1 + (unc*uncFactor);
       }
-      else if( iSysType==sysType::JESdown ){
+      else if( iSysType==Systematics::JESdown ){
 	      unc = ak8jecUnc_->getUncertainty(false);
 	      jes = 1 - (unc*uncFactor);
       }
@@ -623,10 +623,10 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
     reco::GenJet matched_genjet;
     if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.8) ) {
     //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
-      if( iSysType == sysType::JERup ){
+      if( iSysType == Systematics::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
-      else if( iSysType == sysType::JERdown ){
+      else if( iSysType == Systematics::JERdown ){
 	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else {
@@ -644,7 +644,7 @@ MiniAODHelper::GetCorrectedAK8Jet(const pat::Jet& inputJet, const edm::Event& ev
 
 
 float
-MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const Systematics::Type iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   double factor = 1.;
 
@@ -667,17 +667,17 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
     outputJet.scaleEnergy( scale*corrFactor );
     factor *= scale*corrFactor;
 
-    if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+    if( iSysType == Systematics::JESup || iSysType == Systematics::JESdown ){
 
       ak8jecUnc_->setJetEta(outputJet.eta());
       ak8jecUnc_->setJetPt(outputJet.pt()); // here you must use the CORRECTED jet pt
       double unc = 1;
       double jes = 1;
-      if( iSysType==sysType::JESup ){
+      if( iSysType==Systematics::JESup ){
 	      unc = ak8jecUnc_->getUncertainty(true);
 	      jes = 1 + (unc*uncFactor);
       }
-      else if( iSysType==sysType::JESdown ){
+      else if( iSysType==Systematics::JESdown ){
 	      unc = ak8jecUnc_->getUncertainty(false);
 	      jes = 1 - (unc*uncFactor);
       }
@@ -693,10 +693,10 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
     reco::GenJet matched_genjet;
     if ( GenJet_Match(outputJet, genjets, matched_genjet, 0.8) ) {
     //if( outputJet.genJet() && deltaR(outputJet,*outputJet.genJet())<0.4/2 && jetdPtMatched(outputJet)){
-      if( iSysType == sysType::JERup ){
+      if( iSysType == Systematics::JERup ){
 	      jerSF = getJERfactor(uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
-      else if( iSysType == sysType::JERdown ){
+      else if( iSysType == Systematics::JERdown ){
 	      jerSF = getJERfactor(-uncFactor, fabs(outputJet.eta()), matched_genjet.pt(), outputJet.pt());
       }
       else {
@@ -715,7 +715,7 @@ MiniAODHelper::GetAK8JetCorrectionFactor(const pat::Jet& inputJet, const edm::Ev
 
 
 std::vector<pat::Jet>
-MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const Systematics::Type iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputJets;
 
@@ -732,7 +732,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 
 
 // std::vector<pat::Jet>
-// MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const sysType::sysType iSysType ){
+// MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const Systematics::Type iSysType ){
 
 //   CheckSetUp();
 
@@ -757,16 +757,16 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 
 //     jet.scaleEnergy( scale );
 
-//     if( iSysType == sysType::JESup || iSysType == sysType::JESdown ){
+//     if( iSysType == Systematics::JESup || iSysType == Systematics::JESdown ){
 //       jecUnc_->setJetEta(jet.eta());
 //       jecUnc_->setJetPt(jet.pt()); // here you must use the CORRECTED jet pt
 //       double unc = 1;
 //       double jes = 1;
-//       if( iSysType==sysType::JESup ){
+//       if( iSysType==Systematics::JESup ){
 // 	unc = jecUnc_->getUncertainty(true);
 // 	jes = 1 + unc;
 //       }
-//       else if( iSysType==sysType::JESdown ){
+//       else if( iSysType==Systematics::JESdown ){
 // 	unc = jecUnc_->getUncertainty(false);
 // 	jes = 1 - unc;
 //       }
@@ -782,7 +782,7 @@ MiniAODHelper::GetCorrectedJets(const std::vector<pat::Jet>& inputJets, const ed
 
 
 std::vector<boosted::BoostedJet>
-MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& inputBoostedJets, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const sysType::sysType iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
+MiniAODHelper::GetCorrectedBoostedJets(const std::vector<boosted::BoostedJet>& inputBoostedJets, const edm::Event& event, const edm::EventSetup& setup, const edm::Handle<reco::GenJetCollection>& genjets, const Systematics::Type iSysType, const bool& doJES, const bool& doJER, const float& corrFactor, const float& uncFactor){
 
   if( !doJES && !doJER ) return inputBoostedJets;
 
