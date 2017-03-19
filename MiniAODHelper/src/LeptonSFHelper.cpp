@@ -177,7 +177,6 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   return ScaleFactorMap;
 }
 float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int syst , std::string type  ) {
-  std::cout<<type<<" "<<electronPt<<" "<<electronEta<<std::endl;
   if ( electronPt == 0.0 ){ return 1.0; }
 
   int thisBin=0;
