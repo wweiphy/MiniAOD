@@ -177,6 +177,7 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   return ScaleFactorMap;
 }
 float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int syst , std::string type  ) {
+  std::cout<<type<<" "<<electronPt<<" "<<electronEta<<std::endl;
   if ( electronPt == 0.0 ){ return 1.0; }
 
   int thisBin=0;
@@ -436,7 +437,7 @@ void LeptonSFHelper::SetElectronHistos( ){
   TFile *f_GFSSF = new TFile(std::string(GFSinputFile).c_str(),"READ");
 
   h_ele_ID_abseta_pt_ratio = (TH2F*)f_IDSF->Get("EGamma_SF2D");
-  h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_TRIGGERSF->Get(" 	Ele27_WPTight_Gsf");
+  h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_TRIGGERSF->Get("Ele27_WPTight_Gsf");
   h_ele_ISO_abseta_pt_ratio = (TH2F*)f_ISOSF->Get("EGamma_SF2D");
   h_ele_GFS_abseta_pt_ratio = (TH2F*)f_GFSSF->Get("EGamma_SF2D");
 
