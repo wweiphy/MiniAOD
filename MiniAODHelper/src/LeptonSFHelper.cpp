@@ -453,8 +453,8 @@ void LeptonSFHelper::SetMuonHistos( ){
   std::string ISOinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ISO_EfficienciesAndSF_BCDEF.root";
   std::string ISOinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ISO_EfficienciesAndSF_GH.root";
   
-  std::string HIPinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_BCDEF.root";
-  std::string HIPinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_GH.root";
+  std::string HIPinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_BCDEF_histos.root";
+  std::string HIPinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_GH_histos.root";
 
 
   TFile *f_IDSFBtoF = new TFile(std::string(IDinputFileBtoF).c_str(),"READ");
@@ -468,7 +468,7 @@ void LeptonSFHelper::SetMuonHistos( ){
   TFile *f_TRIGGERSFGtoH = new TFile(std::string(TRIGGERinputFileGtoH).c_str(),"READ");
 
   TFile *f_ISOSFBtoF = new TFile(std::string(ISOinputFileBtoF).c_str(),"READ");
-  TFile *f_ISOSFGtoH = new TFile(std::string(ISOinputFileGtoh).c_str(),"READ");
+  TFile *f_ISOSFGtoH = new TFile(std::string(ISOinputFileGtoH).c_str(),"READ");
 
   h_mu_ID_abseta_pt_ratioBtoF = (TH2F*)f_IDSFBtoF->Get("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio");
   h_mu_ID_abseta_pt_ratioGtoH = (TH2F*)f_IDSFGtoH->Get("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio");
@@ -479,7 +479,7 @@ void LeptonSFHelper::SetMuonHistos( ){
   h_mu_TRIGGER_abseta_ptBtoF= (TH2F*)f_TRIGGERSFBtoF->Get("IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio");
   h_mu_TRIGGER_abseta_ptGtoH= (TH2F*)f_TRIGGERSFGtoH->Get("IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio");
 
-  h_mu_ISO_abseta_pt_ratioBtoG = (TH2F*)f_ISOSFBtoF->Get("TightISO_TightID_pt_eta/pt_abseta_ratio");
+  h_mu_ISO_abseta_pt_ratioBtoF = (TH2F*)f_ISOSFBtoF->Get("TightISO_TightID_pt_eta/pt_abseta_ratio");
   h_mu_ISO_abseta_pt_ratioGtoH = (TH2F*)f_ISOSFGtoH->Get("TightISO_TightID_pt_eta/pt_abseta_ratio");
 
 }

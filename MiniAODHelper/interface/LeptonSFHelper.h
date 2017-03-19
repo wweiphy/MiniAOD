@@ -47,7 +47,18 @@ class LeptonSFHelper {
   TH1D *h_mu_HIP_eta_ratio;
   TH2F *h_mu_TRIGGER_abseta_pt;
   TH2F *h_mu_ISO_abseta_pt_ratio;
+  
+    TH2F *h_mu_ID_abseta_pt_ratioBtoF;
+  TH1D *h_mu_HIP_eta_ratioBtoF;
+  TH2F *h_mu_TRIGGER_abseta_ptBtoF;
+  TH2F *h_mu_ISO_abseta_pt_ratioBtoF;
 
+    TH2F *h_mu_ID_abseta_pt_ratioGtoH;
+  TH1D *h_mu_HIP_eta_ratioGtoH;
+  TH2F *h_mu_TRIGGER_abseta_ptGtoH;
+  TH2F *h_mu_ISO_abseta_pt_ratioGtoH;
+
+  
   TH2F *h_ele_ele_TRIGGER_abseta_abseta;
   TH2F *h_mu_mu_TRIGGER_abseta_abseta;
   TH2F *h_ele_mu_TRIGGER_abseta_abseta;
