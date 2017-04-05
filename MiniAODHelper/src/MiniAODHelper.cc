@@ -2891,35 +2891,49 @@ double MiniAODHelper::getJERfactor( const int returnType, const double jetAbsETA
   return factor;
 }
 
-std::vector<pat::MET> MiniAODHelper::CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::MET>& pfMETs){
+std::vector<pat::MET> MiniAODHelper::CorrectMET(const std::vector<pat::Jet>& oldJetsForMET, const std::vector<pat::Jet>& newJetsForMET, const std::vector<pat::Electron>& oldElectronsForMET, const std::vector<pat::Electron>& newElectronsForMET, const std::vector<pat::Muon>& oldMuonsForMET, const std::vector<pat::Muon>& newMuonsForMET , const std::vector<pat::MET>& pfMETs){
   // this function takes two jet collections and replaces their contribution to the Type1 correction of the MET
 
   std::vector<pat::MET> outputMets;
 
   for(std::vector<pat::MET>::const_iterator oldMET=pfMETs.begin();oldMET!=pfMETs.end();++oldMET){
     pat::MET outMET=*oldMET;
-
+	//cout << "before: uncor pt " << outMET.uncorPt() << " cor pt (type1) " << outMET.corPt(pat::MET::Type1) << " cor pt (type1XY) " << outMET.corPt(pat::MET::Type1XY) << endl;
     if(oldMET-pfMETs.begin() == 0){
     //get old MET p4
-    TLorentzVector oldMETVec;
-    oldMETVec.SetPxPyPzE(oldMET->p4().Px(),oldMET->p4().Py(),oldMET->p4().Pz(),oldMET->p4().E());
+    reco::Candidate::LorentzVector oldMETVec(oldMET->corPx(pat::MET::Type1),oldMET->corPy(pat::MET::Type1),oldMET->pz(),oldMET->corSumEt(pat::MET::Type1));
     // add the pT vector of the old jets with the initial correction to the MET vector
     for(std::vector<pat::Jet>::const_iterator itJet=oldJetsForMET.begin();itJet!=oldJetsForMET.end();++itJet){
-      TLorentzVector oldJETVec;
-      oldJETVec.SetPtEtaPhiE(itJet->pt(),itJet->eta(),itJet->phi(),itJet->energy());
-      TLorentzVector PToldJETVec;
-      PToldJETVec.SetPxPyPzE(oldJETVec.Px(),oldJETVec.Py(),0.0,oldJETVec.Et());
-      oldMETVec+=PToldJETVec;
+      reco::Candidate::LorentzVector PToldJETVec(itJet->px(),itJet->py(),0.,itJet->et());
+      oldMETVec=oldMETVec+PToldJETVec;
+    }   
+    // add the pT vector of the old electrons with the initial correction to the MET vector
+    for(std::vector<pat::Electron>::const_iterator itEle=oldElectronsForMET.begin();itEle!=oldElectronsForMET.end();++itEle){
+      reco::Candidate::LorentzVector PToldEleVec(itEle->px(),itEle->py(),0.,itEle->et());
+      oldMETVec=oldMETVec+PToldEleVec;
+    }
+    // add the pT vector of the old muonns with the initial correction to the MET vector
+    for(std::vector<pat::Muon>::const_iterator itMu=oldMuonsForMET.begin();itMu!=oldMuonsForMET.end();++itMu){
+      reco::Candidate::LorentzVector PToldMuVec(itMu->px(),itMu->py(),0.,itMu->et());
+      oldMETVec=oldMETVec+PToldMuVec;
     }
     // now subtract the pT vectors of the clean recorrected jets
     for(std::vector<pat::Jet>::const_iterator itJet=newJetsForMET.begin();itJet!=newJetsForMET.end();++itJet){
-      TLorentzVector newJETVec;
-      newJETVec.SetPtEtaPhiE(itJet->pt(),itJet->eta(),itJet->phi(),itJet->energy());
-      TLorentzVector PTnewJETVec;
-      PTnewJETVec.SetPxPyPzE(newJETVec.Px(),newJETVec.Py(),0.0,newJETVec.Et());
-      oldMETVec-=PTnewJETVec;
+      reco::Candidate::LorentzVector PTnewJETVec(itJet->px(),itJet->py(),0.,itJet->et());
+      oldMETVec=oldMETVec-PTnewJETVec;
     }
-    outMET.setP4(reco::Candidate::LorentzVector(oldMETVec.Px(),oldMETVec.Py(),oldMETVec.Pz(),oldMETVec.E()));
+    // now subtract the pT vectors of the recorrected electrons
+    for(std::vector<pat::Electron>::const_iterator itEle=newElectronsForMET.begin();itEle!=newElectronsForMET.end();++itEle){
+      reco::Candidate::LorentzVector PTnewEleVec(itEle->px(),itEle->py(),0.,itEle->et());
+      oldMETVec=oldMETVec-PTnewEleVec;
+    }
+    // now subtract the pT vectors of the recorrected muons
+    for(std::vector<pat::Muon>::const_iterator itMu=newMuonsForMET.begin();itMu!=newMuonsForMET.end();++itMu){
+      reco::Candidate::LorentzVector PTnewMuVec(itMu->px(),itMu->py(),0.,itMu->et());
+      oldMETVec=oldMETVec-PTnewMuVec;
+    }
+    outMET.setP4(oldMETVec);
+    //cout << "after: uncor pt " << outMET.uncorPt() << " cor pt (type1) " << outMET.corPt(pat::MET::Type1) << " cor pt (type1XY) " << outMET.corPt(pat::MET::Type1XY) << endl;
     }
 
     outputMets.push_back(outMET);
