@@ -272,11 +272,11 @@ CSVHelper::getCSVWeight(const std::vector<double>& jetPts,
     int iEta = -1;
     if (jetPt >= 19.99 && jetPt < 30)
       iPt = 0;
-    else if (jetPt >= 30 && jetPt < 40)
+    else if (jetPt >= 30 && jetPt < 50)
       iPt = 1;
-    else if (jetPt >= 40 && jetPt < 60)
+    else if (jetPt >= 50 && jetPt < 70)
       iPt = 2;
-    else if (jetPt >= 60 && jetPt < 100)
+    else if (jetPt >= 70 && jetPt < 100)
       iPt = 3;
     else if (jetPt >= 100 && jetPt < 160)
       iPt = 4;
