@@ -65,6 +65,7 @@ class LeptonSFHelper {
 
   float electronMaxPt;
   float electronMaxPtHigh;
+  float electronMaxPtHigher;
   float muonMaxPt;
   float muonMaxPtHigh;
   float ljets_mu_BtoF_lumi;

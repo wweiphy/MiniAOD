@@ -11,8 +11,9 @@ LeptonSFHelper::LeptonSFHelper( ){
   SetMuonMuonHistos( );
   SetElectronMuonHistos( );
 
-  electronMaxPt = 199.0;
-  electronMaxPtHigh=250.0;
+  electronMaxPt = 150.0;
+  electronMaxPtHigh= 201.0;
+  electronMaxPtHigher=499.0;
   muonMaxPt = 119.0;
   muonMaxPtHigh = 499.0;
   
@@ -65,40 +66,40 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
 
   for (auto Electron: Electrons){ //Electron is of type pat::Electron
 
-    ElectronIDSF = ElectronIDSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "ID");
-    ElectronIDSF_Up = ElectronIDSF_Up *GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "ID");
-    ElectronIDSF_Down = ElectronIDSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "ID");
+    ElectronIDSF = ElectronIDSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "ID");
+    ElectronIDSF_Up = ElectronIDSF_Up *GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "ID");
+    ElectronIDSF_Down = ElectronIDSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "ID");
 
-    ElectronIsoSF = ElectronIsoSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "Iso");
-    ElectronIsoSF_Up = ElectronIsoSF_Up  * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "Iso");
-    ElectronIsoSF_Down = ElectronIsoSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "Iso");
+    ElectronIsoSF = ElectronIsoSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "Iso");
+    ElectronIsoSF_Up = ElectronIsoSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Iso");
+    ElectronIsoSF_Down = ElectronIsoSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Iso");
 
-    ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "Trigger");
-    ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "Trigger");
-    ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "Trigger");
+    ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "Trigger");
+    ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Trigger");
+    ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Trigger");
 
-    ElectronGFSSF = ElectronGFSSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "GFS");
-    ElectronGFSSF_Up = ElectronGFSSF_Up *GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "GFS");
-    ElectronGFSSF_Down = ElectronGFSSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "GFS");
+    ElectronGFSSF = ElectronGFSSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "GFS");
+    ElectronGFSSF_Up = ElectronGFSSF_Up *GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "GFS");
+    ElectronGFSSF_Down = ElectronGFSSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "GFS");
 
 
   } for (auto Muon: Muons){ //Muon is of type pat::Muon
 
-    MuonIDSF = MuonIDSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "ID");
-    MuonIDSF_Up = MuonIDSF_Up * GetMuonSF(Muon.pt(), Muon.eta(), 1, "ID");
-    MuonIDSF_Down = MuonIDSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "ID");
+    MuonIDSF = MuonIDSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "ID");
+    MuonIDSF_Up = MuonIDSF_Up * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "ID");
+    MuonIDSF_Down = MuonIDSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "ID");
 
-    MuonHIPSF = MuonHIPSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "HIP");
-    MuonHIPSF_Up = MuonHIPSF_Up * GetMuonSF(Muon.pt(), Muon.eta(), 1, "HIP");
-    MuonHIPSF_Down = MuonHIPSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "HIP");
+    MuonHIPSF = MuonHIPSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "HIP");
+    MuonHIPSF_Up = MuonHIPSF_Up * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "HIP");
+    MuonHIPSF_Down = MuonHIPSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "HIP");
 
-    MuonIsoSF = MuonIsoSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "Iso");
-    MuonIsoSF_Up = MuonIsoSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1, "Iso");
-    MuonIsoSF_Down = MuonIsoSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "Iso");
+    MuonIsoSF = MuonIsoSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "Iso");
+    MuonIsoSF_Up = MuonIsoSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Iso");
+    MuonIsoSF_Down = MuonIsoSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Iso");
 
-    MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "Trigger");
-    MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1, "Trigger");
-    MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "Trigger");
+    MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "Trigger");
+    MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Trigger");
+    MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Trigger");
 
   }
 
@@ -182,9 +183,10 @@ float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int
   int thisBin=0;
 
   float searchEta=electronEta;
-  float searchPt=TMath::Min( electronPt , electronMaxPt );
+  float searchPt=TMath::Min( electronPt , electronMaxPt ); // if e_pt < 150 use the corresponding bin
+  if(searchPt==electronMaxPt) {searchPt=electronMaxPtHigher;}; // if e_pt >= 150 go to last bin by setting searchpt to 499
   if (type=="Trigger"){
-    searchPt=TMath::Min( electronPt , electronMaxPtHigh );
+    searchPt=TMath::Min( electronPt , electronMaxPtHigh ); // if pt > 200 use overflow bin by setting searchpt to 201
   }
 
   float nomval = 0;
@@ -250,10 +252,10 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
 
   int thisBin=0;
 
-  float searchEta=fabs( muonEta );
-  float searchPt=TMath::Min( muonPt , muonMaxPt );
+  float searchEta=fabs( muonEta ); 
+  float searchPt=TMath::Min( muonPt , muonMaxPt ); // if muonpt > 119 use last bin
   if (type=="Trigger"){
-    searchPt=TMath::Min( muonPt , muonMaxPtHigh );
+    searchPt=TMath::Min( muonPt , muonMaxPtHigh );// if muonpt > 499 use last bin
   }
   float nomval = 0;
   float error = 0;
