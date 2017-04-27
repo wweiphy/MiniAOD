@@ -221,6 +221,10 @@ float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int
     error=h_ele_ISO_abseta_pt_ratio->GetBinError( thisBin );
     upval=nomval+error;  //DANGERZONE need to add pT depnednet 1% uncertainty
     downval=nomval-error;
+    if(electronPt<20 || electronPt>80) {
+        upval=upval*( 1.0+sqrt(0.01*0.01) );
+        downval=downval*( 1.0-sqrt(0.01*0.01) );
+    }
 
   }
   else if ( type == "GFS" ){
@@ -230,6 +234,10 @@ float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int
     error=h_ele_GFS_abseta_pt_ratio->GetBinError( thisBin );
     upval=nomval+error; //DANGERZONE need to add pT depnednet 1% uncertainty
     downval=nomval-error;
+    if(electronPt<20 || electronPt>80) {
+        upval=upval*( 1.0+sqrt(0.01*0.01) );
+        downval=downval*( 1.0-sqrt(0.01*0.01) );
+    }
 
   }
   else {
