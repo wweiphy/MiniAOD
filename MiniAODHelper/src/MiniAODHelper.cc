@@ -504,6 +504,9 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
       if( Systematics::isJECUncertainty(iSysType) ) {
 	const double unc = GetJECUncertainty(jet,setup,iSysType);
 	const double jecvar = 1. + (unc*uncFactor);
+        if( addUserFloats ) {
+            jet.addUserFloat("Helper"+Systematics::toString(iSysType),jecvar);
+        }
 	jet.scaleEnergy( jecvar );
 	totalCorrFactor *= jecvar;
       }
