@@ -270,18 +270,34 @@ CSVHelper::getCSVWeight(const std::vector<double>& jetPts,
 
     int iPt = -1;
     int iEta = -1;
-    if (jetPt >= 19.99 && jetPt < 30)
-      iPt = 0;
-    else if (jetPt >= 30 && jetPt < 50)
-      iPt = 1;
-    else if (jetPt >= 50 && jetPt < 70)
-      iPt = 2;
-    else if (jetPt >= 70 && jetPt < 100)
-      iPt = 3;
-    else if (jetPt >= 100 && jetPt < 160)
-      iPt = 4;
-    else if (jetPt >= 160)
-      iPt = 5;
+    if(abs(flavor)>3) {
+        if (jetPt >= 19.99 && jetPt < 30)
+            iPt = 0;
+        else if (jetPt >= 30 && jetPt < 50)
+            iPt = 1;
+        else if (jetPt >= 50 && jetPt < 70)
+            iPt = 2;
+        else if (jetPt >= 70 && jetPt < 100)
+            iPt = 3;
+        else if (jetPt >= 100 && jetPt < 160)
+            iPt = 4;
+        else if (jetPt >= 160)
+            iPt = 5;
+    }
+    else {
+        if (jetPt >= 19.99 && jetPt < 30)
+            iPt = 0;
+        else if (jetPt >= 30 && jetPt < 40)
+            iPt = 1;
+        else if (jetPt >= 40 && jetPt < 60)
+            iPt = 2;
+        else if (jetPt >= 60 && jetPt < 100)
+            iPt = 3;
+        else if (jetPt >= 100 && jetPt < 160)
+            iPt = 4;
+        else if (jetPt >= 160)
+            iPt = 5;
+    }
     
     if (jetAbsEta >= 0 && jetAbsEta < 0.8)
       iEta = 0;

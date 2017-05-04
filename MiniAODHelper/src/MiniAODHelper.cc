@@ -352,14 +352,14 @@ MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const flo
 
 
 std::vector<pat::Jet>
-MiniAODHelper::GetSelectedJets(const std::vector<pat::Jet>& inputJets, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVwp){
+MiniAODHelper::GetSelectedJets(const std::vector<pat::Jet>& inputJets, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVwp, const PUJetID::WP wp){
 
   CheckSetUp();
 
   std::vector<pat::Jet> selectedJets;
 
   for( std::vector<pat::Jet>::const_iterator it = inputJets.begin(), ed = inputJets.end(); it != ed; ++it ){
-    if( isGoodJet(*it, iMinPt, iMaxAbsEta, iJetID, iCSVwp) ) selectedJets.push_back(*it);
+    if( isGoodJet(*it, iMinPt, iMaxAbsEta, iJetID, iCSVwp,wp) ) selectedJets.push_back(*it);
   }
 
   return selectedJets;
@@ -1317,7 +1317,7 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
 }
 
 bool
-MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint){
+MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint, const PUJetID::WP wp){
 
 //   CheckVertexSetUp();
 
@@ -1370,6 +1370,8 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   default:
     break;
   }
+  // PileUP Jet ID
+  if(iJet.userInt("pileupJetIdUpdated:fullId")<PUJetID::toInt(wp)) return false;
 
   if( !PassesCSV(iJet, iCSVworkingPoint) ) return false;
 

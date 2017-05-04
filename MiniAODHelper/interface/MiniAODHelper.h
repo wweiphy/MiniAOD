@@ -74,6 +74,7 @@
 #include "DataFormats/MuonReco/interface/MuonSelectors.h"
 
 #include "MiniAOD/MiniAODHelper/interface/Systematics.h"
+#include "MiniAOD/MiniAODHelper/interface/PUJetID.h"
 
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 
@@ -167,7 +168,7 @@ class MiniAODHelper{
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
-  std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char);
+  std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char, const PUJetID::WP wp=PUJetID::none);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetUncorrectedJets(edm::Handle<pat::JetCollection>);
   pat::Jet GetCorrectedJet(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const Systematics::Type iSysType=Systematics::NA, const bool doJES=true, const bool doJER=true, const float corrFactor = 1, const float uncFactor = 1);
@@ -185,7 +186,7 @@ class MiniAODHelper{
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
   bool isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
-  bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char);
+  bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char, const PUJetID::WP wp=PUJetID::none);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&, const coneSize::coneSize, const corrType::corrType, std::map<std::string,double>* miniIso_calculation_params = 0) const;
