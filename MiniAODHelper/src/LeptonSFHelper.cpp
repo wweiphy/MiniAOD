@@ -495,7 +495,7 @@ void LeptonSFHelper::SetMuonHistos( ){
 }
 
 void LeptonSFHelper::SetElectronElectronHistos( ){
-  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "triggerSummary_ee.root";
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "triggerSummary_ee_ReReco2016_ttH.root";
 
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
 
@@ -503,7 +503,7 @@ void LeptonSFHelper::SetElectronElectronHistos( ){
 }
 
 void LeptonSFHelper::SetMuonMuonHistos( ){
-  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "triggerSummary_mumu.root";
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "triggerSummary_mumu_ReReco2016_ttH.root";
 
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
 
@@ -511,7 +511,7 @@ void LeptonSFHelper::SetMuonMuonHistos( ){
 }
 
 void LeptonSFHelper::SetElectronMuonHistos( ){
-  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/" + "triggerSummary_emu.root";
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "triggerSummary_emu_ReReco2016_ttH.root";
 
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
 
