@@ -29,6 +29,7 @@ class LeptonSFHelper {
   float GetElectronElectronSF( float electronEta1, float electronEta2, int syst , std::string type);
   float GetMuonMuonSF( float muonEta1, float muonEta2, int syst , std::string type);
   float GetElectronMuonSF( float electronEta, float muonEta, int syst , std::string type);
+  void  ChangeMuIsoHistos(bool is_DL);
 
  private:
 
