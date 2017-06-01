@@ -453,7 +453,7 @@ void LeptonSFHelper::ChangeMuIsoHistos(bool is_DL) {
 
 void LeptonSFHelper::SetElectronHistos( ){
 
-  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_ID_SF.root";
+  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_ID_SF_tight.root";
   std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_TriggerSF_Run2016All_v1.root";
   std::string ISOinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_Reco_EGM2D.root"; // DANGERZONE: no iso SF yet??
   std::string GFSinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_Reco_EGM2D.root";

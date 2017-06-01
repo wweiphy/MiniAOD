@@ -1697,6 +1697,14 @@ float MiniAODHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername
   return bTagVal;
 }
 
+float MiniAODHelper::GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername){
+
+
+  float bTagVal = jet.bDiscriminator(taggername);
+
+  return bTagVal;
+}
+
 
 
 bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
