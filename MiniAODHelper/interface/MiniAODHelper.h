@@ -198,6 +198,7 @@ class MiniAODHelper{
   void AddElectronRelIso(std::vector<pat::Electron>&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
   static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags");
   static float GetJetCSV_DNN(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags");
+  static jetID::jetID getjetID(const std::string& jetID);
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
   bool PassElectronSpring15Id(const pat::Electron&, const electronID::electronID) const;

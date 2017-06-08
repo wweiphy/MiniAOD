@@ -1553,7 +1553,7 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 
   double correction = 9999.;
   double EffArea = 9999.;
-  double Eta = abs(iElectron.eta());
+  double Eta = abs(iElectron.superCluster()->eta());
 
   double pfIsoCharged;
   double pfIsoNeutral;
@@ -2955,4 +2955,12 @@ std::vector<pat::MET> MiniAODHelper::CorrectMET(const std::vector<pat::Jet>& old
 
   return outputMets;
   
+}
+
+jetID::jetID MiniAODHelper::getjetID(const std::string& jetID) {
+    
+    if(jetID=="loose") return jetID::jetLoose;
+    else if(jetID=="tight") return jetID::jetTight;
+    else return jetID::none;
+    
 }
