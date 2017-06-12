@@ -498,8 +498,8 @@ void MiniAODHelper::ApplyJetEnergyCorrection(pat::Jet& jet,
 	  const double uncDown = GetJECUncertainty(jet,setup,Systematics::JESdown);
 	  const double jecvarUp = 1. + (uncUp);
 	  const double jecvarDown = 1. + (uncDown);
-	  jet.addUserFloat("HelperJESUp",jecvarUp);
-	  jet.addUserFloat("HelperJESDown",jecvarDown);
+	  jet.addUserFloat("HelperJESup",jecvarUp);
+	  jet.addUserFloat("HelperJESdown",jecvarDown);
       }
 
       if( Systematics::isJECUncertainty(iSysType) ) {
