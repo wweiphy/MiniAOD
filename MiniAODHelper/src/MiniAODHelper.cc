@@ -1034,6 +1034,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
   case muonID::muonSide:
   case muonID::muonSideLooseMVA:
   case muonID::muonSideTightMVA:
+  case muonID::muonFakeable:
   case muonID::muonPtOnly:
   case muonID::muonPtEtaOnly:
   case muonID::muonPtEtaIsoOnly:
@@ -1164,6 +1165,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electronSide:
   case electronID::electronSideLooseMVA:
   case electronID::electronSideTightMVA:
+  case electronID::electronFakeable:
   case electronID::electronLooseMinusTrigPresel:
   case electronID::electronRaw:
   case electronID::electronCutBased:
