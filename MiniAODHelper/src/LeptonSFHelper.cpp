@@ -167,9 +167,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   ScaleFactorMap["ElectronSF_Up"]= ElectronIDSF_Up * ElectronIsoSF_Up * ElectronTriggerSF_Up;
   ScaleFactorMap["ElectronSF_Down"]= ElectronIDSF_Down * ElectronIsoSF_Down * ElectronTriggerSF_Down;
 
-  ScaleFactorMap["MuonSF"]= MuonIDSF * MuonIsoSF * MuonTriggerSF;
-  ScaleFactorMap["MuonSF_Up"]= MuonIDSF_Up * MuonIsoSF_Up * MuonTriggerSF_Up;
-  ScaleFactorMap["MuonSF_Down"]= MuonIDSF_Down * MuonIsoSF_Down * MuonTriggerSF_Down;
+  ScaleFactorMap["MuonSF"]= MuonIDSF * MuonIsoSF * MuonTriggerSF * MuonHIPSF;
+  ScaleFactorMap["MuonSF_Up"]= MuonIDSF_Up * MuonIsoSF_Up * MuonTriggerSF_Up * MuonHIPSF_Up;
+  ScaleFactorMap["MuonSF_Down"]= MuonIDSF_Down * MuonIsoSF_Down * MuonTriggerSF_Down * MuonHIPSF_Down;
 
   ScaleFactorMap["LeptonSF"]= ScaleFactorMap["ElectronSF"] * ScaleFactorMap["MuonSF"];
   ScaleFactorMap["LeptonSF_Up"]= ScaleFactorMap["ElectronSF_Up"] * ScaleFactorMap["MuonSF_Up"];
@@ -348,17 +348,17 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
 
   else if ( type == "HIP" ){
 
-    thisBin = h_mu_HIP_eta_ratioBtoF->FindBin( searchEta );
-    nomvalBtoF=h_mu_HIP_eta_ratioBtoF->GetBinContent( thisBin );
-    errorBtoF=h_mu_HIP_eta_ratioBtoF->GetBinError( thisBin );
-    upvalBtoF=( nomvalBtoF+errorBtoF );
-    downvalBtoF=( nomvalBtoF-errorBtoF );
+    //thisBin = findPoint(h_mu_HIP_eta_ratioBtoF,searchEta );
+    nomvalBtoF=getValue(*h_mu_HIP_eta_ratioBtoF,searchEta,0);
+    //errorBtoF=h_mu_HIP_eta_ratioBtoF->GetBinError( thisBin );
+    upvalBtoF=getValue(*h_mu_HIP_eta_ratioBtoF,searchEta,1);
+    downvalBtoF=getValue(*h_mu_HIP_eta_ratioBtoF,searchEta,-1);
     
-    thisBin = h_mu_HIP_eta_ratioGtoH->FindBin( searchEta );
-    nomvalGtoH=h_mu_HIP_eta_ratioGtoH->GetBinContent( thisBin );
-    errorGtoH=h_mu_HIP_eta_ratioGtoH->GetBinError( thisBin );
-    upvalGtoH=( nomvalGtoH+errorGtoH );
-    downvalGtoH=( nomvalGtoH-errorGtoH );
+    //thisBin = h_mu_HIP_eta_ratioGtoH->FindBin( searchEta );
+    nomvalGtoH=getValue(*h_mu_HIP_eta_ratioGtoH,searchEta,0);
+    //errorGtoH=h_mu_HIP_eta_ratioGtoH->GetBinError( thisBin );
+    upvalGtoH=getValue(*h_mu_HIP_eta_ratioGtoH,searchEta,1);
+    downvalGtoH=getValue(*h_mu_HIP_eta_ratioGtoH,searchEta,-1);
     
     nomval=(ljets_mu_BtoF_lumi*nomvalBtoF + ljets_mu_GtoH_lumi * nomvalGtoH)/(ljets_mu_BtoF_lumi+ljets_mu_GtoH_lumi);
     upval=(ljets_mu_BtoF_lumi*upvalBtoF + ljets_mu_GtoH_lumi * upvalGtoH)/(ljets_mu_BtoF_lumi+ljets_mu_GtoH_lumi);
@@ -481,8 +481,8 @@ void LeptonSFHelper::SetMuonHistos( ){
   std::string ISOinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ISO_EfficienciesAndSF_BCDEF.root";
   std::string ISOinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ISO_EfficienciesAndSF_GH.root";
   
-  std::string HIPinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_BCDEF_histos.root";
-  std::string HIPinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_GH_histos.root";
+  std::string HIPinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_BCDEF.root";
+  std::string HIPinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_GH.root";
 
 
   TFile *f_IDSFBtoF = new TFile(std::string(IDinputFileBtoF).c_str(),"READ");
@@ -501,8 +501,8 @@ void LeptonSFHelper::SetMuonHistos( ){
   h_mu_ID_abseta_pt_ratioBtoF = (TH2F*)f_IDSFBtoF->Get("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio");
   h_mu_ID_abseta_pt_ratioGtoH = (TH2F*)f_IDSFGtoH->Get("MC_NUM_TightID_DEN_genTracks_PAR_pt_eta/pt_abseta_ratio");
 
-  h_mu_HIP_eta_ratioBtoF = (TH1D*)f_HIPSFBtoF->Get("ratio_eff_aeta_dr030e030_corr");
-  h_mu_HIP_eta_ratioGtoH = (TH1D*)f_HIPSFGtoH->Get("ratio_eff_aeta_dr030e030_corr");
+  h_mu_HIP_eta_ratioBtoF = (TGraphAsymmErrors*)f_HIPSFBtoF->Get("ratio_eff_aeta_dr030e030_corr");
+  h_mu_HIP_eta_ratioGtoH = (TGraphAsymmErrors*)f_HIPSFGtoH->Get("ratio_eff_aeta_dr030e030_corr");
 
   h_mu_TRIGGER_abseta_ptBtoF= (TH2F*)f_TRIGGERSFBtoF->Get("IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio");
   h_mu_TRIGGER_abseta_ptGtoH= (TH2F*)f_TRIGGERSFGtoH->Get("IsoMu24_OR_IsoTkMu24_PtEtaBins/pt_abseta_ratio");
@@ -534,4 +534,30 @@ void LeptonSFHelper::SetElectronMuonHistos( ){
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
 
   h_ele_mu_TRIGGER_abseta_abseta = (TH2F*)f_TRIGGERSF->Get("scalefactor_eta2d_with_syst");
+}
+
+int LeptonSFHelper::findPoint(TGraphAsymmErrors& graph,double x_) {
+    double x=0.;
+    double y=0.;
+    for(int i=0;i<graph.GetN();i++) {
+        graph.GetPoint(i,x,y);
+        double l=0.;
+        double r=0.;
+        l = x-graph.GetErrorXlow(i);
+        r = x+graph.GetErrorXhigh(i);
+        if((l<=x_) && (x_<r)) {return i;}
+    }
+    return -1;
+}
+
+float LeptonSFHelper::getValue(TGraphAsymmErrors& graph,double x_,int syst) {
+    int i = findPoint(graph,x_);
+    if(i<0) {std::cerr << "x-value " << x_ << " cannot be assigned to a valid point" << std::endl;}
+    double x=0.;
+    double y=0.;
+    graph.GetPoint(i,x,y);
+    float y_=y;
+    if(syst==1) {return y_+graph.GetErrorYhigh(i);}
+    else if(syst==-1) {return y_-graph.GetErrorYlow(i);}
+    else {return y_;}
 }
