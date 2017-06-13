@@ -536,7 +536,7 @@ void LeptonSFHelper::SetElectronMuonHistos( ){
   h_ele_mu_TRIGGER_abseta_abseta = (TH2F*)f_TRIGGERSF->Get("scalefactor_eta2d_with_syst");
 }
 
-int LeptonSFHelper::findPoint(TGraphAsymmErrors& graph,double x_) {
+int LeptonSFHelper::findPoint(TGraphAsymmErrors& graph,float& x_) {
     double x=0.;
     double y=0.;
     for(int i=0;i<graph.GetN();i++) {
@@ -550,7 +550,7 @@ int LeptonSFHelper::findPoint(TGraphAsymmErrors& graph,double x_) {
     return -1;
 }
 
-float LeptonSFHelper::getValue(TGraphAsymmErrors& graph,double x_,int syst) {
+float LeptonSFHelper::getValue(TGraphAsymmErrors& graph,float& x_,int syst) {
     int i = findPoint(graph,x_);
     if(i<0) {std::cerr << "x-value " << x_ << " cannot be assigned to a valid point" << std::endl;}
     double x=0.;

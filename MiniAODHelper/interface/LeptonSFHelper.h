@@ -39,8 +39,8 @@ class LeptonSFHelper {
   void SetElectronElectronHistos( );
   void SetMuonMuonHistos( );
   void SetElectronMuonHistos( );
-  int findPoint(TGraphAsymmErrors& graph,double x_);
-  float getValue(TGraphAsymmErrors& graph,double x_,int syst);
+  int findPoint(TGraphAsymmErrors& graph,float& x_);
+  float getValue(TGraphAsymmErrors& graph,float& x_,int syst);
 
   TH2F *h_ele_ID_abseta_pt_ratio;
   TH2F *h_ele_TRIGGER_abseta_pt_ratio;
