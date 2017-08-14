@@ -65,41 +65,89 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
 
 
   for (auto Electron: Electrons){ //Electron is of type pat::Electron
+      
+    if(Electron.hasUserFloat("ptBeforeRun2Calibration")) {
 
-    ElectronIDSF = ElectronIDSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "ID");
-    ElectronIDSF_Up = ElectronIDSF_Up *GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "ID");
-    ElectronIDSF_Down = ElectronIDSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "ID");
+        ElectronIDSF = ElectronIDSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "ID");
+        ElectronIDSF_Up = ElectronIDSF_Up *GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "ID");
+        ElectronIDSF_Down = ElectronIDSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "ID");
 
-    ElectronIsoSF = ElectronIsoSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "Iso");
-    ElectronIsoSF_Up = ElectronIsoSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Iso");
-    ElectronIsoSF_Down = ElectronIsoSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Iso");
+        ElectronIsoSF = ElectronIsoSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "Iso");
+        ElectronIsoSF_Up = ElectronIsoSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Iso");
+        ElectronIsoSF_Down = ElectronIsoSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Iso");
 
-    ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "Trigger");
-    ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Trigger");
-    ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Trigger");
+        ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "Trigger");
+        ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Trigger");
+        ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Trigger");
 
-    ElectronGFSSF = ElectronGFSSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "GFS");
-    ElectronGFSSF_Up = ElectronGFSSF_Up *GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "GFS");
-    ElectronGFSSF_Down = ElectronGFSSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "GFS");
+        ElectronGFSSF = ElectronGFSSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "GFS");
+        ElectronGFSSF_Up = ElectronGFSSF_Up *GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "GFS");
+        ElectronGFSSF_Down = ElectronGFSSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "GFS");
+    
+    }
+    
+    else {
+        
+        ElectronIDSF = ElectronIDSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "ID");
+        ElectronIDSF_Up = ElectronIDSF_Up *GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "ID");
+        ElectronIDSF_Down = ElectronIDSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "ID");
+
+        ElectronIsoSF = ElectronIsoSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "Iso");
+        ElectronIsoSF_Up = ElectronIsoSF_Up  * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "Iso");
+        ElectronIsoSF_Down = ElectronIsoSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "Iso");
+
+        ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "Trigger");
+        ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "Trigger");
+        ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "Trigger");
+
+        ElectronGFSSF = ElectronGFSSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "GFS");
+        ElectronGFSSF_Up = ElectronGFSSF_Up *GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "GFS");
+        ElectronGFSSF_Down = ElectronGFSSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "GFS");
+    }
 
 
-  } for (auto Muon: Muons){ //Muon is of type pat::Muon
+  }
+  
+  for (auto Muon: Muons){ //Muon is of type pat::Muon
+      
+    if(Muon.hasUserFloat("PtbeforeRC")) {
 
-    MuonIDSF = MuonIDSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "ID");
-    MuonIDSF_Up = MuonIDSF_Up * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "ID");
-    MuonIDSF_Down = MuonIDSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "ID");
+        MuonIDSF = MuonIDSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "ID");
+        MuonIDSF_Up = MuonIDSF_Up * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "ID");
+        MuonIDSF_Down = MuonIDSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "ID");
 
-    MuonHIPSF = MuonHIPSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "HIP");
-    MuonHIPSF_Up = MuonHIPSF_Up * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "HIP");
-    MuonHIPSF_Down = MuonHIPSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "HIP");
+        MuonHIPSF = MuonHIPSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "HIP");
+        MuonHIPSF_Up = MuonHIPSF_Up * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "HIP");
+        MuonHIPSF_Down = MuonHIPSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "HIP");
 
-    MuonIsoSF = MuonIsoSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "Iso");
-    MuonIsoSF_Up = MuonIsoSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Iso");
-    MuonIsoSF_Down = MuonIsoSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Iso");
+        MuonIsoSF = MuonIsoSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "Iso");
+        MuonIsoSF_Up = MuonIsoSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Iso");
+        MuonIsoSF_Down = MuonIsoSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Iso");
 
-    MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "Trigger");
-    MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Trigger");
-    MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Trigger");
+        MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "Trigger");
+        MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Trigger");
+        MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Trigger");
+    }
+    
+    else {
+        
+        MuonIDSF = MuonIDSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "ID");
+        MuonIDSF_Up = MuonIDSF_Up * GetMuonSF(Muon.pt(), Muon.eta(), 1, "ID");
+        MuonIDSF_Down = MuonIDSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "ID");
+
+        MuonHIPSF = MuonHIPSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "HIP");
+        MuonHIPSF_Up = MuonHIPSF_Up * GetMuonSF(Muon.pt(), Muon.eta(), 1, "HIP");
+        MuonHIPSF_Down = MuonHIPSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "HIP");
+
+        MuonIsoSF = MuonIsoSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "Iso");
+        MuonIsoSF_Up = MuonIsoSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1, "Iso");
+        MuonIsoSF_Down = MuonIsoSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "Iso");
+
+        MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "Trigger");
+        MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1, "Trigger");
+        MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "Trigger");
+        
+    }
 
   }
 
