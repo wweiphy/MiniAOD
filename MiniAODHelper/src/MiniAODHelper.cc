@@ -1008,6 +1008,11 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
 
 
   switch(iMuonID){
+  case muonID::none:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso = true;
+    passesID = true;
+    break;
   case muonID::muonPreselection:
     // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
     // selection userFloats
@@ -1138,6 +1143,11 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
 
 
   switch(iElectronID){
+  case electronID::none:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso = true;
+    passesID = true;
+    break;
   case electronID::electronPreselection:
     // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
     // selection userFloats

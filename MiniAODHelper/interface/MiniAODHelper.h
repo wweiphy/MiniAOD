@@ -97,6 +97,7 @@ namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, s
 
 namespace muonID{
    enum muonID{
+      none,
       muonPreselection,
       muonSide, muonSideLooseMVA, muonSideTightMVA,
       muonLoose, muonTight,
@@ -110,6 +111,7 @@ namespace muonID{
 }
 namespace electronID{
    enum electronID{
+      none, 
       electronPreselection,
       electronSide, electronSideLooseMVA, electronSideTightMVA,
       electronLoose, electronTight,
