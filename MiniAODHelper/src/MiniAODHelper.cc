@@ -1240,7 +1240,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring15);
     break;
-
+  case electronID::electron80XCutBasedV:
   case electronID::electron80XCutBasedL:
   case electronID::electron80XCutBasedM:
   case electronID::electron80XCutBasedT:
@@ -1768,6 +1768,30 @@ bool MiniAODHelper::PassElectron80XId(const pat::Electron& iElectron, const elec
 
   bool pass = false;
   switch(iElectronID){
+  case electronID::electron80XCutBasedV:
+    if( isEB ){
+      pass = ( full5x5_sigmaIetaIeta < 0.0115 &&
+	       fabsdEtaInSeed < 0.00749 &&
+	       dPhiIn < 0.228 &&
+	       hOverE <  0.356  &&
+	       ooEmooP <  0.299  &&
+	       expectedMissingInnerHits <= 2 &&
+	       passConversionVeto &&
+	       relIso <  0.175 
+	       );
+    }
+    else{
+      pass = ( full5x5_sigmaIetaIeta <  0.037  &&
+	       fabsdEtaInSeed < 0.00895 &&
+	       dPhiIn < 0.213 &&
+	       hOverE < 0.211  &&
+	       ooEmooP < 0.15 &&
+	       expectedMissingInnerHits <= 3 &&
+	       passConversionVeto &&
+	       relIso < 0.159
+	       );
+    }
+    break;
   case electronID::electron80XCutBasedL:
     if( isEB ){
       pass = ( full5x5_sigmaIetaIeta < 0.011 &&

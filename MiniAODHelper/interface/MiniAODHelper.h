@@ -123,7 +123,7 @@ namespace electronID{
       electron2lss,
       electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T,
       electronEndOf15MVA80, electronEndOf15MVA90, electronEndOf15MVA80iso0p1, electronEndOf15MVA80iso0p15, electronEndOf15MVA90iso0p1, electronEndOf15MVA90iso0p15,
-      electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electronNonTrigMVAid90,electronNonTrigMVAid80,
+      electron80XCutBasedV,electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electronNonTrigMVAid90,electronNonTrigMVAid80,
       electronGeneralPurposeMVA2016WP80,electronGeneralPurposeMVA2016WP90 // MVA IDs for 80X with 80 and 90 percent eff.
    };
 }
