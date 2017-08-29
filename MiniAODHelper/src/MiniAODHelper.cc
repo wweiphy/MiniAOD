@@ -336,14 +336,14 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
 }
 
 std::vector<pat::Tau>
-MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const float iMinPt, const tau::ID id){
+MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const float iMinPt, const tau::ID id, const float iMaxEta){
 
   CheckSetUp();
 
   std::vector<pat::Tau> selectedTaus;
 
   for( std::vector<pat::Tau>::const_iterator it = inputTaus.begin(), ed = inputTaus.end(); it != ed; ++it ){
-    if( isGoodTau(*it,iMinPt,id) ) selectedTaus.push_back(*it);
+    if( isGoodTau(*it,iMinPt,id,iMaxEta) ) selectedTaus.push_back(*it);
   }
 
   return selectedTaus;
@@ -1275,7 +1275,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
 }
 
 bool
-MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID id)
+MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID id, const float max_eta)
 {
   CheckVertexSetUp();
 
@@ -1292,7 +1292,7 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tau::ID 
   // systematics are only defined for p_T > 20
   bool passesKinematics = \
                           (tau.pt() >= std::max(20.f, min_pt)) and \
-                          (fabs(tau.eta()) <= 2.3) and \
+                          (fabs(tau.eta()) <= max_eta) and \
                           (track->pt() >= 5.) and \
                           (fabs(track->dxy(vertex.position())) < 1000.) and \
                           (fabs(track->dz(vertex.position())) <= 0.2);
