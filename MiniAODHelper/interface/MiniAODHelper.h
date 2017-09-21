@@ -99,7 +99,7 @@ namespace muonID{
    enum muonID{
       muonPreselection,
       muonSide, muonSideLooseMVA, muonSideTightMVA,
-      muonLoose, muonTight,muonTight_IsoInverted,
+      muonLoose, muonTight,muonTight_IsoInverted,muonTightDL_IsoInverted,
       muonTightDL,
       muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly,
       muonRaw,

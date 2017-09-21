@@ -1091,6 +1091,11 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
       passesIso        = !(GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
       passesID         = passesMuonPOGIdTight(iMuon);
       break;
+  case muonID::muonTightDL_IsoInverted:
+      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+      passesIso        = !(GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25);
+      passesID         = passesMuonPOGIdTight(iMuon);
+      break;
 
   }
 
