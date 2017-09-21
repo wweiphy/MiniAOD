@@ -1086,6 +1086,11 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
       passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
       passesID         = passesMuonPOGIdICHEPMedium(iMuon);
       break;
+  case muonID::muonTight_IsoInverted:
+      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+      passesIso        = !(GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
+      passesID         = passesMuonPOGIdTight(iMuon);
+      break;
 
   }
 
@@ -1237,6 +1242,11 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesID = PassElectron80XId(iElectron,iElectronID);
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring16);
+    break;
+  case electronID::electron80XCutBasedT_IsoInverted:
+    passesID = PassElectron80XId(iElectron,iElectronID);
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    passesIso=!(0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring16));
     break;
   case electronID::electronNonTrigMVAid80:
     passesID = PassesNonTrigMVAid80(iElectron);
