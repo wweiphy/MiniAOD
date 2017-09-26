@@ -54,14 +54,21 @@ double QCDHelper::GetScaleFactor(int n_jets, int n_btags, int n_isoinverted_elec
 	if(!initialized) return 0.;
 	int bin = -1;
 	double sf = 0.;
+	int N_jets = n_jets>6 ? 6 : n_jets;
+	int N_btags = n_btags>4 ? 4 : n_btags;
 	if(n_isoinverted_electrons==1&&n_isoinverted_muons==0) 
 	{
-		bin = El_SF->GetBin(n_jets,n_btags);
+		bin = El_SF->GetBin(N_jets,N_btags);
 		sf = El_SF->GetBinContent(bin);
+		// the values in the file are not correct for electron 6j4b category and have to be set manually
+		if(N_jets>=6&&N_btags>=4)
+		{
+			sf = 1.8;
+		}
 	}
 	else if(n_isoinverted_electrons==0&&n_isoinverted_muons==1)
 	{
-		bin = Mu_SF->GetBin(n_jets,n_btags);
+		bin = Mu_SF->GetBin(N_jets,N_btags);
 		sf = Mu_SF->GetBinContent(bin);
 	}
 	else 
@@ -76,14 +83,21 @@ double QCDHelper::GetScaleFactorError(int n_jets, int n_btags, int n_isoinverted
 	if(!initialized) return 0.;
 	int bin = -1;
 	double sf_err = 0.;
+	int N_jets = n_jets>6 ? 6 : n_jets;
+	int N_btags = n_btags>4 ? 4 : n_btags;
 	if(n_isoinverted_electrons==1&&n_isoinverted_muons==0) 
 	{
-		bin = El_SF->GetBin(n_jets,n_btags);
+		bin = El_SF->GetBin(N_jets,N_btags);
 		sf_err = El_SF->GetBinError(bin);
+		// the values in the file are not correct for electron 6j4b category and have to be set manually
+		if(N_jets>=6&&N_btags>=4)
+		{
+			sf_err = 2.0;
+		}
 	}
 	else if(n_isoinverted_electrons==0&&n_isoinverted_muons==1)
 	{
-		bin = Mu_SF->GetBin(n_jets,n_btags);
+		bin = Mu_SF->GetBin(N_jets,N_btags);
 		sf_err = Mu_SF->GetBinError(bin);
 	}
 	else 
