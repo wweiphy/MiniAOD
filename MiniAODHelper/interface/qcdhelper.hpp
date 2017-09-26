@@ -27,6 +27,7 @@
 class QCDHelper
 {
 	public:
+		// see the definition/implementation file for a description of the functions 
 		QCDHelper(TString path_to_sf_file_);
 		~QCDHelper();
 		double GetScaleFactor(int n_jets, int n_btags, int n_isoinverted_electrons, int n_isoinverted_muons);
@@ -37,10 +38,14 @@ class QCDHelper
 		void LoadFile(TString path_to_sf_file_);
 			
 	private:
+		// pointer for the root file containing the desired histograms
 		TFile* scalefactor_file = 0;
+		// path to the root file
 		TString path_to_sf_file = "";
+		// histograms containing the scale factors for electron and muon channel separately
 		TH2D* Mu_SF = 0;
 		TH2D* El_SF = 0;
+		// flag if the file and the histograms were read properly
 		bool initialized = false;
 };
 

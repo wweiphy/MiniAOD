@@ -22,11 +22,13 @@
 
 QCDHelper::QCDHelper(TString path_to_sf_file_)
 {
+	// just the constructor which loads a root file containing the histograms with the scale factors using the LoadFile function
 	LoadFile(path_to_sf_file_);
 }
 
 void QCDHelper::LoadFile(TString path_to_sf_file_)
 {
+	// this function loads the file given by a string and initializes the 2 needed histograms if the file was loaded correctly
 	path_to_sf_file = path_to_sf_file_;
 	if(path_to_sf_file!="")
 	{
@@ -42,6 +44,7 @@ void QCDHelper::LoadFile(TString path_to_sf_file_)
 
 void QCDHelper::Reset()
 {
+	// resets all member data
 	scalefactor_file = 0;
 	path_to_sf_file = "";
 	Mu_SF = 0;
@@ -51,6 +54,7 @@ void QCDHelper::Reset()
 
 double QCDHelper::GetScaleFactor(int n_jets, int n_btags, int n_isoinverted_electrons, int n_isoinverted_muons)
 {
+	// this function gets the scale factor for a event dependent on the number of jets,btags and the lepton flavor
 	if(!initialized) return 0.;
 	int bin = -1;
 	double sf = 0.;
@@ -80,6 +84,7 @@ double QCDHelper::GetScaleFactor(int n_jets, int n_btags, int n_isoinverted_elec
 
 double QCDHelper::GetScaleFactorError(int n_jets, int n_btags, int n_isoinverted_electrons, int n_isoinverted_muons)
 {
+	// this function gets the error on the scale factor for a event dependent on the number of jets,btags and the lepton flavor
 	if(!initialized) return 0.;
 	int bin = -1;
 	double sf_err = 0.;
@@ -109,6 +114,7 @@ double QCDHelper::GetScaleFactorError(int n_jets, int n_btags, int n_isoinverted
 
 double QCDHelper::GetScaleFactorErrorUp(int n_jets, int n_btags, int n_isoinverted_electrons, int n_isoinverted_muons)
 {
+	// gets the scale factor + error
 	if(!initialized) return 0.;
 	double sf = GetScaleFactor(n_jets,n_btags,n_isoinverted_electrons,n_isoinverted_muons);
 	double sf_err = GetScaleFactorError(n_jets,n_btags,n_isoinverted_electrons,n_isoinverted_muons);
@@ -117,6 +123,7 @@ double QCDHelper::GetScaleFactorErrorUp(int n_jets, int n_btags, int n_isoinvert
 
 double QCDHelper::GetScaleFactorErrorDown(int n_jets, int n_btags, int n_isoinverted_electrons, int n_isoinverted_muons)
 {
+	// gets the scale factor - error
 	if(!initialized) return 0.;
 	double sf = GetScaleFactor(n_jets,n_btags,n_isoinverted_electrons,n_isoinverted_muons);
 	double sf_err = GetScaleFactorError(n_jets,n_btags,n_isoinverted_electrons,n_isoinverted_muons);
@@ -125,6 +132,7 @@ double QCDHelper::GetScaleFactorErrorDown(int n_jets, int n_btags, int n_isoinve
 
 QCDHelper::~QCDHelper()
 {
+	// destructor which closes the file if it was loaded in the first place
 	if(initialized) scalefactor_file->Close();
 }
 
