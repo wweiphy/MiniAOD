@@ -13,6 +13,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
+ * see https://gitlab.cern.ch/ttH/reference/blob/master/definitions/Moriond17.md#69-lj-channel-qcd-estimation
  */
 
 
