@@ -90,7 +90,7 @@ typedef std::vector<int> vint;
 
 namespace analysisType{ enum analysisType{ LJ, DIL, TauLJ, TauDIL }; }
 namespace jetID{		enum jetID{			none, jetPU, jetMinimal, jetLooseAOD, jetLoose, jetTight, jetMETcorrection }; }
-namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight }; }
+namespace tauID { enum tauID{ tauNonIso, tauRaw, tauLoose, tauMedium, tauTight }; }
 namespace tau { enum ID { nonIso, loose, medium, tight }; }
 namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, selfVetoFirst=2};}
 
