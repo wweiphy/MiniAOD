@@ -261,7 +261,7 @@ float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int
     downvalBtoF=nomvalBtoF-errorBtoF;
 
     thisBin = h_ele_ID_abseta_pt_ratioGtoH->FindBin( searchEta , searchPt );
-    nomvalGtoH=h_ele_ID_abseta_pt_ratioGtoH->GetBinContent( thisBin );ljets
+    nomvalGtoH=h_ele_ID_abseta_pt_ratioGtoH->GetBinContent( thisBin );
     errorGtoH=h_ele_ID_abseta_pt_ratioGtoH->GetBinError( thisBin );
     upvalGtoH=nomvalGtoH+errorGtoH;
     downvalGtoH=nomvalGtoH-errorGtoH;
