@@ -24,6 +24,8 @@
 #include <TString.h>
 #include <TH2D.h>
 
+// QCD Helper to retrieve scale factor for QCD Estimation with iso inverted ntuples
+
 class QCDHelper
 {
 	public:

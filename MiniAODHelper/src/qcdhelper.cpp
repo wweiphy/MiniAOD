@@ -62,7 +62,7 @@ double QCDHelper::GetScaleFactor(int n_jets, int n_btags, int n_isoinverted_elec
 	int N_btags = n_btags>4 ? 4 : n_btags;
 	if(n_isoinverted_electrons==1&&n_isoinverted_muons==0) 
 	{
-		bin = El_SF->GetBin(N_jets,N_btags);
+		bin = El_SF->GetBin(N_jets+1,N_btags+1);
 		sf = El_SF->GetBinContent(bin);
 		// the values in the file are not correct for electron 6j4b category and have to be set manually
 		if(N_jets>=6&&N_btags>=4)
@@ -72,14 +72,14 @@ double QCDHelper::GetScaleFactor(int n_jets, int n_btags, int n_isoinverted_elec
 	}
 	else if(n_isoinverted_electrons==0&&n_isoinverted_muons==1)
 	{
-		bin = Mu_SF->GetBin(N_jets,N_btags);
+		bin = Mu_SF->GetBin(N_jets+1,N_btags+1);
 		sf = Mu_SF->GetBinContent(bin);
 	}
 	else 
 	{
 		return 0.;
 	}
-	return sf<0. ? 0. : sf;
+	return sf<=0. ? 0.001 : sf;
 }
 
 double QCDHelper::GetScaleFactorError(int n_jets, int n_btags, int n_isoinverted_electrons, int n_isoinverted_muons)
@@ -92,7 +92,7 @@ double QCDHelper::GetScaleFactorError(int n_jets, int n_btags, int n_isoinverted
 	int N_btags = n_btags>4 ? 4 : n_btags;
 	if(n_isoinverted_electrons==1&&n_isoinverted_muons==0) 
 	{
-		bin = El_SF->GetBin(N_jets,N_btags);
+		bin = El_SF->GetBin(N_jets+1,N_btags+1);
 		sf_err = El_SF->GetBinError(bin);
 		// the values in the file are not correct for electron 6j4b category and have to be set manually
 		if(N_jets>=6&&N_btags>=4)
@@ -102,7 +102,7 @@ double QCDHelper::GetScaleFactorError(int n_jets, int n_btags, int n_isoinverted
 	}
 	else if(n_isoinverted_electrons==0&&n_isoinverted_muons==1)
 	{
-		bin = Mu_SF->GetBin(N_jets,N_btags);
+		bin = Mu_SF->GetBin(N_jets+1,N_btags+1);
 		sf_err = Mu_SF->GetBinError(bin);
 	}
 	else 
@@ -118,7 +118,7 @@ double QCDHelper::GetScaleFactorErrorUp(int n_jets, int n_btags, int n_isoinvert
 	if(!initialized) return 0.;
 	double sf = GetScaleFactor(n_jets,n_btags,n_isoinverted_electrons,n_isoinverted_muons);
 	double sf_err = GetScaleFactorError(n_jets,n_btags,n_isoinverted_electrons,n_isoinverted_muons);
-	return sf+sf_err <0. ? 0. : sf+sf_err;
+	return sf+sf_err <=0. ? 0.002 : sf+sf_err;
 }
 
 double QCDHelper::GetScaleFactorErrorDown(int n_jets, int n_btags, int n_isoinverted_electrons, int n_isoinverted_muons)
@@ -127,7 +127,7 @@ double QCDHelper::GetScaleFactorErrorDown(int n_jets, int n_btags, int n_isoinve
 	if(!initialized) return 0.;
 	double sf = GetScaleFactor(n_jets,n_btags,n_isoinverted_electrons,n_isoinverted_muons);
 	double sf_err = GetScaleFactorError(n_jets,n_btags,n_isoinverted_electrons,n_isoinverted_muons);
-	return sf-sf_err <0. ? 0. : sf-sf_err;
+	return sf-sf_err <=0. ? 0.0005 : sf-sf_err;
 }
 
 QCDHelper::~QCDHelper()
