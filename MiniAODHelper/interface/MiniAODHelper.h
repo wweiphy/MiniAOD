@@ -145,7 +145,7 @@ class MiniAODHelper{
  public:
   // Constructor(s) and destructor
   MiniAODHelper();
-  virtual ~MiniAODHelper();
+  virtual ~MiniAODHelper() noexcept (false);
 
   // Set up MiniAODHelper
   void SetUp(string, int, const analysisType::analysisType, bool);

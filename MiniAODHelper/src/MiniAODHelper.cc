@@ -82,7 +82,7 @@ MiniAODHelper::MiniAODHelper()
 }
 
 // Destructor
-MiniAODHelper::~MiniAODHelper(){
+MiniAODHelper::~MiniAODHelper() noexcept(false){
 
 }
 
