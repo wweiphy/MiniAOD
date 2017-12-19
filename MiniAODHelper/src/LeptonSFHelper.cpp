@@ -19,7 +19,8 @@ LeptonSFHelper::LeptonSFHelper( ){
   
   ljets_mu_BtoF_lumi=19691.782;
   ljets_mu_GtoH_lumi=16226.452;
-
+  ljets_ele_BtoF_lumi=19691.782;
+  ljets_ele_GtoH_lumi=16226.452;
 
 }
 
@@ -241,16 +242,33 @@ float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int
   float error = 0;
   float upval = 0;
   float downval= 0;
+  float nomvalBtoF = 0;
+  float errorBtoF = 0;
+  float upvalBtoF = 0;
+  float downvalBtoF= 0;
+  float nomvalGtoH = 0;
+  float errorGtoH = 0;
+  float upvalGtoH = 0;
+  float downvalGtoH= 0;
 
 
   if ( type == "ID" ){
 
-    thisBin = h_ele_ID_abseta_pt_ratio->FindBin( searchEta , searchPt );
-    nomval=h_ele_ID_abseta_pt_ratio->GetBinContent( thisBin );
-    error=h_ele_ID_abseta_pt_ratio->GetBinError( thisBin );
+    thisBin = h_ele_ID_abseta_pt_ratioBtoF->FindBin( searchEta , searchPt );
+    nomvalBtoF=h_ele_ID_abseta_pt_ratioBtoF->GetBinContent( thisBin );
+    errorBtoF=h_ele_ID_abseta_pt_ratioBtoF->GetBinError( thisBin );
+    upvalBtoF=nomvalBtoF+errorBtoF;
+    downvalBtoF=nomvalBtoF-errorBtoF;
 
-    upval=nomval+error;
-    downval=nomval-error;
+    thisBin = h_ele_ID_abseta_pt_ratioGtoH->FindBin( searchEta , searchPt );
+    nomvalGtoH=h_ele_ID_abseta_pt_ratioGtoH->GetBinContent( thisBin );
+    errorGtoH=h_ele_ID_abseta_pt_ratioGtoH->GetBinError( thisBin );
+    upvalGtoH=nomvalGtoH+errorGtoH;
+    downvalGtoH=nomvalGtoH-errorGtoH;
+    
+    nomval=(ljets_ele_BtoF_lumi*nomvalBtoF + ljets_ele_GtoH_lumi * nomvalGtoH)/(ljets_ele_BtoF_lumi+ljets_ele_GtoH_lumi);
+    upval=(ljets_ele_BtoF_lumi*upvalBtoF + ljets_ele_GtoH_lumi * upvalGtoH)/(ljets_ele_BtoF_lumi+ljets_ele_GtoH_lumi);
+    downval=(ljets_ele_BtoF_lumi*downvalBtoF + ljets_ele_GtoH_lumi * downvalGtoH)/(ljets_ele_BtoF_lumi+ljets_ele_GtoH_lumi);
 
   }
   else if ( type == "Trigger" ){
@@ -481,8 +499,8 @@ float LeptonSFHelper::GetElectronMuonSF(  float electronEta , float muonEta , in
 }
 
 void LeptonSFHelper::ChangeMuIsoHistos(bool is_DL) {
-    std::string ISOinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ISO_EfficienciesAndSF_BCDEF.root";
-    std::string ISOinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ISO_EfficienciesAndSF_GH.root";
+    std::string ISOinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_ISO_EfficienciesAndSF_BCDEF.root";
+    std::string ISOinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_ISO_EfficienciesAndSF_GH.root";
     TFile *f_ISOSFBtoF = new TFile(std::string(ISOinputFileBtoF).c_str(),"READ");
     TFile *f_ISOSFGtoH = new TFile(std::string(ISOinputFileGtoH).c_str(),"READ");
     if(is_DL) {
@@ -501,17 +519,22 @@ void LeptonSFHelper::ChangeMuIsoHistos(bool is_DL) {
 
 void LeptonSFHelper::SetElectronHistos( ){
 
-  std::string IDinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_ID_SF_tight.root";
-  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_TriggerSF_Run2016All_v1.root";
-  std::string ISOinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_Reco_EGM2D.root"; // DANGERZONE: no iso SF yet??
-  std::string GFSinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "ele_Reco_EGM2D.root";
+  std::string IDinputFileBtoF = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_ID_SF_tight_BCDEF.root";
+  std::string IDinputFileGtoH = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_ID_SF_tight_GH.root";
 
-  TFile *f_IDSF = new TFile(std::string(IDinputFile).c_str(),"READ");
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_TriggerSF_Run2016All_v1.root";
+  std::string ISOinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_Reco_EGM2D.root"; // DANGERZONE: no iso SF yet??
+  std::string GFSinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_Reco_EGM2D.root";
+
+  TFile *f_IDSFBtoF = new TFile(std::string(IDinputFileBtoF).c_str(),"READ");
+  TFile *f_IDSFGtoH = new TFile(std::string(IDinputFileGtoH).c_str(),"READ");
+  
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
   TFile *f_ISOSF = new TFile(std::string(ISOinputFile).c_str(),"READ");
   TFile *f_GFSSF = new TFile(std::string(GFSinputFile).c_str(),"READ");
 
-  h_ele_ID_abseta_pt_ratio = (TH2F*)f_IDSF->Get("EGamma_SF2D");
+  h_ele_ID_abseta_pt_ratioGtoH=(TH2F*)f_IDSFGtoH->Get("EGamma_SF2D");
+  h_ele_ID_abseta_pt_ratioBtoF=(TH2F*)f_IDSFBtoF->Get("EGamma_SF2D");
   h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_TRIGGERSF->Get("Ele27_WPTight_Gsf");
   h_ele_ISO_abseta_pt_ratio = (TH2F*)f_ISOSF->Get("EGamma_SF2D");
   h_ele_GFS_abseta_pt_ratio = (TH2F*)f_GFSSF->Get("EGamma_SF2D");
@@ -520,17 +543,17 @@ void LeptonSFHelper::SetElectronHistos( ){
 
 void LeptonSFHelper::SetMuonHistos( ){
 
-  std::string IDinputFileBtoF = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ID_EfficienciesAndSF_BCDEF.root";
-  std::string IDinputFileGtoH = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ID_EfficienciesAndSF_GH.root";
+  std::string IDinputFileBtoF = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_ID_EfficienciesAndSF_BCDEF.root";
+  std::string IDinputFileGtoH = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_ID_EfficienciesAndSF_GH.root";
 
-  std::string TRIGGERinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_TRIGGER_BtoF.root";
-  std::string TRIGGERinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_TRIGGER_GtoH.root";
+  std::string TRIGGERinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_TRIGGER_BtoF.root";
+  std::string TRIGGERinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_TRIGGER_GtoH.root";
 
-  std::string ISOinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ISO_EfficienciesAndSF_BCDEF.root";
-  std::string ISOinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "mu_ISO_EfficienciesAndSF_GH.root";
+  std::string ISOinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_ISO_EfficienciesAndSF_BCDEF.root";
+  std::string ISOinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_ISO_EfficienciesAndSF_GH.root";
   
-  std::string HIPinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_BCDEF.root";
-  std::string HIPinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "HIP_GH.root";
+  std::string HIPinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "HIP_BCDEF.root";
+  std::string HIPinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "HIP_GH.root";
 
 
   TFile *f_IDSFBtoF = new TFile(std::string(IDinputFileBtoF).c_str(),"READ");
@@ -561,7 +584,7 @@ void LeptonSFHelper::SetMuonHistos( ){
 }
 
 void LeptonSFHelper::SetElectronElectronHistos( ){
-  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "triggerSummary_ee_ReReco2016_ttH.root";
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "triggerSummary_ee_ReReco2016_ttH.root";
 
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
 
@@ -569,7 +592,7 @@ void LeptonSFHelper::SetElectronElectronHistos( ){
 }
 
 void LeptonSFHelper::SetMuonMuonHistos( ){
-  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "triggerSummary_mumu_ReReco2016_ttH.root";
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "triggerSummary_mumu_ReReco2016_ttH.root";
 
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
 
@@ -577,7 +600,7 @@ void LeptonSFHelper::SetMuonMuonHistos( ){
 }
 
 void LeptonSFHelper::SetElectronMuonHistos( ){
-  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/feb160317/" + "triggerSummary_emu_ReReco2016_ttH.root";
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "triggerSummary_emu_ReReco2016_ttH.root";
 
   TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
 
