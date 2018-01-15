@@ -1337,6 +1337,12 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tauID::t
                    tau.tauID("againstElectronMediumMVA6") >= .5;
         passesIsolation = tau.tauID("byTightCombinedIsolationDeltaBetaCorr3Hits") >= .5;
         break;
+     case tauID::tauMVAVeryLoose:
+        passesID = passesID and \
+                   tau.tauID("againstMuonTight3") >= .5 and \
+                   tau.tauID("againstElectronMediumMVA6") >= .5;
+        passesIsolation = tau.tauID("byVLooseIsolationMVArun2v1DBnewDMwLT") >= .5;
+        break;
      case tauID::none:
         passesID = true;
         passesIsolation = true;
