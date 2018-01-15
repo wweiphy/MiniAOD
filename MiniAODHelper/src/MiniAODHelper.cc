@@ -349,7 +349,19 @@ MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const flo
   return selectedTaus;
 }
 
+std::vector<pat::Photon>
+MiniAODHelper::GetSelectedPhotons(const std::vector<pat::Photon>& inputPhotons, const float iMinPt, const float iMaxEta){
 
+  CheckSetUp();
+
+  std::vector<pat::Photon> selectedPhotons;
+
+  for( std::vector<pat::Photon>::const_iterator it = inputPhotons.begin(), ed = inputPhotons.end(); it != ed; ++it ){
+    if( isGoodPhoton(*it,iMinPt,iMaxEta) ) selectedPhotons.push_back(*it);
+  }
+
+  return selectedPhotons;
+}
 
 std::vector<pat::Jet>
 MiniAODHelper::GetSelectedJets(const std::vector<pat::Jet>& inputJets, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVwp, const PUJetID::WP wp){
@@ -1350,6 +1362,20 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tauID::t
   }
 
   return passesKinematics && passesIsolation && passesID;
+}
+
+bool
+MiniAODHelper::isGoodPhoton(const pat::Photon& iPhoton, const float iMinPt, const float iMaxEta){
+
+  CheckVertexSetUp();
+  //double SCeta = (iPhoton.superCluster().isAvailable()) ? iPhoton.superCluster()->position().eta() : -99;
+  bool passesKinematics = ((iPhoton.pt() >= iMinPt) && (fabs(iPhoton.eta()) <= iMaxEta));
+  //bool isEB =  fabs(SCeta) < 1.479 ;
+  //double full5x5_sigmaIetaIeta = iPhoton.full5x5_sigmaIetaIeta();
+  //double HoverE = iPhoton.hadronicOverEm();
+  
+  return passesKinematics;
+  
 }
 
 bool
