@@ -348,7 +348,7 @@ MiniAODHelper::GetSelectedTaus(const std::vector<pat::Tau>& inputTaus, const flo
 
   return selectedTaus;
 }
-
+/*
 std::vector<pat::Photon>
 MiniAODHelper::GetSelectedPhotons(const std::vector<pat::Photon>& inputPhotons, const float iMinPt, const float iMaxEta){
 
@@ -362,7 +362,7 @@ MiniAODHelper::GetSelectedPhotons(const std::vector<pat::Photon>& inputPhotons, 
 
   return selectedPhotons;
 }
-
+*/
 std::vector<pat::Jet>
 MiniAODHelper::GetSelectedJets(const std::vector<pat::Jet>& inputJets, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVwp, const PUJetID::WP wp){
 
@@ -1363,7 +1363,7 @@ MiniAODHelper::isGoodTau(const pat::Tau& tau, const float min_pt, const tauID::t
 
   return passesKinematics && passesIsolation && passesID;
 }
-
+/*
 bool
 MiniAODHelper::isGoodPhoton(const pat::Photon& iPhoton, const float iMinPt, const float iMaxEta){
 
@@ -1377,7 +1377,7 @@ MiniAODHelper::isGoodPhoton(const pat::Photon& iPhoton, const float iMinPt, cons
   return passesKinematics;
   
 }
-
+*/
 bool
 MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float iMaxAbsEta, const jetID::jetID iJetID, const char iCSVworkingPoint, const PUJetID::WP wp){
 
