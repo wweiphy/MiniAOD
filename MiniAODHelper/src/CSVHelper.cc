@@ -3,7 +3,7 @@
 
 #include "TFile.h"
 #include "TH1.h"
-
+#include <algorithm>
 #include "FWCore/Utilities/interface/Exception.h"
 
 #include "MiniAOD/MiniAODHelper/interface/CSVHelper.h"
