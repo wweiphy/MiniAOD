@@ -48,8 +48,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag,"auto:run2_mc")
 
 process.source = cms.Source(
     "PoolSource",
-    #fileNames = cms.untracked.vstring(options.inputFiles),
-    fileNames = cms.untracked.vstring(inputFiles),
+    fileNames = cms.untracked.vstring(options.inputFiles),
+    #fileNames = cms.untracked.vstring(inputFiles),
     skipEvents = cms.untracked.uint32(0),
     )
 process.maxEvents = cms.untracked.PSet(
