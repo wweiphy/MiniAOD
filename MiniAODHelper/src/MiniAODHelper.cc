@@ -1391,6 +1391,7 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   // Jet ID
   bool loose = false;
+  bool tight = false;
   bool goodForMETCorrection = false;
 
   if(iJetID!=jetID::none){
@@ -1400,9 +1401,19 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 		  iJet.neutralEmEnergyFraction() < 0.99 &&
 		  iJet.numberOfDaughters() > 1
 		  );
+    tight = (
+		  iJet.neutralHadronEnergyFraction() < 0.90 &&
+		  iJet.chargedEmEnergyFraction() < 0.99 &&
+		  iJet.neutralEmEnergyFraction() < 0.90 &&
+		  iJet.numberOfDaughters() > 1
+		  );
 
     if( fabs(iJet.eta())<2.4 ){
       loose = ( loose &&
+	      iJet.chargedHadronEnergyFraction() > 0.0 &&
+	      iJet.chargedMultiplicity() > 0
+	      );
+      tight = ( tight &&
 	      iJet.chargedHadronEnergyFraction() > 0.0 &&
 	      iJet.chargedMultiplicity() > 0
 	      );
@@ -1425,8 +1436,10 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   case jetID::jetMinimal:
   case jetID::jetLooseAOD:
   case jetID::jetLoose:
-  case jetID::jetTight:
     if( !loose ) return false;
+    break;
+  case jetID::jetTight:
+    if( !tight ) return false;
     break;
   case jetID::none:
   default:
