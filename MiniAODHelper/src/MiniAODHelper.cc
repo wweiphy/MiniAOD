@@ -81,6 +81,89 @@ MiniAODHelper::MiniAODHelper()
   
 }
 
+// alternative Constructor
+MiniAODHelper::MiniAODHelper(std::string jetTypeLabelForJECUncertainty) 
+  : jetTypeLabelForJECUncertainty_(jetTypeLabelForJECUncertainty),
+    jecUncertaintyTxtFileName_("") {
+
+  isSetUp = false;
+
+  vertexIsSet = false;
+  rhoIsSet = false;
+  factorizedjetcorrectorIsSet = false;
+
+  // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
+  // Preliminary working (or operating) points for CSVv2+IVF
+  CSVLwp = 0.5426;
+  CSVMwp = 0.8484;
+  CSVTwp = 0.9535;
+
+  samplename = "blank";
+
+  // JEC uncertainties
+  if(jetTypeLabelForJECUncertainty_=="AK4PFchs"){
+    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt";
+  }
+  else if(jetTypeLabelForJECUncertainty_=="AK8PFchs"){
+    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Summer16_23Sep2016V4_MC_UncertaintySources_AK8PFchs.txt";
+  }
+  else{
+    throw cms::Exception("InvalidjetTypeLabelForJECUncertainty") << "Wrong jetTypeLabel '" << jecUncertaintyTxtFileName_ << "' found";  
+  }
+  if( jecUncertaintyTxtFileName_ != "" ) {
+    if( !utils::fileExists(jecUncertaintyTxtFileName_) ) { // check if JEC uncertainty file exists
+      throw cms::Exception("InvalidJECUncertaintyFile") << "No JEC uncertainty file '" << jecUncertaintyTxtFileName_ << "' found";
+    }
+  }
+
+  { //  JER preparation
+
+    const std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
+    if( !utils::fileExists(JER_file) ) {
+      throw cms::Exception("InvalidJERCorrectionFile") << "No JER correction file '" << JER_file << "' found";
+    }
+
+    double eta_min;
+    double eta_max;
+    double rho_min;
+    double rho_max;
+    double dummy;
+    double pt_min;
+    double pt_max;
+    double par0;
+    double par1;
+    double par2;
+    double par3;
+
+    JER_etaMin.clear();
+    JER_etaMax.clear();
+    JER_rhoMin.clear();
+    JER_rhoMax.clear();
+    JER_PtMin.clear();
+    JER_PtMax.clear();
+    JER_Par0.clear();
+    JER_Par1.clear();
+    JER_Par2.clear();
+    JER_Par3.clear();
+
+    std::ifstream infile( JER_file);
+    while (infile>>eta_min>>eta_max>>rho_min>>rho_max>>dummy>>pt_min>>pt_max>>par0>>par1>>par2>>par3) {
+      JER_etaMin.push_back(eta_min);
+      JER_etaMax.push_back(eta_max);
+      JER_rhoMin.push_back(rho_min);
+      JER_rhoMax.push_back(rho_max);
+      JER_PtMin .push_back(pt_min);
+      JER_PtMax .push_back(pt_max);
+      JER_Par0  .push_back(par0);
+      JER_Par1  .push_back(par1);
+      JER_Par2  .push_back(par2);
+      JER_Par3  .push_back(par3);
+    }
+
+  } // end of JER preparation
+  
+}
+
 // Destructor
 MiniAODHelper::~MiniAODHelper(){
 
