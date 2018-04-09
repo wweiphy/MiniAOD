@@ -144,6 +144,7 @@ class MiniAODHelper{
  public:
   // Constructor(s) and destructor
   MiniAODHelper();
+  MiniAODHelper(std::string jetTypeLabelForJECUncertainty); 
   virtual ~MiniAODHelper();
 
   // Set up MiniAODHelper
