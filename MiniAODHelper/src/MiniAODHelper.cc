@@ -1572,57 +1572,66 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
   double pfIsoPUSubtracted;
 
   switch(iconeSize)
-    {
+  {
     case coneSize::R04:
+      pfIsoCharged = iElectron.chargedHadronIso();  
+      pfIsoNeutral = iElectron.neutralHadronIso() + iElectron.photonIso();
     case coneSize::R03:
-      pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
-      pfIsoNeutral = iElectron.pfIsolationVariables().sumNeutralHadronEt + iElectron.pfIsolationVariables().sumPhotonEt;
-
+      if (iconeSize!=coneSize::R04) // <- because c++ switches are counter-intuitive (at best)
+      {
+        pfIsoCharged = iElectron.pfIsolationVariables().sumChargedHadronPt;
+        pfIsoNeutral = iElectron.pfIsolationVariables().sumNeutralHadronEt + iElectron.pfIsolationVariables().sumPhotonEt;
+      }
       switch(icorrType)
-	{
-	case corrType::rhoEA:
-	  if(ieffAreaType==effAreaType::phys14){
-	    if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
-	    else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
-	    else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
-	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
-	    else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
-	  }
-	  else if (ieffAreaType==effAreaType::spring15){
-	    if (Eta >= 0. && Eta < 1.0) EffArea = 0.1752;
-	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1862;
-	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1411;
-	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1534;
-	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1903;
-	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
-	    else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
-	  }
-	  else if (ieffAreaType==effAreaType::spring16){
-	    if (Eta >= 0. && Eta < 1.0) EffArea = 0.1703;
-	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1715;
-	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1213;
-	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1230;
-	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1635;
-	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1937;
-	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.2393;
-	  }
-	  else if (ieffAreaType==effAreaType::fall17){
-	    if (Eta >= 0. && Eta < 1.0) EffArea = 0.1566;
-	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1626;
-	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1073;
-	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0854;
-	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1051;
-	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1204;
-	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.1524;
-	  }
+	  {
+	    case corrType::rhoEA:
+	        if(ieffAreaType==effAreaType::phys14)
+	        {
+	            if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
+	            else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
+	            else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
+	            else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
+	            else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	        }
+	        else if (ieffAreaType==effAreaType::spring15)
+	        {
+	            if (Eta >= 0. && Eta < 1.0) EffArea = 0.1752;
+	            else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1862;
+	            else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1411;
+	            else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1534;
+	            else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1903;
+	            else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
+	            else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
+	        }
+	        else if (ieffAreaType==effAreaType::spring16)
+	        {
+                if (Eta >= 0. && Eta < 1.0) EffArea = 0.1703;
+                else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1715;
+                else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1213;
+                else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1230;
+                else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1635;
+                else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1937;
+                else if (Eta >= 2.4 && Eta < 5) EffArea = 0.2393;
+	        }
+	        else if (ieffAreaType==effAreaType::fall17)
+	        {
+                if (Eta >= 0. && Eta < 1.0) EffArea = 0.1566;
+                else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1626;
+                else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1073;
+                else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0854;
+                else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1051;
+                else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1204;
+                else if (Eta >= 2.4 && Eta < 5) EffArea = 0.1524;
+	        }
 
-	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
-	  correction = useRho*EffArea;
-	  break;
-	case corrType::deltaBeta:
-	  correction = 0.5*iElectron.pfIsolationVariables().sumPUPt;
-	  break;
-	}
+	        if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
+	        correction = useRho*EffArea;
+	        break;
+	        
+	    case corrType::deltaBeta:
+	        correction = 0.5*iElectron.pfIsolationVariables().sumPUPt;
+	        break;
+	  }
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
       break;
@@ -1631,72 +1640,74 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
       double innerR_nu;
       double miniIsoR = 10.0/min(max(float(iElectron.pt()), float(50.)),float(200.));
       if (iElectron.isEB())
-	{
-	  innerR_ch = 0.0;
-	  innerR_nu = 0.0;
-	}
+	  {
+	    innerR_ch = 0.0;
+	    innerR_nu = 0.0;
+	  }
       else
-	{
-	  innerR_ch = 0.015;
-	  innerR_nu = 0.08;
-	}
+	  {
+	    innerR_ch = 0.015;
+	    innerR_nu = 0.08;
+	  }
 
       pfIsoCharged = isoSumRaw(charged_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
       pfIsoNeutral = isoSumRaw(neutral_, iElectron, miniIsoR, innerR_nu, 0.0, SelfVetoPolicy::selfVetoNone, 22)+isoSumRaw(neutral_, iElectron, miniIsoR, 0.0, 0.0, SelfVetoPolicy::selfVetoNone, 130);
       switch(icorrType)
-	{
-	case corrType::rhoEA:
-	  //effective area based on R03
+      {
+	    case corrType::rhoEA:
+	        //effective area based on R03
 
-	  if(ieffAreaType==effAreaType::phys14)
-	    {
-	      if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
-	      else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
-	      else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
-	      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
-	      else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
-	    }
-	  else if (ieffAreaType==effAreaType::spring15)
-	    {
-	      if (Eta >= 0. && Eta < 1.0) EffArea = 0.1752;
-	      else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1862;
-	      else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1411;
-	      else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1534;
-	      else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1903;
-	      else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
-	      else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
-	    }
-	  else if (ieffAreaType==effAreaType::fall17){
-	    if (Eta >= 0. && Eta < 1.0) EffArea = 0.1566;
-	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1626;
-	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1073;
-	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0854;
-	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1051;
-	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1204;
-	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.1524;
-	  }
-	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
-	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
-	  break;
-	case corrType::deltaBeta:
-	  double miniAbsIsoPU = isoSumRaw(pileup_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
-	  correction = 0.5*miniAbsIsoPU;
-	  break;
-	}
+	        if(ieffAreaType==effAreaType::phys14)
+	        {
+	            if (Eta >= 0. && Eta < 0.8) EffArea = 0.1013;
+                else if (Eta >= 0.8 && Eta < 1.3) EffArea = 0.0988;
+                else if (Eta >= 1.3 && Eta < 2.0) EffArea = 0.0572;
+                else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0842;
+                else if (Eta >= 2.2 && Eta <= 2.5) EffArea = 0.1530;
+	        }
+	        else if (ieffAreaType==effAreaType::spring15)
+	        {
+              if (Eta >= 0. && Eta < 1.0) EffArea = 0.1752;
+              else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1862;
+              else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1411;
+              else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1534;
+              else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1903;
+              else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
+              else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
+            }
+	        else if (ieffAreaType==effAreaType::fall17)
+	        {
+              if (Eta >= 0. && Eta < 1.0) EffArea = 0.1566;
+              else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1626;
+              else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1073;
+              else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0854;
+              else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1051;
+              else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1204;
+              else if (Eta >= 2.4 && Eta < 5) EffArea = 0.1524;
+	        }
+	        if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
+	        correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
+	        break;
+	    case corrType::deltaBeta:
+	        double miniAbsIsoPU = isoSumRaw(pileup_, iElectron, miniIsoR, innerR_ch, 0.0, SelfVetoPolicy::selfVetoNone);
+	        correction = 0.5*miniAbsIsoPU;
+	        break;
+      }
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction);
       result = (pfIsoCharged + pfIsoPUSubtracted)/iElectron.pt();
 
-      if (miniIso_calculation_params) {
-         miniIso_calculation_params->clear();
-         (*miniIso_calculation_params)["miniAbsIsoCharged"] = pfIsoCharged;
-         (*miniIso_calculation_params)["miniAbsIsoNeutral"] = pfIsoNeutral;
-         (*miniIso_calculation_params)["rho"] = useRho;
-         (*miniIso_calculation_params)["effArea"] = EffArea;
-         (*miniIso_calculation_params)["miniIsoR"] = miniIsoR;
-         (*miniIso_calculation_params)["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted;
+      if (miniIso_calculation_params) 
+      {
+        miniIso_calculation_params->clear();
+        (*miniIso_calculation_params)["miniAbsIsoCharged"] = pfIsoCharged;
+        (*miniIso_calculation_params)["miniAbsIsoNeutral"] = pfIsoNeutral;
+        (*miniIso_calculation_params)["rho"] = useRho;
+        (*miniIso_calculation_params)["effArea"] = EffArea;
+        (*miniIso_calculation_params)["miniIsoR"] = miniIsoR;
+        (*miniIso_calculation_params)["miniAbsIsoNeutralcorr"] = pfIsoPUSubtracted;
       }
       break;
-    }
+  }
   return result;
 }
 
