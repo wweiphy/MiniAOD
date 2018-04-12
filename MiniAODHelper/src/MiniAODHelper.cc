@@ -1328,6 +1328,7 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 
   // Jet ID
   bool loose = false;
+  bool tight = false;
   bool goodForMETCorrection = false;
 
   if(iJetID!=jetID::none){
@@ -1337,14 +1338,33 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
 		  iJet.neutralEmEnergyFraction() < 0.99 &&
 		  iJet.numberOfDaughters() > 1
 		  );
-
-    if( fabs(iJet.eta())<2.4 ){
-      loose = ( loose &&
-	      iJet.chargedHadronEnergyFraction() > 0.0 &&
-	      iJet.chargedMultiplicity() > 0
-	      );
+    if ( fabs(iJet.eta())<=2.7 )
+    {
+        // https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID13TeVRun2017
+        tight = ( iJet.neutralHadronEnergyFraction() < 0.9 &&
+            iJet.neutralEmEnergyFraction() < 0.9 &&
+            (iJet.neutralMultiplicity()+iJet.chargedMultiplicity())>1 );
+        
+        if( fabs(iJet.eta())<=2.4 )
+        {
+            bool etaLT2p4reqs = iJet.chargedHadronEnergyFraction() > 0.0 && iJet.chargedMultiplicity() > 0;           
+            loose = loose && etaLT2p4reqs;
+            tight = tight && etaLT2p4reqs;
+        }
     }
-
+    if ( fabs(iJet.eta())>2.7 && fabs(iJet.eta())<=3.0 )
+    {
+        tight = ( iJet.neutralEmEnergyFraction()>0.02 &&
+             iJet.neutralEmEnergyFraction()<0.99 &&
+             (iJet.neutralMultiplicity()+iJet.chargedMultiplicity())>2 );
+    }
+    if ( fabs(iJet.eta())>3.0 )
+    {
+        tight = ( iJet.neutralEmEnergyFraction()<0.9 &&
+            iJet.neutralHadronEnergyFraction()>0.02 &&
+            iJet.neutralMultiplicity()>10 );
+    }
+    
     if(iJetID==jetID::jetMETcorrection){ //only check this if asked, otherwise there could be problems
       goodForMETCorrection = (
                   iJet.correctedJet(0).pt()>10.0 &&
@@ -1362,8 +1382,10 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   case jetID::jetMinimal:
   case jetID::jetLooseAOD:
   case jetID::jetLoose:
-  case jetID::jetTight:
     if( !loose ) return false;
+    break;
+  case jetID::jetTight:
+    if( !tight ) return false;
     break;
   case jetID::none:
   default:
