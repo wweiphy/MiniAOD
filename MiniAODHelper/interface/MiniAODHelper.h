@@ -91,12 +91,12 @@ typedef std::vector<int> vint;
 
 namespace analysisType{ enum analysisType{ LJ, DIL, TauLJ, TauDIL }; }
 namespace jetID{		enum jetID{			none, jetPU, jetMinimal, jetLooseAOD, jetLoose, jetTight, jetMETcorrection }; }
-namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight }; }
-namespace tau { enum ID { nonIso, loose, medium, tight }; }
+namespace tauID { enum tauID{ tauNonIso, tauLoose, tauMedium, tauTight, tauMVAVeryLoose, none }; }
 namespace SelfVetoPolicy { enum SelfVetoPolicy {selfVetoNone=0, selfVetoAll=1, selfVetoFirst=2};}
 
 namespace muonID{
    enum muonID{
+      none,
       muonPreselection,
       muonSide, muonSideLooseMVA, muonSideTightMVA,
       muonLoose, muonTight,muonTight_IsoInverted,muonTightDL_IsoInverted,
@@ -110,6 +110,7 @@ namespace muonID{
 }
 namespace electronID{
    enum electronID{
+      none, 
       electronPreselection,
       electronSide, electronSideLooseMVA, electronSideTightMVA,
       electronLoose, electronTight,
@@ -121,7 +122,7 @@ namespace electronID{
       electron2lss,
       electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T,
       electronEndOf15MVA80, electronEndOf15MVA90, electronEndOf15MVA80iso0p1, electronEndOf15MVA80iso0p15, electronEndOf15MVA90iso0p1, electronEndOf15MVA90iso0p15,
-      electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electron80XCutBasedT_IsoInverted,electronNonTrigMVAid90,electronNonTrigMVAid80,
+      electron80XCutBasedV,electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electron80XCutBasedT_IsoInverted,electronNonTrigMVAid90,electronNonTrigMVAid80,
       electronGeneralPurposeMVA2016WP80,electronGeneralPurposeMVA2016WP90 // MVA IDs for 80X with 80 and 90 percent eff.
    };
 }
@@ -144,6 +145,7 @@ class MiniAODHelper{
  public:
   // Constructor(s) and destructor
   MiniAODHelper();
+  MiniAODHelper(std::string jetTypeLabelForJECUncertainty); 
   virtual ~MiniAODHelper();
 
   // Set up MiniAODHelper
@@ -167,8 +169,9 @@ class MiniAODHelper{
 
   virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
-  std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
+  std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tauID::tauID, const float);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char, const PUJetID::WP wp=PUJetID::none);
+  //std::vector<pat::Photon> GetSelectedPhotons(const std::vector<pat::Photon>& inputPhotons, const float iMinPt, const float iMaxEta);
   std::vector<pat::Jet> GetUncorrectedJets(const std::vector<pat::Jet>&);
   std::vector<pat::Jet> GetUncorrectedJets(edm::Handle<pat::JetCollection>);
   pat::Jet GetCorrectedJet(const pat::Jet&, const edm::Event&, const edm::EventSetup&, const edm::Handle<reco::GenJetCollection>&, const Systematics::Type iSysType=Systematics::NA, const bool doJES=true, const bool doJER=true, const float corrFactor = 1, const float uncFactor = 1);
@@ -185,7 +188,8 @@ class MiniAODHelper{
 
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
   bool isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID);
-  bool isGoodTau(const pat::Tau&, const float, const tau::ID);
+  bool isGoodTau(const pat::Tau&, const float, const tauID::tauID, const float);
+  //bool isGoodPhoton(const pat::Photon& iPhoton, const float iMinPt, const float iMaxEta);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char, const PUJetID::WP wp=PUJetID::none);
   //  virtual float GetMuonRelIso(const pat::Muon&) const;
   float GetMuonRelIso(const pat::Muon&) const;
