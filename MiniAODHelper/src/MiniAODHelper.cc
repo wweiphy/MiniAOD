@@ -26,7 +26,7 @@ MiniAODHelper::MiniAODHelper()
   samplename = "blank";
 
   // JEC uncertainties
-  jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt";
+  jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V6_MC_UncertaintySources_AK4PFchs.txt";
   if( jecUncertaintyTxtFileName_ != "" ) {
     if( !utils::fileExists(jecUncertaintyTxtFileName_) ) { // check if JEC uncertainty file exists
       throw cms::Exception("InvalidJECUncertaintyFile") << "No JEC uncertainty file '" << jecUncertaintyTxtFileName_ << "' found";
@@ -102,10 +102,10 @@ MiniAODHelper::MiniAODHelper(std::string jetTypeLabelForJECUncertainty)
 
   // JEC uncertainties
   if(jetTypeLabelForJECUncertainty_=="AK4PFchs"){
-    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Summer16_23Sep2016V4_MC_UncertaintySources_AK4PFchs.txt";
+    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V6_MC_UncertaintySources_AK4PFchs.txt";
   }
   else if(jetTypeLabelForJECUncertainty_=="AK8PFchs"){
-    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Summer16_23Sep2016V4_MC_UncertaintySources_AK8PFchs.txt";
+    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V6_MC_UncertaintySources_AK8PFchs.txt";
   }
   else{
     throw cms::Exception("InvalidjetTypeLabelForJECUncertainty") << "Wrong jetTypeLabel '" << jecUncertaintyTxtFileName_ << "' found";  
