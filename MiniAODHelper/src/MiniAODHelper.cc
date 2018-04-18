@@ -1023,7 +1023,7 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
 }
 
 bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
-
+    //version of April 18th 2018
     if( !iMuon.isGlobalMuon()) return false;
     if( !iMuon.globalTrack().isAvailable() ) return false;
 
@@ -1040,12 +1040,13 @@ bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
     if(!passesMuonBestTrackID) return false;
 
     if(!iMuon.innerTrack().isAvailable() ) return false;
-    bool passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0);
+    bool passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0)
+                                && (iMuon.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5);
     if(!passesInnerTrackID) return false;
 
-    if(!iMuon.track().isAvailable() ) return false;
-    bool passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
-    if(!passesTrackID) return false;
+    // if(!iMuon.track().isAvailable() ) return false;
+    // bool passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
+    // if(!passesTrackID) return false;
 
     if(iMuon.numberOfMatchedStations() <= 1) return false;
 
