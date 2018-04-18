@@ -128,6 +128,16 @@ namespace electronID{
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
+namespace muonIso{ 
+    enum muonIso{
+        PFIsoVeryTight = pat::Muon::PFIsoVeryTight, 
+        PFIsoTight = pat::Muon::PFIsoTight,
+        PFIsoMedium = pat::Muon::PFIsoMedium,
+        PFIsoLoose = pat::Muon::PFIsoLoose,
+        PFIsoVeryLoose = pat::Muon::PFIsoVeryLoose,
+        CalculateManually           //flag to manually calculate muon iso
+    };
+}
 namespace effAreaType{ enum effAreaType{spring16,spring15,phys14};}
 
 using namespace std;
@@ -166,7 +176,7 @@ class MiniAODHelper{
 
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
 
-  virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
+  virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4, const muonIso::muonIso = muonIso::CalculateManually);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char, const PUJetID::WP wp=PUJetID::none);
@@ -184,7 +194,7 @@ class MiniAODHelper{
   bool passesMuonPOGIdTight(const pat::Muon&);
   bool passesMuonPOGIdICHEPMedium(const pat::Muon&);
 
-  bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
+  bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType, const muonIso::muonIso);
   bool isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char, const PUJetID::WP wp=PUJetID::none);

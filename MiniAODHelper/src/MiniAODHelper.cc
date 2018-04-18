@@ -390,14 +390,19 @@ void MiniAODHelper::SetAK8JetCorrectorUncertainty(const edm::EventSetup& iSetup,
 }
 
 std::vector<pat::Muon>
-MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const float iMaxEta){
+MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const float iMaxEta, const muonIso::muonIso imuonIso){
 
   CheckSetUp();
 
   std::vector<pat::Muon> selectedMuons;
-
+    double debug_muonreliso = 0;
   for( std::vector<pat::Muon>::const_iterator it = inputMuons.begin(), ed = inputMuons.end(); it != ed; ++it ){
-    if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType) ) selectedMuons.push_back(*it);
+    if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType, imuonIso) ) 
+    {
+        debug_muonreliso = GetMuonRelIso(*it, iconeSize,icorrType);
+        if(debug_muonreliso > 0.15) std::cout << "\tselecting muon with calc. rel iso = " << debug_muonreliso << std::endl;
+        selectedMuons.push_back(*it);
+    }
   }
 
   return selectedMuons;
@@ -1068,7 +1073,7 @@ bool MiniAODHelper::passesMuonPOGIdICHEPMedium(const pat::Muon& iMuon){
 }
 
 bool
-MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
+MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const muonIso::muonIso imuonIso){
 
   CheckVertexSetUp();
 
@@ -1154,13 +1159,22 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
 
     break;
   case muonID::muonTight:
+  // std::cout << "current muonID: muonTight\n";
       passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
+      passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15) : iMuon.passed(imuonIso);
+      
       passesID         = passesMuonPOGIdTight(iMuon);
+      // passesID         = iMuon.
       break;
   case muonID::muonTightDL:
+    // std::cout << "current muonID: muonTightDL\n";
       passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25);
+      passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25) : iMuon.passed(imuonIso);
+      // std::cout << "current rel muon iso: " << imuonIso << std::endl;
+      // std::cout << "ref map:\n";
+        // if( imuonIso == muonIso::CalculateManually) std::cout << "\tcalc manually\n";
+        // else if(imuonIso == muonIso::PFIsoLoose) std::cout << "\tpat PFIsoLoose\n";
+        // if(passesIso) std::cout << "passed iso criteria\n";
       passesID         = passesMuonPOGIdTight(iMuon);
       break;
 
@@ -1181,7 +1195,8 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
       break;
 
   }
-
+    // if(passesKinematics) std::cout << "\tpassed kinematics\n";
+    // if(passesIso) std::cout << "\tpassed iso";
   return (passesKinematics && passesIso && passesID);
 }
 
@@ -1511,6 +1526,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
 }
 
 //overloaded
+
 float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::map<std::string,double> *miniIso_calculation_params) const
 {
 
@@ -1629,6 +1645,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       }
       break;
     }
+    if(result < 0.25 && result > 0.15) std::cout << "\trel iso in GetMuonRelIso() = " << result << "\n";
   return result;
 }
 
