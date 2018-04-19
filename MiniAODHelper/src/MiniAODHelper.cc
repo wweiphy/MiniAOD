@@ -115,6 +115,9 @@ MiniAODHelper::MiniAODHelper(std::string jetTypeLabelForJECUncertainty)
       throw cms::Exception("InvalidJECUncertaintyFile") << "No JEC uncertainty file '" << jecUncertaintyTxtFileName_ << "' found";
     }
   }
+  
+  std::cout << "JES Uncertainty Sources File: " << jecUncertaintyTxtFileName_ << std::endl;
+  std::cout << "Jet Type: " << jetTypeLabelForJECUncertainty_ << std::endl;
 
   { //  JER preparation
 
@@ -1351,7 +1354,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
   case electronID::electron80XCutBasedT:
     passesID = PassElectron80XId(iElectron,iElectronID);
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
-    passesIso=0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring16);
+    passesIso=true;//not needed since isolation is checked in ID: 0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring16);
     break;
   case electronID::electron80XCutBasedT_IsoInverted:
     passesID = PassElectron80XId(iElectron,iElectronID);
