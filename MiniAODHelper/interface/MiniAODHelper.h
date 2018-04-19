@@ -99,7 +99,8 @@ namespace muonID{
    enum muonID{
       muonPreselection,
       muonSide, muonSideLooseMVA, muonSideTightMVA,
-      muonLoose, muonTight,muonTight_IsoInverted,muonTightDL_IsoInverted,
+      muonLoose, muonTight, muonMedium,
+      muonTight_IsoInverted,muonTightDL_IsoInverted,
       muonTightDL,
       muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly,
       muonRaw,
@@ -192,6 +193,8 @@ class MiniAODHelper{
   std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID, const string);
   std::vector<pat::PackedCandidate> GetPackedCandidates(void);
   bool passesMuonPOGIdTight(const pat::Muon&);
+  bool passesMuonPOGIdLoose(const pat::Muon&);
+  bool passesMuonPOGIdMedium(const pat::Muon&);
   bool passesMuonPOGIdICHEPMedium(const pat::Muon&);
 
   bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType, const muonIso::muonIso);

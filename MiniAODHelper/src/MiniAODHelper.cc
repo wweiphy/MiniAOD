@@ -1024,6 +1024,7 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
 
 bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
     //version of April 18th 2018
+    
     if( !iMuon.isGlobalMuon()) return false;
     if( !iMuon.globalTrack().isAvailable() ) return false;
 
@@ -1051,27 +1052,49 @@ bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
     if(iMuon.numberOfMatchedStations() <= 1) return false;
 
     if(!iMuon.isPFMuon()) return false;
-
+    
+    
     return true;
 
 }
 
+bool MiniAODHelper::passesMuonPOGIdLoose(const pat::Muon& iMuon){
+    bool isPFMuon         = false;
+    bool passesMuonRequirement = false;
+  
+    isPFMuon         = iMuon.isPFMuon();
+    passesMuonRequirement = iMuon.isGlobalMuon() || iMuon.isTrackerMuon()
+    
+    return (passesMuonRequirement && isPFMuon);
+}
+
+bool MiniAODHelper::passesMuonPOGIdMedium(const pat::Muon& iMuon){
+     bool goodGlob = iMuon.isGlobalMuon() && 
+                      iMuon.globalTrack()->normalizedChi2() < 3 && 
+                      iMuon.combinedQuality().chi2LocalPosition < 12 && 
+                      iMuon.combinedQuality().trkKink < 20; 
+      bool isMedium = muon::isLooseMuon(iMuon) && 
+                      iMuon.innerTrack()->validFraction() > 0.8 && 
+                      muon::segmentCompatibility(iMuon) > (goodGlob ? 0.303 : 0.451); 
+      return isMedium;
+}
+
 // ICHEP dataset medium ID
 // https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Short_Term_Medium_Muon_Definitio
-bool MiniAODHelper::passesMuonPOGIdICHEPMedium(const pat::Muon& iMuon){
-  bool isLooseMuon=false;
-  isLooseMuon=(iMuon.isPFMuon() && (iMuon.isGlobalMuon() || iMuon.isTrackerMuon()));
+// bool MiniAODHelper::passesMuonPOGIdICHEPMedium(const pat::Muon& iMuon){
+  // bool isLooseMuon=false;
+  // isLooseMuon=(iMuon.isPFMuon() && (iMuon.isGlobalMuon() || iMuon.isTrackerMuon()));
 
-  if(!isLooseMuon) return false;
+  // if(!isLooseMuon) return false;
 
-  bool goodGlob = (iMuon.isGlobalMuon() && iMuon.globalTrack()->normalizedChi2() < 3 && iMuon.combinedQuality().chi2LocalPosition < 12 && iMuon.combinedQuality().trkKink < 20);
+  // bool goodGlob = (iMuon.isGlobalMuon() && iMuon.globalTrack()->normalizedChi2() < 3 && iMuon.combinedQuality().chi2LocalPosition < 12 && iMuon.combinedQuality().trkKink < 20);
 
-  bool isMedium = (isLooseMuon && iMuon.innerTrack()->validFraction() > 0.49 && muon::segmentCompatibility(iMuon) > (goodGlob ? 0.303 : 0.451));
+  // bool isMedium = (isLooseMuon && iMuon.innerTrack()->validFraction() > 0.49 && muon::segmentCompatibility(iMuon) > (goodGlob ? 0.303 : 0.451));
 
-  if(!isMedium) return false;
-  return true;
+  // if(!isMedium) return false;
+  // return true;
 
-}
+// }
 
 bool
 MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const muonIso::muonIso imuonIso){
@@ -1087,85 +1110,32 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
   bool passesKinematics	= false;
   bool passesIso        = false;
   bool passesID         = false;
-  bool isPFMuon         = false;
-  bool passesTrackerID  = false;
-
-  bool passesGlobalTrackID   = false;
-  bool passesMuonBestTrackID = false;
-  bool passesInnerTrackID    = false;
-  bool passesTrackID         = false;
+  
 
 
   switch(iMuonID){
-  case muonID::muonPreselection:
-    // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
-    // selection userFloats
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idPreselection") > .5;
-    break;
-  case muonID::muonLooseMvaBased:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idLooseMVA") > .5;
-    break;
-  case muonID::muonTightMvaBased:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idTightMVA") > .5;
-    break;
-  case muonID::muonLooseCutBased:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idLooseCut") > .5;
-    break;
-  case muonID::muonTightCutBased:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idTightCut") > .5;
-    break;
-  case muonID::muonSide:
-  case muonID::muonSideLooseMVA:
-  case muonID::muonSideTightMVA:
-  case muonID::muonPtOnly:
-  case muonID::muonPtEtaOnly:
-  case muonID::muonPtEtaIsoOnly:
-  case muonID::muonPtEtaIsoTrackerOnly:
-  case muonID::muonRaw:
-  case muonID::muonCutBased:
-  case muonID::muon2lss:
+  
   case muonID::muonLoose:
     passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
     passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.200);
-    isPFMuon         = iMuon.isPFMuon();
-
-    if( iMuon.globalTrack().isAvailable() ){
-      passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.)
-			      && (iMuon.globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
-			      );
-    }
-    if( iMuon.muonBestTrack().isAvailable() ){
-      passesMuonBestTrackID = ( (fabs(iMuon.muonBestTrack()->dxy(vertex.position())) < 0.2)
-				&& (fabs(iMuon.muonBestTrack()->dz(vertex.position())) < 0.5)
-				);
-    }
-    if( iMuon.innerTrack().isAvailable() )
-      passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0);
-    if( iMuon.track().isAvailable() )
-      passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
-
-    passesTrackerID = ( passesGlobalTrackID && passesMuonBestTrackID && passesInnerTrackID && passesTrackID && (iMuon.numberOfMatchedStations() > 1) );
-
-    passesID        = (iMuon.isGlobalMuon() && isPFMuon && passesTrackerID);
+    passesID         = passesMuonPOGIdLoose(iMuon);
+    if(passesID != muon::isLooseMuon(iMuon)) throw cms::Exception("InvalidLooseID") << "Manual loose ID is not equal to muon::isLooseMuon()!";
 
     break;
+  case muonID::muonMedium:
+    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
+    passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.20) : iMuon.passed(imuonIso);
+    passesID         = passesMuonPOGIdMedium(iMuon);
+    if(passesID != muon::isMediumMuon(iMuon)) throw cms::Exception("InvalidMediumID") << "Manual medium ID is not equal to muon::isMediumMuon()!";
+    break;
+    
   case muonID::muonTight:
   // std::cout << "current muonID: muonTight\n";
       passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
       passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15) : iMuon.passed(imuonIso);
       
       passesID         = passesMuonPOGIdTight(iMuon);
-      // passesID         = iMuon.
+      if(passesID != muon::isTightMuon(iMuon, vertex)) throw cms::Exception("InvalidTightID") << "Manual tight ID is not equal to muon::isTightMuon()!";
       break;
   case muonID::muonTightDL:
     // std::cout << "current muonID: muonTightDL\n";
@@ -1177,13 +1147,9 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
         // else if(imuonIso == muonIso::PFIsoLoose) std::cout << "\tpat PFIsoLoose\n";
         // if(passesIso) std::cout << "passed iso criteria\n";
       passesID         = passesMuonPOGIdTight(iMuon);
+      if(passesID != muon::isTightMuon(iMuon, vertex)) throw cms::Exception("InvalidTightID") << "Manual tight ID is not equal to muon::isTightMuon()!";
       break;
 
-  case muonID::muonMediumICHEP:
-      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
-      passesID         = passesMuonPOGIdICHEPMedium(iMuon);
-      break;
   case muonID::muonTight_IsoInverted:
       passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
       passesIso        = !(GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
@@ -1194,6 +1160,9 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
       passesIso        = !(GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25);
       passesID         = passesMuonPOGIdTight(iMuon);
       break;
+    
+  default:
+      throw cms::Exception("InvalidMuonID") << "No matching muon ID found!";
 
   }
     // if(passesKinematics) std::cout << "\tpassed kinematics\n";
