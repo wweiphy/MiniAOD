@@ -399,8 +399,8 @@ MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const 
   for( std::vector<pat::Muon>::const_iterator it = inputMuons.begin(), ed = inputMuons.end(); it != ed; ++it ){
     if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType, imuonIso) ) 
     {
-        debug_muonreliso = GetMuonRelIso(*it, iconeSize,icorrType);
-        if(debug_muonreliso > 0.15) std::cout << "\tselecting muon with calc. rel iso = " << debug_muonreliso << std::endl;
+        // debug_muonreliso = GetMuonRelIso(*it, iconeSize,icorrType);
+        // if(debug_muonreliso > 0.15) std::cout << "\tselecting muon with calc. rel iso = " << debug_muonreliso << std::endl;
         selectedMuons.push_back(*it);
     }
   }
@@ -1063,7 +1063,7 @@ bool MiniAODHelper::passesMuonPOGIdLoose(const pat::Muon& iMuon){
     bool passesMuonRequirement = false;
   
     isPFMuon         = iMuon.isPFMuon();
-    passesMuonRequirement = iMuon.isGlobalMuon() || iMuon.isTrackerMuon()
+    passesMuonRequirement = iMuon.isGlobalMuon() || iMuon.isTrackerMuon();
     
     return (passesMuonRequirement && isPFMuon);
 }
@@ -1216,6 +1216,34 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
 
 
   switch(iElectronID){
+  case electronID::electron94XCutBasedLoose:
+  case electronID::electron94XCutBasedMedium:
+  case electronID::electron94XCutBasedVeto:
+  case electronID::electron94XCutBasedTight:
+    {
+        passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+        passesIso = true;
+        passesID = true;
+        double IP_d0 = 999;
+        double IP_dZ = 999;
+    
+        bool isEB = ( absSCeta < 1.479 ); //check if electron is in barrel region
+        if( iElectron.gsfTrack().isAvailable() ){
+            IP_d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
+            IP_dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
+        }
+        
+        //if impact parameter cuts are not met, set passesID = false
+        if( isEB )
+        {
+            if(!(IP_d0 < 0.05 && IP_dZ < 0.1)) passesID = false;
+        }
+        else if(!(IP_d0 < 0.1 && IP_dZ < 0.2)) passesID = false;
+        
+        break;
+    }
+      
+      
   case electronID::electronPreselection:
     // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
     // selection userFloats
@@ -1615,7 +1643,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       }
       break;
     }
-    if(result < 0.25 && result > 0.15) std::cout << "\trel iso in GetMuonRelIso() = " << result << "\n";
+    // if(result < 0.25 && result > 0.15) std::cout << "\trel iso in GetMuonRelIso() = " << result << "\n";
   return result;
 }
 
@@ -2275,6 +2303,8 @@ vector<pat::Electron> MiniAODHelper::GetElectronsWithMVAid(edm::Handle<edm::View
     }
     return electrons_with_id;
 }
+
+
 bool MiniAODHelper::InECALbarrel(const pat::Electron& iElectron) const{
     return abs(iElectron.superCluster()->position().eta()) < 1.4442;
 }

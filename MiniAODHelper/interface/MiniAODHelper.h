@@ -123,7 +123,8 @@ namespace electronID{
       electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T,
       electronEndOf15MVA80, electronEndOf15MVA90, electronEndOf15MVA80iso0p1, electronEndOf15MVA80iso0p15, electronEndOf15MVA90iso0p1, electronEndOf15MVA90iso0p15,
       electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electron80XCutBasedT_IsoInverted,electronNonTrigMVAid90,electronNonTrigMVAid80,
-      electronGeneralPurposeMVA2016WP80,electronGeneralPurposeMVA2016WP90 // MVA IDs for 80X with 80 and 90 percent eff.
+      electronGeneralPurposeMVA2016WP80,electronGeneralPurposeMVA2016WP90, // MVA IDs for 80X with 80 and 90 percent eff.
+      electron94XCutBasedLoose, electron94XCutBasedMedium, electron94XCutBasedTight, electron94XCutBasedVeto
    };
 }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
@@ -139,7 +140,7 @@ namespace muonIso{
         CalculateManually           //flag to manually calculate muon iso
     };
 }
-namespace effAreaType{ enum effAreaType{spring16,spring15,phys14};}
+namespace effAreaType{ enum effAreaType{spring16,spring15,phys14, fall17};}
 
 using namespace std;
 
@@ -217,6 +218,9 @@ class MiniAODHelper{
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
   bool PassElectronSpring15Id(const pat::Electron&, const electronID::electronID) const;
   vector<pat::Electron> GetElectronsWithMVAid(edm::Handle<edm::View<pat::Electron> > electrons, edm::Handle<edm::ValueMap<float> > mvaValues, edm::Handle<edm::ValueMap<int> > mvaCategories) const;
+
+  
+  
   bool PassElectron80XId(const pat::Electron&, const electronID::electronID) const;
 
   bool InECALbarrel(const pat::Electron&) const;
