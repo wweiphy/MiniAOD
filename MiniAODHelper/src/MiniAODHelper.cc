@@ -1724,6 +1724,15 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1937;
 	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.2393;
 	  }
+      else if (ieffAreaType==effAreaType::fall17){
+          if (Eta >= 0. && Eta < 1.0) EffArea = 0.1566;
+	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1626;
+	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1073;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0854;
+	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1051;
+	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1204;
+	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.1524;
+      }
 
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea;
@@ -1775,6 +1784,25 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	      else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
 	      else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
 	    }
+        else if (ieffAreaType==effAreaType::spring16){
+            if (Eta >= 0. && Eta < 1.0) EffArea = 0.1703;
+            else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1715;
+            else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1213;
+            else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1230;
+            else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1635;
+            else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1937;
+            else if (Eta >= 2.4 && Eta < 5) EffArea = 0.2393;
+          }
+        else if (ieffAreaType==effAreaType::fall17){
+          if (Eta >= 0. && Eta < 1.0) EffArea = 0.1566;
+	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1626;
+	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1073;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0854;
+	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1051;
+	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1204;
+	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.1524;
+      }
+        
 
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
