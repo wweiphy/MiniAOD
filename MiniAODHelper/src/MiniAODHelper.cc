@@ -19,10 +19,13 @@ MiniAODHelper::MiniAODHelper()
 
   // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
   // Preliminary working (or operating) points for CSVv2+IVF
-  CSVLwp = 0.5426;
-  CSVMwp = 0.8484;
-  CSVTwp = 0.9535;
-
+//   CSVLwp = 0.5426;
+//   CSVMwp = 0.8484;
+//   CSVTwp = 0.9535;
+//Deep CSV working points for 94x as of 23.04.2018  
+  float CSVLwp = 0.1522;
+  float CSVMwp = 0.4941;
+  float CSVTwp = 0.8001;
   samplename = "blank";
 
   // JEC uncertainties
@@ -92,11 +95,10 @@ MiniAODHelper::MiniAODHelper(std::string jetTypeLabelForJECUncertainty)
   rhoIsSet = false;
   factorizedjetcorrectorIsSet = false;
 
-  // twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagging#Preliminary_working_or_operating
-  // Preliminary working (or operating) points for CSVv2+IVF
-  CSVLwp = 0.5426;
-  CSVMwp = 0.8484;
-  CSVTwp = 0.9535;
+  //Deep CSV working points for 94x as of 23.04.2018
+  CSVLwp = 0.1522;
+  CSVMwp = 0.4941;
+  CSVTwp = 0.8001;
 
   samplename = "blank";
 
@@ -1801,9 +1803,13 @@ void MiniAODHelper::AddElectronRelIso(std::vector<pat::Electron>& electrons,cons
 float MiniAODHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername){
 
   float defaultFailure = -.1;
-
-  float bTagVal = jet.bDiscriminator(taggername);
-
+  float bTagVal=0;
+  if(taggername=="DeepCSV"){
+    bTagVal=jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb");
+  }
+  else{
+    bTagVal = jet.bDiscriminator(taggername);
+  }
   if(isnan(bTagVal)) return defaultFailure;
 
   if(bTagVal > 1.) return 1.;
@@ -1815,8 +1821,14 @@ float MiniAODHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername
 float MiniAODHelper::GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername){
 
 
-  float bTagVal = jet.bDiscriminator(taggername);
-
+  float bTagVal=0;
+  if(taggername=="DeepCSV"){
+    bTagVal=jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb");
+  }
+  else{
+    bTagVal = jet.bDiscriminator(taggername);
+  }
+  
   return bTagVal;
 }
 
@@ -1825,7 +1837,7 @@ float MiniAODHelper::GetJetCSV_DNN(const pat::Jet& jet, const std::string tagger
 bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
   CheckSetUp();
 
-  float csvValue = GetJetCSV(iJet,"pfCombinedInclusiveSecondaryVertexV2BJetTags");
+  float csvValue = GetJetCSV(iJet,"DeepCSV");
 
   // CSV b-tagging requirement
   switch(iCSVworkingPoint){

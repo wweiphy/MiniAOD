@@ -197,8 +197,8 @@ class MiniAODHelper{
   float GetElectronRelIso(const pat::Electron&, const coneSize::coneSize, const corrType::corrType, const effAreaType::effAreaType=effAreaType::phys14, std::map<std::string,double>* miniIso_calculation_params = 0) const;
   void AddElectronRelIso(pat::Electron&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
   void AddElectronRelIso(std::vector<pat::Electron>&,const coneSize::coneSize, const corrType::corrType,const effAreaType::effAreaType=effAreaType::phys14,std::string userFloatName="relIso") const;
-  static float GetJetCSV(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags");
-  static float GetJetCSV_DNN(const pat::Jet&, const std::string = "pfCombinedInclusiveSecondaryVertexV2BJetTags");
+  static float GetJetCSV(const pat::Jet&, const std::string = "DeepCSV");
+  static float GetJetCSV_DNN(const pat::Jet&, const std::string = "DeepCSV");
   static jetID::jetID getjetID(const std::string& jetID);
   bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
@@ -370,7 +370,7 @@ template <typename T> T MiniAODHelper::GetSortedByPt(const T& collection){
 // === Returned sorted input collection, by descending CSV === //
 template <typename T> T MiniAODHelper::GetSortedByCSV(const T& collection){
   T result = collection;
-  std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return GetJetCSV(a,"pfCombinedInclusiveSecondaryVertexV2BJetTags") > GetJetCSV(b,"pfCombinedInclusiveSecondaryVertexV2BJetTags");});
+  std::sort(result.begin(), result.end(), [] (typename T::value_type a, typename T::value_type b) { return GetJetCSV(a,"DeepCSV") > GetJetCSV(b,"DeepCSV");});
   return result;
 }
 
