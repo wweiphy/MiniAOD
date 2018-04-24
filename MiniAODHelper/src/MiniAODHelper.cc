@@ -392,14 +392,16 @@ void MiniAODHelper::SetAK8JetCorrectorUncertainty(const edm::EventSetup& iSetup,
 }
 
 std::vector<pat::Muon>
-MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const float iMaxEta){
+MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const float iMinPt, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const float iMaxEta, const muonIso::muonIso imuonIso){
 
   CheckSetUp();
 
   std::vector<pat::Muon> selectedMuons;
-
   for( std::vector<pat::Muon>::const_iterator it = inputMuons.begin(), ed = inputMuons.end(); it != ed; ++it ){
-    if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType) ) selectedMuons.push_back(*it);
+    if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType, imuonIso) ) 
+    {
+        selectedMuons.push_back(*it);
+    }
   }
 
   return selectedMuons;
@@ -414,7 +416,10 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
   std::vector<pat::Electron> selectedElectrons;
 
   for( std::vector<pat::Electron>::const_iterator it = inputElectrons.begin(), ed = inputElectrons.end(); it != ed; ++it ){
-    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID) ) selectedElectrons.push_back(*it);
+    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID) ) 
+    {
+        selectedElectrons.push_back(*it);
+    }
   }
 
   return selectedElectrons;
@@ -1020,7 +1025,8 @@ MiniAODHelper::GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>& in
 }
 
 bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
-
+    //version of April 18th 2018
+    
     if( !iMuon.isGlobalMuon()) return false;
     if( !iMuon.globalTrack().isAvailable() ) return false;
 
@@ -1037,40 +1043,63 @@ bool MiniAODHelper::passesMuonPOGIdTight(const pat::Muon& iMuon){
     if(!passesMuonBestTrackID) return false;
 
     if(!iMuon.innerTrack().isAvailable() ) return false;
-    bool passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0);
+    bool passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0)
+                                && (iMuon.innerTrack()->hitPattern().trackerLayersWithMeasurement() > 5);
     if(!passesInnerTrackID) return false;
 
-    if(!iMuon.track().isAvailable() ) return false;
-    bool passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
-    if(!passesTrackID) return false;
+    // if(!iMuon.track().isAvailable() ) return false;
+    // bool passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
+    // if(!passesTrackID) return false;
 
     if(iMuon.numberOfMatchedStations() <= 1) return false;
 
     if(!iMuon.isPFMuon()) return false;
-
+    
+    
     return true;
 
 }
 
-// ICHEP dataset medium ID
-// https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Short_Term_Medium_Muon_Definitio
-bool MiniAODHelper::passesMuonPOGIdICHEPMedium(const pat::Muon& iMuon){
-  bool isLooseMuon=false;
-  isLooseMuon=(iMuon.isPFMuon() && (iMuon.isGlobalMuon() || iMuon.isTrackerMuon()));
-
-  if(!isLooseMuon) return false;
-
-  bool goodGlob = (iMuon.isGlobalMuon() && iMuon.globalTrack()->normalizedChi2() < 3 && iMuon.combinedQuality().chi2LocalPosition < 12 && iMuon.combinedQuality().trkKink < 20);
-
-  bool isMedium = (isLooseMuon && iMuon.innerTrack()->validFraction() > 0.49 && muon::segmentCompatibility(iMuon) > (goodGlob ? 0.303 : 0.451));
-
-  if(!isMedium) return false;
-  return true;
-
+bool MiniAODHelper::passesMuonPOGIdLoose(const pat::Muon& iMuon){
+    bool isPFMuon         = false;
+    bool passesMuonRequirement = false;
+  
+    isPFMuon         = iMuon.isPFMuon();
+    passesMuonRequirement = iMuon.isGlobalMuon() || iMuon.isTrackerMuon();
+    
+    return (passesMuonRequirement && isPFMuon);
 }
 
+bool MiniAODHelper::passesMuonPOGIdMedium(const pat::Muon& iMuon){
+     bool goodGlob = iMuon.isGlobalMuon() && 
+                      iMuon.globalTrack()->normalizedChi2() < 3 && 
+                      iMuon.combinedQuality().chi2LocalPosition < 12 && 
+                      iMuon.combinedQuality().trkKink < 20; 
+      bool isMedium = muon::isLooseMuon(iMuon) && 
+                      iMuon.innerTrack()->validFraction() > 0.8 && 
+                      muon::segmentCompatibility(iMuon) > (goodGlob ? 0.303 : 0.451); 
+      return isMedium;
+}
+
+// ICHEP dataset medium ID
+// https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Short_Term_Medium_Muon_Definitio
+// bool MiniAODHelper::passesMuonPOGIdICHEPMedium(const pat::Muon& iMuon){
+  // bool isLooseMuon=false;
+  // isLooseMuon=(iMuon.isPFMuon() && (iMuon.isGlobalMuon() || iMuon.isTrackerMuon()));
+
+  // if(!isLooseMuon) return false;
+
+  // bool goodGlob = (iMuon.isGlobalMuon() && iMuon.globalTrack()->normalizedChi2() < 3 && iMuon.combinedQuality().chi2LocalPosition < 12 && iMuon.combinedQuality().trkKink < 20);
+
+  // bool isMedium = (isLooseMuon && iMuon.innerTrack()->validFraction() > 0.49 && muon::segmentCompatibility(iMuon) > (goodGlob ? 0.303 : 0.451));
+
+  // if(!isMedium) return false;
+  // return true;
+
+// }
+
 bool
-MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType){
+MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const float iMaxEta, const muonID::muonID iMuonID, const coneSize::coneSize iconeSize, const corrType::corrType icorrType, const muonIso::muonIso imuonIso){
 
   CheckVertexSetUp();
 
@@ -1083,104 +1112,38 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
   bool passesKinematics	= false;
   bool passesIso        = false;
   bool passesID         = false;
-  bool isPFMuon         = false;
-  bool passesTrackerID  = false;
-
-  bool passesGlobalTrackID   = false;
-  bool passesMuonBestTrackID = false;
-  bool passesInnerTrackID    = false;
-  bool passesTrackID         = false;
-
+  
+  passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
 
   switch(iMuonID){
-  case muonID::muonPreselection:
-    // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
-    // selection userFloats
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idPreselection") > .5;
-    break;
-  case muonID::muonLooseMvaBased:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idLooseMVA") > .5;
-    break;
-  case muonID::muonTightMvaBased:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idTightMVA") > .5;
-    break;
-  case muonID::muonLooseCutBased:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idLooseCut") > .5;
-    break;
-  case muonID::muonTightCutBased:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso = true;
-    passesID = iMuon.userFloat("idTightCut") > .5;
-    break;
-  case muonID::muonSide:
-  case muonID::muonSideLooseMVA:
-  case muonID::muonSideTightMVA:
-  case muonID::muonPtOnly:
-  case muonID::muonPtEtaOnly:
-  case muonID::muonPtEtaIsoOnly:
-  case muonID::muonPtEtaIsoTrackerOnly:
-  case muonID::muonRaw:
-  case muonID::muonCutBased:
-  case muonID::muon2lss:
+  
   case muonID::muonLoose:
-    passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-    passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.200);
-    isPFMuon         = iMuon.isPFMuon();
-
-    if( iMuon.globalTrack().isAvailable() ){
-      passesGlobalTrackID = ( (iMuon.globalTrack()->normalizedChi2() < 10.)
-			      && (iMuon.globalTrack()->hitPattern().numberOfValidMuonHits() > 0)
-			      );
-    }
-    if( iMuon.muonBestTrack().isAvailable() ){
-      passesMuonBestTrackID = ( (fabs(iMuon.muonBestTrack()->dxy(vertex.position())) < 0.2)
-				&& (fabs(iMuon.muonBestTrack()->dz(vertex.position())) < 0.5)
-				);
-    }
-    if( iMuon.innerTrack().isAvailable() )
-      passesInnerTrackID = (iMuon.innerTrack()->hitPattern().numberOfValidPixelHits() > 0);
-    if( iMuon.track().isAvailable() )
-      passesTrackID = (iMuon.track()->hitPattern().trackerLayersWithMeasurement() > 5);
-
-    passesTrackerID = ( passesGlobalTrackID && passesMuonBestTrackID && passesInnerTrackID && passesTrackID && (iMuon.numberOfMatchedStations() > 1) );
-
-    passesID        = (iMuon.isGlobalMuon() && isPFMuon && passesTrackerID);
-
-    break;
+      passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25) : iMuon.passed(imuonIso);
+      passesID         = muon::isLooseMuon(iMuon);
+      break;
+  case muonID::muonMedium:
+      passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.20) : iMuon.passed(imuonIso);
+      passesID         = muon::isMediumMuon(iMuon);
+      break;
   case muonID::muonTight:
-      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
-      passesID         = passesMuonPOGIdTight(iMuon);
+      passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15) : iMuon.passed(imuonIso);
+      passesID         = muon::isTightMuon(iMuon, vertex);
       break;
   case muonID::muonTightDL:
-      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25);
-      passesID         = passesMuonPOGIdTight(iMuon);
-      break;
-
-  case muonID::muonMediumICHEP:
-      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
-      passesIso        = (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
-      passesID         = passesMuonPOGIdICHEPMedium(iMuon);
+      passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25) : iMuon.passed(imuonIso);
+      passesID         = muon::isTightMuon(iMuon, vertex);
       break;
   case muonID::muonTight_IsoInverted:
-      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
       passesIso        = !(GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15);
       passesID         = passesMuonPOGIdTight(iMuon);
       break;
   case muonID::muonTightDL_IsoInverted:
-      passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
       passesIso        = !(GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25);
       passesID         = passesMuonPOGIdTight(iMuon);
       break;
+    
+  default:
+      throw cms::Exception("InvalidMuonID") << "No matching muon ID found!";
 
   }
 
@@ -1233,6 +1196,34 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
 
 
   switch(iElectronID){
+  case electronID::electron94XCutBasedLoose:
+  case electronID::electron94XCutBasedMedium:
+  case electronID::electron94XCutBasedVeto:
+  case electronID::electron94XCutBasedTight:
+    {
+        passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+        passesIso = true;
+        passesID = true;
+        double IP_d0 = 999;
+        double IP_dZ = 999;
+    
+        bool isEB = ( absSCeta < 1.479 ); //check if electron is in barrel region
+        if( iElectron.gsfTrack().isAvailable() ){
+            IP_d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
+            IP_dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
+        }
+        
+        //if impact parameter cuts are not met, set passesID = false
+        if( isEB )
+        {
+            if(!(IP_d0 < 0.05 && IP_dZ < 0.1)) passesID = false;
+        }
+        else if(!(IP_d0 < 0.1 && IP_dZ < 0.2)) passesID = false;
+        
+        break;
+    }
+      
+      
   case electronID::electronPreselection:
     // see https://github.com/cms-ttH/ttH-LeptonID for adding multilepton
     // selection userFloats
@@ -1360,7 +1351,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     break;
 
   }
-
+  
   return (passesKinematics && passesIso && passesID);
 }
 
@@ -1513,6 +1504,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
 }
 
 //overloaded
+
 float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::map<std::string,double> *miniIso_calculation_params) const
 {
 
@@ -1631,6 +1623,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       }
       break;
     }
+    // if(result < 0.25 && result > 0.15) std::cout << "\trel iso in GetMuonRelIso() = " << result << "\n";
   return result;
 }
 
@@ -1711,6 +1704,15 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1937;
 	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.2393;
 	  }
+      else if (ieffAreaType==effAreaType::fall17){
+          if (Eta >= 0. && Eta < 1.0) EffArea = 0.1566;
+	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1626;
+	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1073;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0854;
+	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1051;
+	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1204;
+	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.1524;
+      }
 
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea;
@@ -1762,6 +1764,25 @@ float MiniAODHelper::GetElectronRelIso(const pat::Electron& iElectron,const cone
 	      else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.2243;
 	      else if (Eta >= 2.4 && Eta < 2.5) EffArea = 0.2687;
 	    }
+        else if (ieffAreaType==effAreaType::spring16){
+            if (Eta >= 0. && Eta < 1.0) EffArea = 0.1703;
+            else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1715;
+            else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1213;
+            else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.1230;
+            else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1635;
+            else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1937;
+            else if (Eta >= 2.4 && Eta < 5) EffArea = 0.2393;
+          }
+        else if (ieffAreaType==effAreaType::fall17){
+          if (Eta >= 0. && Eta < 1.0) EffArea = 0.1566;
+	    else if (Eta >= 1.0 && Eta < 1.479) EffArea = 0.1626;
+	    else if (Eta >= 1.479 && Eta < 2.0) EffArea = 0.1073;
+	    else if (Eta >= 2.0 && Eta < 2.2) EffArea = 0.0854;
+	    else if (Eta >= 2.2 && Eta < 2.3) EffArea = 0.1051;
+	    else if (Eta >= 2.3 && Eta < 2.4) EffArea = 0.1204;
+	    else if (Eta >= 2.4 && Eta < 5) EffArea = 0.1524;
+      }
+        
 
 	  if(!rhoIsSet) std::cout << " !! ERROR !! Trying to get rhoEffArea correction without setting rho" << std::endl;
 	  correction = useRho*EffArea*(miniIsoR/0.3)*(miniIsoR/0.3);
@@ -2300,6 +2321,8 @@ vector<pat::Electron> MiniAODHelper::GetElectronsWithMVAid(edm::Handle<edm::View
     }
     return electrons_with_id;
 }
+
+
 bool MiniAODHelper::InECALbarrel(const pat::Electron& iElectron) const{
     return abs(iElectron.superCluster()->position().eta()) < 1.4442;
 }

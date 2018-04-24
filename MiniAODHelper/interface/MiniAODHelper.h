@@ -99,7 +99,8 @@ namespace muonID{
    enum muonID{
       muonPreselection,
       muonSide, muonSideLooseMVA, muonSideTightMVA,
-      muonLoose, muonTight,muonTight_IsoInverted,muonTightDL_IsoInverted,
+      muonLoose, muonTight, muonMedium,
+      muonTight_IsoInverted,muonTightDL_IsoInverted,
       muonTightDL,
       muonPtOnly, muonPtEtaOnly, muonPtEtaIsoOnly, muonPtEtaIsoTrackerOnly,
       muonRaw,
@@ -122,13 +123,24 @@ namespace electronID{
       electronSpring15Veto, electronSpring15L, electronSpring15M, electronSpring15T,
       electronEndOf15MVA80, electronEndOf15MVA90, electronEndOf15MVA80iso0p1, electronEndOf15MVA80iso0p15, electronEndOf15MVA90iso0p1, electronEndOf15MVA90iso0p15,
       electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electron80XCutBasedT_IsoInverted,electronNonTrigMVAid90,electronNonTrigMVAid80,
-      electronGeneralPurposeMVA2016WP80,electronGeneralPurposeMVA2016WP90 // MVA IDs for 80X with 80 and 90 percent eff.
+      electronGeneralPurposeMVA2016WP80,electronGeneralPurposeMVA2016WP90, // MVA IDs for 80X with 80 and 90 percent eff.
+      electron94XCutBasedLoose, electron94XCutBasedMedium, electron94XCutBasedTight, electron94XCutBasedVeto
    };
 }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
 namespace coneSize{ enum coneSize{miniIso,R03,R04};}
 namespace corrType{ enum corrType{deltaBeta,rhoEA};}
-namespace effAreaType{ enum effAreaType{spring16,spring15,phys14};}
+namespace muonIso{ 
+    enum muonIso{
+        PFIsoVeryTight = pat::Muon::PFIsoVeryTight, 
+        PFIsoTight = pat::Muon::PFIsoTight,
+        PFIsoMedium = pat::Muon::PFIsoMedium,
+        PFIsoLoose = pat::Muon::PFIsoLoose,
+        PFIsoVeryLoose = pat::Muon::PFIsoVeryLoose,
+        CalculateManually           //flag to manually calculate muon iso
+    };
+}
+namespace effAreaType{ enum effAreaType{spring16,spring15,phys14, fall17};}
 
 using namespace std;
 
@@ -166,7 +178,7 @@ class MiniAODHelper{
 
   void SetPackedCandidates(const std::vector<pat::PackedCandidate> & all, int fromPV_thresh=1, float dz_thresh=9999., bool also_leptons=false);
 
-  virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4);
+  virtual std::vector<pat::Muon> GetSelectedMuons(const std::vector<pat::Muon>&, const float, const muonID::muonID, const coneSize::coneSize = coneSize::R04, const corrType::corrType = corrType::deltaBeta, const float = 2.4, const muonIso::muonIso = muonIso::CalculateManually);
   virtual std::vector<pat::Electron> GetSelectedElectrons(const std::vector<pat::Electron>&, const float, const electronID::electronID, const float = 2.4);
   std::vector<pat::Tau> GetSelectedTaus(const std::vector<pat::Tau>&, const float, const tau::ID);
   std::vector<pat::Jet> GetSelectedJets(const std::vector<pat::Jet>&, const float, const float, const jetID::jetID, const char, const PUJetID::WP wp=PUJetID::none);
@@ -182,9 +194,11 @@ class MiniAODHelper{
   std::vector<boosted::BoostedJet> GetSelectedBoostedJets(const std::vector<boosted::BoostedJet>&, const float, const float, const float, const float, const jetID::jetID, const string);
   std::vector<pat::PackedCandidate> GetPackedCandidates(void);
   bool passesMuonPOGIdTight(const pat::Muon&);
+  bool passesMuonPOGIdLoose(const pat::Muon&);
+  bool passesMuonPOGIdMedium(const pat::Muon&);
   bool passesMuonPOGIdICHEPMedium(const pat::Muon&);
 
-  bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType);
+  bool isGoodMuon(const pat::Muon&, const float, const float, const muonID::muonID, const coneSize::coneSize, const corrType::corrType, const muonIso::muonIso);
   bool isGoodElectron(const pat::Electron& iElectron, const float iMinPt, const float iMaxEta,const electronID::electronID iElectronID);
   bool isGoodTau(const pat::Tau&, const float, const tau::ID);
   bool isGoodJet(const pat::Jet&, const float, const float, const jetID::jetID, const char, const PUJetID::WP wp=PUJetID::none);
@@ -204,6 +218,9 @@ class MiniAODHelper{
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
   bool PassElectronSpring15Id(const pat::Electron&, const electronID::electronID) const;
   vector<pat::Electron> GetElectronsWithMVAid(edm::Handle<edm::View<pat::Electron> > electrons, edm::Handle<edm::ValueMap<float> > mvaValues, edm::Handle<edm::ValueMap<int> > mvaCategories) const;
+
+  
+  
   bool PassElectron80XId(const pat::Electron&, const electronID::electronID) const;
 
   bool InECALbarrel(const pat::Electron&) const;
