@@ -395,12 +395,9 @@ MiniAODHelper::GetSelectedMuons(const std::vector<pat::Muon>& inputMuons, const 
   CheckSetUp();
 
   std::vector<pat::Muon> selectedMuons;
-    double debug_muonreliso = 0;
   for( std::vector<pat::Muon>::const_iterator it = inputMuons.begin(), ed = inputMuons.end(); it != ed; ++it ){
     if( isGoodMuon(*it,iMinPt,iMaxEta,iMuonID,iconeSize,icorrType, imuonIso) ) 
     {
-        // debug_muonreliso = GetMuonRelIso(*it, iconeSize,icorrType);
-        // if(debug_muonreliso > 0.15) std::cout << "\tselecting muon with calc. rel iso = " << debug_muonreliso << std::endl;
         selectedMuons.push_back(*it);
     }
   }
@@ -417,7 +414,10 @@ MiniAODHelper::GetSelectedElectrons(const std::vector<pat::Electron>& inputElect
   std::vector<pat::Electron> selectedElectrons;
 
   for( std::vector<pat::Electron>::const_iterator it = inputElectrons.begin(), ed = inputElectrons.end(); it != ed; ++it ){
-    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID) ) selectedElectrons.push_back(*it);
+    if( isGoodElectron(*it,iMinPt,iMaxEta,iElectronID) ) 
+    {
+        selectedElectrons.push_back(*it);
+    }
   }
 
   return selectedElectrons;
@@ -1130,7 +1130,6 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
     break;
     
   case muonID::muonTight:
-  // std::cout << "current muonID: muonTight\n";
       passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
       passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.15) : iMuon.passed(imuonIso);
       
@@ -1138,14 +1137,8 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
       if(passesID != muon::isTightMuon(iMuon, vertex)) throw cms::Exception("InvalidTightID") << "Manual tight ID is not equal to muon::isTightMuon()!";
       break;
   case muonID::muonTightDL:
-    // std::cout << "current muonID: muonTightDL\n";
       passesKinematics = ((iMuon.pt() >= minMuonPt) && (fabs(iMuon.eta()) <= maxMuonEta));
       passesIso        = imuonIso == muonIso::CalculateManually ? (GetMuonRelIso(iMuon,iconeSize,icorrType) < 0.25) : iMuon.passed(imuonIso);
-      // std::cout << "current rel muon iso: " << imuonIso << std::endl;
-      // std::cout << "ref map:\n";
-        // if( imuonIso == muonIso::CalculateManually) std::cout << "\tcalc manually\n";
-        // else if(imuonIso == muonIso::PFIsoLoose) std::cout << "\tpat PFIsoLoose\n";
-        // if(passesIso) std::cout << "passed iso criteria\n";
       passesID         = passesMuonPOGIdTight(iMuon);
       if(passesID != muon::isTightMuon(iMuon, vertex)) throw cms::Exception("InvalidTightID") << "Manual tight ID is not equal to muon::isTightMuon()!";
       break;
@@ -1165,8 +1158,7 @@ MiniAODHelper::isGoodMuon(const pat::Muon& iMuon, const float iMinPt, const floa
       throw cms::Exception("InvalidMuonID") << "No matching muon ID found!";
 
   }
-    // if(passesKinematics) std::cout << "\tpassed kinematics\n";
-    // if(passesIso) std::cout << "\tpassed iso";
+
   return (passesKinematics && passesIso && passesID);
 }
 
@@ -1371,7 +1363,7 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     break;
 
   }
-
+  
   return (passesKinematics && passesIso && passesID);
 }
 
