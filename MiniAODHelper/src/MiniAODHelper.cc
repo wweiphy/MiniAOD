@@ -1349,6 +1349,13 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
     passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
     passesIso = 0.15>=GetElectronRelIso(iElectron, coneSize::R03, corrType::rhoEA,effAreaType::spring16);
     break;
+  case electronID::skimming:
+    passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+    if(iElectron.electronID("cutBasedElectronID-Fall17-94X-V1-loose")==1.){
+        passesID = true;
+        passesIso = true;
+    }
+    break;
 
   }
   

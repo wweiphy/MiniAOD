@@ -124,7 +124,8 @@ namespace electronID{
       electronEndOf15MVA80, electronEndOf15MVA90, electronEndOf15MVA80iso0p1, electronEndOf15MVA80iso0p15, electronEndOf15MVA90iso0p1, electronEndOf15MVA90iso0p15,
       electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electron80XCutBasedT_IsoInverted,electronNonTrigMVAid90,electronNonTrigMVAid80,
       electronGeneralPurposeMVA2016WP80,electronGeneralPurposeMVA2016WP90, // MVA IDs for 80X with 80 and 90 percent eff.
-      electron94XCutBasedLoose, electron94XCutBasedMedium, electron94XCutBasedTight, electron94XCutBasedVeto
+      electron94XCutBasedLoose, electron94XCutBasedMedium, electron94XCutBasedTight, electron94XCutBasedVeto,
+      skimming
    };
 }
 namespace hdecayType{	enum hdecayType{ hbb, hcc, hww, hzz, htt, hgg, hjj, hzg }; }
