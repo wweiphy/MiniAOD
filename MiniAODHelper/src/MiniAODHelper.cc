@@ -1835,6 +1835,9 @@ float MiniAODHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername
   if(taggername=="DeepCSV"){
     bTagVal=jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb");
   }
+  else if(taggername=="DeepFlavour"){
+    bTagVal=jet.bDiscriminator("pfDeepFlavourJetTags:probb") + jet.bDiscriminator("pfDeepFlavourJetTags:probbb");    
+  }
   else{
     bTagVal = jet.bDiscriminator(taggername);
   }
@@ -1852,6 +1855,9 @@ float MiniAODHelper::GetJetCSV_DNN(const pat::Jet& jet, const std::string tagger
   float bTagVal=0;
   if(taggername=="DeepCSV"){
     bTagVal=jet.bDiscriminator("pfDeepCSVJetTags:probb") + jet.bDiscriminator("pfDeepCSVJetTags:probbb");
+  }
+  else if(taggername=="DeepFlavour"){
+    bTagVal=jet.bDiscriminator("pfDeepFlavourJetTags:probb") + jet.bDiscriminator("pfDeepFlavourJetTags:probbb");    
   }
   else{
     bTagVal = jet.bDiscriminator(taggername);
