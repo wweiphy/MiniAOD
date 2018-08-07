@@ -152,7 +152,10 @@ public:
     CSVCErr1up,
     CSVCErr1down,
     CSVCErr2up,
-    CSVCErr2down 
+    CSVCErr2down, 
+    
+    METUnclENup,
+    METUnclENdown
   };
 
   // convert between string and int representation

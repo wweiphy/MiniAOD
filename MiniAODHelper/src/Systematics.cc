@@ -69,6 +69,7 @@ void Systematics::init() {
   add( CSVHFStats2up,            CSVHFStats2down,            "CSVHFStats2",              "HFStats2"            );
   add( CSVCErr1up,               CSVCErr1down,               "CSVcErr1",                 "CErr1"               );
   add( CSVCErr2up,               CSVCErr2down,               "CSVcErr2",                 "CErr2"               );
+  add( METUnclENup,              METUnclENdown,              "METUnclEN",                "UnclEN"              );
 }
 
 bool Systematics::isInit() {
