@@ -1515,8 +1515,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon) const
 float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSize iconeSize, const corrType::corrType icorrType, std::map<std::string,double> *miniIso_calculation_params) const
 {
 
-  // !!! NOTE !!! rho used with Phys14 should be: fixedGridRhoFastjetAll
-  // !!! NOTE !!! rho used with Spring15 should be: fixedGridRhoFastjetCentralNeutral
+  // see https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2#Particle_Flow_isolation for more details
 
   float result = 9999;
 
@@ -1530,12 +1529,14 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 
   switch(iconeSize)
     {
+    // Particle-Flow isolation, recommended at the moment
     case coneSize::R04:
       pfIsoCharged = iMuon.pfIsolationR04().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR04().sumNeutralHadronEt + iMuon.pfIsolationR04().sumPhotonEt;
 
       switch(icorrType)
 	{
+        // not recommended at the moment
 	case corrType::rhoEA:
 	  //based on R04 Phys14_25ns_v1
 	  // if (Eta >= 0. && Eta < 0.8) EffArea = 0.1546;
@@ -1546,6 +1547,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
 	  EffArea = -9999.;
 	  correction = useRho*EffArea;
 	  break;
+        // currently recommended
 	case corrType::deltaBeta:
 	  correction =  0.5*iMuon.pfIsolationR04().sumPUPt;
 	  break;
@@ -1554,7 +1556,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
       break;
-
+    // Tracker-based isolation
     case coneSize::R03:
       pfIsoCharged = iMuon.pfIsolationR03().sumChargedHadronPt;
       pfIsoNeutral = iMuon.pfIsolationR03().sumNeutralHadronEt + iMuon.pfIsolationR03().sumPhotonEt;
@@ -1586,7 +1588,7 @@ float MiniAODHelper::GetMuonRelIso(const pat::Muon& iMuon,const coneSize::coneSi
       pfIsoPUSubtracted = std::max( 0.0, pfIsoNeutral - correction );
       result = (pfIsoCharged + pfIsoPUSubtracted)/iMuon.pt();
       break;
-
+    // Mini isolation
     case coneSize::miniIso:
       double miniIsoR = 10.0/min(max(float(iMuon.pt()), float(50.)),float(200.));
       pfIsoCharged = isoSumRaw(charged_, iMuon, miniIsoR, 0.0001, 0.0, SelfVetoPolicy::selfVetoAll);
