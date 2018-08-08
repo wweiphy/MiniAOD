@@ -23,9 +23,9 @@ MiniAODHelper::MiniAODHelper()
 //   CSVMwp = 0.8484;
 //   CSVTwp = 0.9535;
 //Deep CSV working points for 94x as of 23.04.2018  
-  float CSVLwp = 0.1522;
-  float CSVMwp = 0.4941;
-  float CSVTwp = 0.8001;
+  CSVLwp = 0.1522;
+  CSVMwp = 0.4941;
+  CSVTwp = 0.8001;
   samplename = "blank";
 
   // JEC uncertainties
