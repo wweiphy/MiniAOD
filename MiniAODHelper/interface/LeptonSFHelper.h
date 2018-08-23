@@ -23,13 +23,13 @@ class LeptonSFHelper {
   ~LeptonSFHelper( );
 
   std::map< std::string, float>  GetLeptonSF( const std::vector< pat::Electron >& Electrons,
-					      const std::vector< pat::Muon >& Muons);
+					      const std::vector< pat::Muon >& Muons) const;
 
-  float GetElectronSF(  float electronPt , float electronEta , int syst , std::string type  );
-  float GetMuonSF(  float muonPt , float muonEta , int syst , std::string type  );
-  float GetElectronElectronSF( float electronEta1, float electronEta2, int syst , std::string type);
-  float GetMuonMuonSF( float muonEta1, float muonEta2, int syst , std::string type);
-  float GetElectronMuonSF( float electronEta, float muonEta, int syst , std::string type);
+  float GetElectronSF(  float electronPt , float electronEta , int syst , std::string type  ) const;
+  float GetMuonSF(  float muonPt , float muonEta , int syst , std::string type  ) const;
+  float GetElectronElectronSF( float electronEta1, float electronEta2, int syst , std::string type) const;
+  float GetMuonMuonSF( float muonEta1, float muonEta2, int syst , std::string type) const;
+  float GetElectronMuonSF( float electronEta, float muonEta, int syst , std::string type) const;
   void  ChangeMuIsoHistos(bool is_DL);
 
  private:
@@ -39,8 +39,9 @@ class LeptonSFHelper {
   void SetElectronElectronHistos( );
   void SetMuonMuonHistos( );
   void SetElectronMuonHistos( );
-  int findPoint(TGraphAsymmErrors& graph,float& x_);
-  float getValue(TGraphAsymmErrors& graph,float& x_,int syst);
+  
+  int findPoint(TGraphAsymmErrors& graph,float& x_) const;
+  float getValue(TGraphAsymmErrors& graph,float& x_,int syst) const;
 
   TH2F *h_ele_ID_abseta_pt_ratioGtoH;
   TH2F *h_ele_ID_abseta_pt_ratioBtoF;
