@@ -1431,7 +1431,7 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
   bool tight = false;
   bool goodForMETCorrection = false;
 
-  if(iJetID!=jetID::none){
+  if(iJetID!=jetID::none && iJet.isPFJet()){
     // these are the loose requirements for Run 2016 80X
     loose = (
 		  iJet.neutralHadronEnergyFraction() < 0.99 &&
