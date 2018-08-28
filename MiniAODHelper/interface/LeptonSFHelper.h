@@ -42,12 +42,13 @@ class LeptonSFHelper {
   int findPoint(TGraphAsymmErrors& graph,float& x_);
   float getValue(TGraphAsymmErrors& graph,float& x_,int syst);
 
-  TH2F *h_ele_ID_abseta_pt_ratioGtoH;
+  //TH2F *h_ele_ID_abseta_pt_ratioGtoH;
   TH2F *h_ele_ID_abseta_pt_ratioBtoF;
 
   TH2F *h_ele_TRIGGER_abseta_pt_ratio;
   TH2F *h_ele_ISO_abseta_pt_ratio;
   TH2F *h_ele_GFS_abseta_pt_ratio;
+  TH2F *h_ele_GFS_abseta_pt_ratio_lowEt;
 
   TH2F *h_mu_ID_abseta_pt_ratio;
   TH1D *h_mu_HIP_eta_ratio;
@@ -59,10 +60,10 @@ class LeptonSFHelper {
   TH2F *h_mu_TRIGGER_abseta_ptBtoF;
   TH2F *h_mu_ISO_abseta_pt_ratioBtoF;
 
-  TH2F *h_mu_ID_abseta_pt_ratioGtoH;
-  TGraphAsymmErrors *h_mu_HIP_eta_ratioGtoH;
-  TH2F *h_mu_TRIGGER_abseta_ptGtoH;
-  TH2F *h_mu_ISO_abseta_pt_ratioGtoH;
+  //TH2F *h_mu_ID_abseta_pt_ratioGtoH;
+  //TGraphAsymmErrors *h_mu_HIP_eta_ratioGtoH;
+  //TH2F *h_mu_TRIGGER_abseta_ptGtoH;
+  //TH2F *h_mu_ISO_abseta_pt_ratioGtoH;
 
   
   TH2F *h_ele_ele_TRIGGER_abseta_abseta;
@@ -75,9 +76,9 @@ class LeptonSFHelper {
   float muonMaxPt;
   float muonMaxPtHigh;
   float ljets_mu_BtoF_lumi;
-  float ljets_mu_GtoH_lumi;
+  //float ljets_mu_GtoH_lumi;
   float ljets_ele_BtoF_lumi;
-  float ljets_ele_GtoH_lumi;  
+  //float ljets_ele_GtoH_lumi;  
 
 };
 
