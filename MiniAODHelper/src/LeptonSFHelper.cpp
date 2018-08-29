@@ -77,9 +77,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
         //ElectronIsoSF_Up = ElectronIsoSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Iso");
         //ElectronIsoSF_Down = ElectronIsoSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Iso");
 
-        //ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "Trigger");
-        //ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Trigger");
-        //ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Trigger");
+        ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "Trigger");
+        ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "Trigger");
+        ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), -1, "Trigger");
 
         ElectronGFSSF = ElectronGFSSF * GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 0, "GFS");
         ElectronGFSSF_Up = ElectronGFSSF_Up *GetElectronSF(Electron.userFloat("ptBeforeRun2Calibration"), Electron.superCluster()->eta(), 1, "GFS");
@@ -97,9 +97,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
         //ElectronIsoSF_Up = ElectronIsoSF_Up  * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "Iso");
         //ElectronIsoSF_Down = ElectronIsoSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "Iso");
 
-        //ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "Trigger");
-        //ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "Trigger");
-        //ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "Trigger");
+        ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "Trigger");
+        ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "Trigger");
+        ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "Trigger");
 
         ElectronGFSSF = ElectronGFSSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "GFS");
         ElectronGFSSF_Up = ElectronGFSSF_Up *GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "GFS");
@@ -239,9 +239,9 @@ float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int
   
   float searchPt=electronPt;
   if(searchPt>=electronMaxPtHigher) {searchPt=electronMaxPtHigher;}; // if e_pt >= 500 go to last bin by setting searchpt to 499
-  if (type=="Trigger"){
-    searchPt=TMath::Min( electronPt , electronMaxPtHigh ); // if pt > 200 use overflow bin by setting searchpt to 201
-  }
+  //if (type=="Trigger"){
+    //searchPt=TMath::Min( electronPt , electronMaxPtHigh ); // if pt > 200 use overflow bin by setting searchpt to 201
+  //}
   
 
   float nomval = 0;
@@ -538,7 +538,7 @@ void LeptonSFHelper::SetElectronHistos( ){
   std::string IDinputFileBtoF = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "egammaEffi.txt_EGM2D_runBCDEF_passingTight94X.root";
   // std::string IDinputFileGtoH = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_ID_SF_tight_GH.root";
 
-  //std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_TriggerSF_Run2016All_v1.root";
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "SingleEG_JetHT_Trigger_Scale_Factors_ttHbb_Data_MC.root";
   //std::string ISOinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_Reco_EGM2D.root"; // DANGERZONE: no iso SF yet??
   std::string GFSinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root"; //reco SFs for pt > 20
   std::string GFSinputFile_lowEt = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "egammaEffi.txt_EGM2D_runBCDEF_passingRECO_lowEt.root"; //reco SFs for pt<20
@@ -548,14 +548,14 @@ void LeptonSFHelper::SetElectronHistos( ){
   TFile *f_IDSFBtoF = new TFile(std::string(IDinputFileBtoF).c_str(),"READ");
   //TFile *f_IDSFGtoH = new TFile(std::string(IDinputFileGtoH).c_str(),"READ");
   
-  //TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
+  TFile *f_TRIGGERSF = new TFile(std::string(TRIGGERinputFile).c_str(),"READ");
   //TFile *f_ISOSF = new TFile(std::string(ISOinputFile).c_str(),"READ");
   TFile *f_GFSSF = new TFile(std::string(GFSinputFile).c_str(),"READ");
   TFile *f_GFSSF_lowEt = new TFile(std::string(GFSinputFile_lowEt).c_str(),"READ");
 
   //h_ele_ID_abseta_pt_ratioGtoH=(TH2F*)f_IDSFGtoH->Get("EGamma_SF2D");
   h_ele_ID_abseta_pt_ratioBtoF=(TH2F*)f_IDSFBtoF->Get("EGamma_SF2D");
-  //h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_TRIGGERSF->Get("Ele27_WPTight_Gsf");
+  h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_TRIGGERSF->Get("SFs_ele_pt_ele_sceta_ele28_ht150_OR_ele35_2017BCDEF");
   //h_ele_ISO_abseta_pt_ratio = (TH2F*)f_ISOSF->Get("EGamma_SF2D");
   h_ele_GFS_abseta_pt_ratio = (TH2F*)f_GFSSF->Get("EGamma_SF2D");
   h_ele_GFS_abseta_pt_ratio_lowEt = (TH2F*)f_GFSSF_lowEt->Get("EGamma_SF2D");
