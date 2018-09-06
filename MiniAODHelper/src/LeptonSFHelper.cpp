@@ -11,9 +11,18 @@ LeptonSFHelper::LeptonSFHelper( ){
   SetMuonMuonHistos( );
   SetElectronMuonHistos( );
 
+  electronLowPtRangeCut=20.0;
   electronMaxPt = 150.0;
+  electronMinPt = 20.0;
+  electronMinPtLowPt = 10;
+  electronMaxPtLowPt = 19.9; 
   electronMaxPtHigh= 201.0;
   electronMaxPtHigher= 499.0;  //TH2 histos from Fall17 are binned up to 500 GeV
+  electronMaxEta=2.49;
+  electronMaxEtaLow=2.19;
+  
+  
+  
   muonMaxPt = 119.0;
   muonMaxPtHigh = 1199.;       //TH2 Trigger SF histos from Fall17 are binned up to 1200 GEV 
   
@@ -233,14 +242,29 @@ float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int
 
   int thisBin=0;
 
+  // restrict electron eta 
   float searchEta=electronEta;
-  // float searchPt=TMath::Min( electronPt , electronMaxPt ); // if e_pt < 150 use the corresponding bin
-  // if(searchPt==electronMaxPt) {searchPt=electronMaxPtHigher;}; // if e_pt >= 150 go to last bin by setting searchpt to 499
+  if(searchEta<0 and searchEta<=-electronMaxEta){searchEta=-electronMaxEta;}
+  if(searchEta>0 and searchEta>=electronMaxEta){searchEta=electronMaxEta;}
+  if(type=="Trigger"){
+    if(searchEta<0 and searchEta<=-electronMaxEtaLow){searchEta=-electronMaxEtaLow;}
+    if(searchEta>0 and searchEta>=electronMaxEtaLow){searchEta=electronMaxEtaLow;}
+  }
+    
   
+  // restrict electron pT
   float searchPt=electronPt;
-  if(searchPt>=electronMaxPtHigher) {searchPt=electronMaxPtHigher;}; // if e_pt >= 500 go to last bin by setting searchpt to 499
+  if(searchPt>electronLowPtRangeCut){
+    if(searchPt>=electronMaxPtHigher) {searchPt=electronMaxPtHigher;}; // if e_pt >= 500 go to last bin by setting searchPt to 499
+    if(searchPt<electronMinPt){searchPt=electronMinPt;}; // if e_pt < 20 go to first bin by setting searchPt to 20
+  }
+  else{
+  // these are now for the low pt Reco SF 
+  if(searchPt>=electronMaxPtLowPt) {searchPt=electronMaxPtLowPt;}; // if e_pt >= 500 go to last bin by setting searchPtLowPt to 499
+  if(searchPt<electronMinPtLowPt){searchPt=electronMinPtLowPt;}; // if e_pt < 20 go to first bin by setting searchPtLowPt to 20
+  }
   //if (type=="Trigger"){
-    //searchPt=TMath::Min( electronPt , electronMaxPtHigh ); // if pt > 200 use overflow bin by setting searchpt to 201
+    //searchPt=TMath::Min( electronPt , electronMaxPtHigh ); // if pt > 200 use overflow bin by setting searchPt to 201
   //}
   
 
@@ -305,8 +329,8 @@ float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int
   else if ( type == "GFS" ){
     // std::cout << "getting reco SF\n";
     TH2F* current_reco_histo; //create pt dependend TH2F histo pointer to avoid copy-pasting the same code
-    if(electronPt<20) current_reco_histo = h_ele_GFS_abseta_pt_ratio_lowEt;
-    else current_reco_histo = h_ele_GFS_abseta_pt_ratio;
+    if(electronPt<electronLowPtRangeCut){ current_reco_histo = h_ele_GFS_abseta_pt_ratio_lowEt;}
+    else  {current_reco_histo = h_ele_GFS_abseta_pt_ratio;}
     thisBin = current_reco_histo->FindBin( searchEta , searchPt );
     nomval=current_reco_histo->GetBinContent( thisBin );
     error=current_reco_histo->GetBinError( thisBin );

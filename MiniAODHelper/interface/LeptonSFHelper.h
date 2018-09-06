@@ -55,7 +55,7 @@ class LeptonSFHelper {
   TH2F *h_mu_TRIGGER_abseta_pt;
   TH2F *h_mu_ISO_abseta_pt_ratio;
   
-    TH2F *h_mu_ID_abseta_pt_ratioBtoF;
+  TH2F *h_mu_ID_abseta_pt_ratioBtoF;
   TGraphAsymmErrors *h_mu_HIP_eta_ratioBtoF;
   TH2F *h_mu_TRIGGER_abseta_ptBtoF;
   TH2F *h_mu_ISO_abseta_pt_ratioBtoF;
@@ -70,9 +70,18 @@ class LeptonSFHelper {
   TH2F *h_mu_mu_TRIGGER_abseta_abseta;
   TH2F *h_ele_mu_TRIGGER_abseta_abseta;
 
+  float electronLowPtRangeCut;
   float electronMaxPt;
+  float electronMinPt;
+  float electronMinPtLowPt;
+  float electronMaxPtLowPt;
+  
   float electronMaxPtHigh;
   float electronMaxPtHigher;
+  float electronMaxEta;
+  float electronMaxEtaLow;
+  
+  
   float muonMaxPt;
   float muonMaxPtHigh;
   float ljets_mu_BtoF_lumi;
