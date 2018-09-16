@@ -212,9 +212,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
 
   ScaleFactorMap["ElectronMuonTriggerSF"] = ElectronMuonTriggerSF;
 
-  ScaleFactorMap["ElectronSF"]= ElectronIDSF * ElectronIsoSF * ElectronTriggerSF;
-  ScaleFactorMap["ElectronSF_Up"]= ElectronIDSF_Up * ElectronIsoSF_Up * ElectronTriggerSF_Up;
-  ScaleFactorMap["ElectronSF_Down"]= ElectronIDSF_Down * ElectronIsoSF_Down * ElectronTriggerSF_Down;
+  ScaleFactorMap["ElectronSF"]= ElectronIDSF * ElectronIsoSF * ElectronTriggerSF * ElectronGFSSF;
+  ScaleFactorMap["ElectronSF_Up"]= ElectronIDSF_Up * ElectronIsoSF_Up * ElectronTriggerSF_Up * ElectronGFSSF_Up;
+  ScaleFactorMap["ElectronSF_Down"]= ElectronIDSF_Down * ElectronIsoSF_Down * ElectronTriggerSF_Down * ElectronGFSSF_Down;
 
   ScaleFactorMap["MuonSF"]= MuonIDSF * MuonIsoSF * MuonTriggerSF * MuonHIPSF;
   ScaleFactorMap["MuonSF_Up"]= MuonIDSF_Up * MuonIsoSF_Up * MuonTriggerSF_Up * MuonHIPSF_Up;
@@ -329,7 +329,8 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
   float searchEta=fabs( muonEta ); 
   float searchPt=TMath::Min( muonPt , muonMaxPt ); // if muonpt > 119 use last bin
   if (type=="Trigger"){
-    searchPt=TMath::Min( muonPt , muonMaxPtHigh );// if muonpt > 499 use last bin
+    searchPt=TMath::Max( muonPt , 26. );//if muonpt <26 use first bin
+    searchPt=TMath::Min( searchPt , muonMaxPtHigh );// if muonpt > 499 use last bin
   }
   float nomval = 0;
   float error = 0;
