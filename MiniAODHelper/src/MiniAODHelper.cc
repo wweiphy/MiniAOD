@@ -1485,8 +1485,8 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
     break;
   }
   // PileUP Jet ID
-  if(iJet.hasUserInt("pileupJetIdUpdated:fullId")) {
-    if(iJet.userInt("pileupJetIdUpdated:fullId")<PUJetID::toInt(wp)) return false;
+  if(iJet.hasUserInt("pileupJetId:fullId")) {
+    if(iJet.userInt("pileupJetId:fullId")<PUJetID::toInt(wp)) return false;
   }
 
   if( !PassesCSV(iJet, iCSVworkingPoint) ) return false;
