@@ -139,9 +139,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
         MuonIsoSF_Up = MuonIsoSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Iso");
         MuonIsoSF_Down = MuonIsoSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Iso");
 
-        //MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "Trigger");
-        //MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Trigger");
-        //MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Trigger");
+        MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 0, "Trigger");
+        MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), 1, "Trigger");
+        MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.userFloat("PtbeforeRC"), Muon.eta(), -1, "Trigger");
     }
     
     else {
@@ -159,9 +159,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
         MuonIsoSF_Up = MuonIsoSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1, "Iso");
         MuonIsoSF_Down = MuonIsoSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "Iso");
 
-        //MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "Trigger");
-        //MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1, "Trigger");
-        //MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "Trigger");
+        MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.pt(), Muon.eta(), 0, "Trigger");
+        MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1, "Trigger");
+        MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1, "Trigger");
         
     }
 
@@ -525,16 +525,16 @@ float LeptonSFHelper::GetElectronMuonSF(  float electronEta , float muonEta , in
 }
 
 void LeptonSFHelper::ChangeMuIsoHistos(bool is_DL) {
-    std::string ISOinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_ISO_EfficienciesAndSF_BCDEF.root";
+    std::string ISOinputFileBtoF =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "MuonIsoSF_Errors_RunBtoF_Nov17Nov2017.root";
 //     std::string ISOinputFileGtoH =  std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "mu_ISO_EfficienciesAndSF_GH.root";
     TFile *f_ISOSFBtoF = new TFile(std::string(ISOinputFileBtoF).c_str(),"READ");
 //     TFile *f_ISOSFGtoH = new TFile(std::string(ISOinputFileGtoH).c_str(),"READ");
     if(is_DL) {
-        h_mu_ISO_abseta_pt_ratioBtoF=(TH2F*)f_ISOSFBtoF->Get("LooseISO_TightID_pt_eta/pt_abseta_ratio");
+        h_mu_ISO_abseta_pt_ratioBtoF=(TH2F*)f_ISOSFBtoF->Get("NUM_LooseRelIso_DEN_TightIDandIPCut_pt_abseta");
 //         h_mu_ISO_abseta_pt_ratioGtoH=(TH2F*)f_ISOSFGtoH->Get("LooseISO_TightID_pt_eta/pt_abseta_ratio");
     }
     else {
-        h_mu_ISO_abseta_pt_ratioBtoF=(TH2F*)f_ISOSFBtoF->Get("TightISO_TightID_pt_eta/pt_abseta_ratio");
+        h_mu_ISO_abseta_pt_ratioBtoF=(TH2F*)f_ISOSFBtoF->Get("NUM_TightRelIso_DEN_TightIDandIPCut_pt_abseta");
 //         h_mu_ISO_abseta_pt_ratioGtoH=(TH2F*)f_ISOSFGtoH->Get("TightISO_TightID_pt_eta/pt_abseta_ratio");
     }
     delete f_ISOSFBtoF;
