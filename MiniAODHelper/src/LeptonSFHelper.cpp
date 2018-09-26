@@ -326,7 +326,8 @@ float LeptonSFHelper::GetMuonSF(  float muonPt , float muonEta , int syst , std:
 
   int thisBin=0;
 
-  float searchEta=fabs( muonEta ); 
+  float searchEta=fabs( muonEta );
+  searchEta=TMath::Min(searchEta,2.39); 
   float searchPt=TMath::Max( muonPt , 20. );
   searchPt=TMath::Min( searchPt , muonMaxPt ); // if muonpt > 119 use last bin
   if (type=="Trigger"){
