@@ -548,7 +548,7 @@ void LeptonSFHelper::SetElectronHistos( ){
   std::string IDinputFileBtoF = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "egammaEffi.txt_EGM2D_runBCDEF_passingTight94X.root";
   // std::string IDinputFileGtoH = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_ID_SF_tight_GH.root";
 
-  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "SingleEG_JetHT_Trigger_Scale_Factors_ttHbb_Data_MC.root";
+  std::string TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "SingleEG_JetHT_Trigger_Scale_Factors_ttHbb_Data_MC_v2.0.root";
   //std::string ISOinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/oct202017/" + "ele_Reco_EGM2D.root"; // DANGERZONE: no iso SF yet??
   std::string GFSinputFile = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "egammaEffi.txt_EGM2D_runBCDEF_passingRECO.root"; //reco SFs for pt > 20
   std::string GFSinputFile_lowEt = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/leptonSF/Fall17/" + "egammaEffi.txt_EGM2D_runBCDEF_passingRECO_lowEt.root"; //reco SFs for pt<20
