@@ -125,6 +125,7 @@ namespace electronID{
       electron80XCutBasedL,electron80XCutBasedM,electron80XCutBasedT,electron80XCutBasedT_IsoInverted,electronNonTrigMVAid90,electronNonTrigMVAid80,
       electronGeneralPurposeMVA2016WP80,electronGeneralPurposeMVA2016WP90, // MVA IDs for 80X with 80 and 90 percent eff.
       electron94XCutBasedLoose, electron94XCutBasedMedium, electron94XCutBasedTight, electron94XCutBasedVeto,
+      electron94XCutBasedLooseV2, electron94XCutBasedMediumV2, electron94XCutBasedTightV2, electron94XCutBasedVetoV2,
       skimming
    };
 }

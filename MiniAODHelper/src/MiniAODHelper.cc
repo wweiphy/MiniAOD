@@ -1222,6 +1222,33 @@ MiniAODHelper::isGoodElectron(const pat::Electron& iElectron, const float iMinPt
         
         break;
     }
+    
+  case electronID::electron94XCutBasedLooseV2:
+  case electronID::electron94XCutBasedMediumV2:
+  case electronID::electron94XCutBasedVetoV2:
+  case electronID::electron94XCutBasedTightV2:
+    {
+        passesKinematics = ((iElectron.pt() >= minElectronPt) && (fabs(iElectron.eta()) <= maxElectronEta) && !inCrack);
+        passesIso = true;
+        passesID = true;
+        double IP_d0 = 999;
+        double IP_dZ = 999;
+    
+        bool isEB = ( absSCeta < 1.479 ); //check if electron is in barrel region
+        if( iElectron.gsfTrack().isAvailable() ){
+            IP_d0 = fabs(iElectron.gsfTrack()->dxy(vertex.position()));
+            IP_dZ = fabs(iElectron.gsfTrack()->dz(vertex.position()));
+        }
+        
+        //if impact parameter cuts are not met, set passesID = false
+        if( isEB )
+        {
+            if(!(IP_d0 < 0.05 && IP_dZ < 0.1)) passesID = false;
+        }
+        else if(!(IP_d0 < 0.1 && IP_dZ < 0.2)) passesID = false;
+        
+        break;
+    }
       
       
   case electronID::electronPreselection:
