@@ -29,7 +29,7 @@ MiniAODHelper::MiniAODHelper()
   samplename = "blank";
 
   // JEC uncertainties
-  jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V6_MC_UncertaintySources_AK4PFchs.txt";
+  jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V32_MC_UncertaintySources_AK4PFchs.txt";
   if( jecUncertaintyTxtFileName_ != "" ) {
     if( !utils::fileExists(jecUncertaintyTxtFileName_) ) { // check if JEC uncertainty file exists
       throw cms::Exception("InvalidJECUncertaintyFile") << "No JEC uncertainty file '" << jecUncertaintyTxtFileName_ << "' found";
@@ -38,7 +38,7 @@ MiniAODHelper::MiniAODHelper()
 
   { //  JER preparation
 
-    const std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
+    const std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_V3_MC_PtResolution_AK4PFchs.txt" ;
     if( !utils::fileExists(JER_file) ) {
       throw cms::Exception("InvalidJERCorrectionFile") << "No JER correction file '" << JER_file << "' found";
     }
@@ -104,10 +104,10 @@ MiniAODHelper::MiniAODHelper(std::string jetTypeLabelForJECUncertainty)
 
   // JEC uncertainties
   if(jetTypeLabelForJECUncertainty_=="AK4PFchs"){
-    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V6_MC_UncertaintySources_AK4PFchs.txt";
+    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V32_MC_UncertaintySources_AK4PFchs.txt";
   }
   else if(jetTypeLabelForJECUncertainty_=="AK8PFchs"){
-    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V6_MC_UncertaintySources_AK8PFchs.txt";
+    jecUncertaintyTxtFileName_ = std::string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_17Nov2017_V32_MC_UncertaintySources_AK8PFchs.txt";
   }
   else{
     throw cms::Exception("InvalidjetTypeLabelForJECUncertainty") << "Wrong jetTypeLabel '" << jecUncertaintyTxtFileName_ << "' found";  
@@ -120,7 +120,7 @@ MiniAODHelper::MiniAODHelper(std::string jetTypeLabelForJECUncertainty)
 
   { //  JER preparation
 
-    const std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt" ;
+    const std::string JER_file =  string(getenv("CMSSW_BASE")) + "/src/MiniAOD/MiniAODHelper/data/jec/Fall17_V3_MC_PtResolution_AK4PFchs.txt" ;
     if( !utils::fileExists(JER_file) ) {
       throw cms::Exception("InvalidJERCorrectionFile") << "No JER correction file '" << JER_file << "' found";
     }
