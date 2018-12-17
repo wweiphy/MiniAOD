@@ -215,7 +215,7 @@ class MiniAODHelper{
   static float GetJetCSV(const pat::Jet&, const std::string = "DeepCSV");
   static float GetJetCSV_DNN(const pat::Jet&, const std::string = "DeepCSV");
   static jetID::jetID getjetID(const std::string& jetID);
-  bool PassesCSV(const pat::Jet&, const char);
+  static bool PassesCSV(const pat::Jet&, const char);
   bool PassElectronPhys14Id(const pat::Electron&, const electronID::electronID) const;
   bool PassElectronSpring15Id(const pat::Electron&, const electronID::electronID) const;
   vector<pat::Electron> GetElectronsWithMVAid(edm::Handle<edm::View<pat::Electron> > electrons, edm::Handle<edm::ValueMap<float> > mvaValues, edm::Handle<edm::ValueMap<int> > mvaCategories) const;
@@ -285,7 +285,9 @@ class MiniAODHelper{
   analysisType::analysisType analysis;
   string samplename;
 
-  float CSVLwp, CSVMwp, CSVTwp;
+  static constexpr float CSVLwp = 0.1522;
+  static constexpr float CSVMwp = 0.4941;
+  static constexpr float CSVTwp = 0.8001;
 
   double useRho;
   const std::vector<pat::PackedCandidate> * allcands_;
