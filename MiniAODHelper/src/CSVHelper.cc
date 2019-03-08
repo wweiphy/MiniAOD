@@ -285,7 +285,7 @@ float CSVHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername){
   else if(taggername=="DeepJet"){
     bTagVal=jet.bDiscriminator("pfDeepFlavourJetTags:probb") + jet.bDiscriminator("pfDeepFlavourJetTags:probbb") + jet.bDiscriminator("pfDeepFlavourJetTags:problepb");    
   }
-  else if (taggername == "CSVv2"){
+  else if (taggername == "CSVv2" or TString(taggername).BeginsWith("pfDeep")){
     bTagVal = jet.bDiscriminator(taggername);
   }
   else{
@@ -311,7 +311,7 @@ float CSVHelper::GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername
   else if(taggername=="DeepJet"){
     bTagVal=jet.bDiscriminator("pfDeepFlavourJetTags:probb") + jet.bDiscriminator("pfDeepFlavourJetTags:probbb") + jet.bDiscriminator("pfDeepFlavourJetTags:problepb");    
   }
-  else if (taggername == "CSVv2"){
+  else if (taggername == "CSVv2" or TString(taggername).BeginsWith("pfDeep")){
     bTagVal = jet.bDiscriminator(taggername);
   }
   else{
