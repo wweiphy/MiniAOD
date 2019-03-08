@@ -7,6 +7,8 @@
 #include "TFile.h"
 #include "TH1.h"
 #include "TString.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+
 #include "MiniAOD/MiniAODHelper/interface/Systematics.h"
 
 class CSVHelper
@@ -24,6 +26,14 @@ public:
   CSVHelper(const std::string& hf, const std::string& lf, const int& nHFptBins=5,const int& nLFptBins=4,const int& nLFetaBins=3,const std::vector<Systematics::Type>& jecsysts = std::vector<Systematics::Type>(1,Systematics::NA));
   // destructor
   ~CSVHelper();
+    
+  enum class CSVwp{
+    Tight,
+    Medium,
+    Loose,
+    None
+  };
+
   // function to set up the needed stuff
   void init(const std::string& hf, const std::string& lf, const int& nHFptBins,const int& nLFptBins,const int& nLFetaBins,const std::vector<Systematics::Type>& jecsysts);
   // function to get the csv weight
@@ -35,6 +45,11 @@ public:
 		      double &csvWgtHF,
 		      double &csvWgtLF,
 		      double &csvWgtCF) const;
+  static float GetJetCSV(const pat::Jet& jet, const std::string taggername);
+  static float GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername);
+  static bool PassesCSV(std::string dataEra, const pat::Jet& iJet, std::string taggername, const CSVwp iCSVworkingPoint);
+  static float GetWP(std::string dataEra, const CSVwp iCSVworkingPoint, std::string taggername);
+
 
   // If there is no SF for a jet because it is out of acceptance
   // of SF, an SF of 1 is used for this jet. Intended when running
@@ -78,6 +93,8 @@ private:
   void fillCSVHistos(TFile *fileHF, TFile *fileLF, const std::vector<Systematics::Type>& systs);
   // function which reads the desired histogram from the provided root file
   TH1* readHistogram(TFile* file, const TString& name) const;
+
+
 };
 
 #endif
