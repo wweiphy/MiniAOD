@@ -289,7 +289,7 @@ float CSVHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername){
     bTagVal = jet.bDiscriminator(taggername);
   }
   else{
-      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername" << taggername << "not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
+      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername '" << taggername << "' not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
       bTagVal = defaultFailure;
   }
 
@@ -315,7 +315,7 @@ float CSVHelper::GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername
     bTagVal = jet.bDiscriminator(taggername);
   }
   else{
-      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername" << taggername << "not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
+      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername '" << taggername << "' not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
   }
   return bTagVal;
 }
@@ -358,7 +358,7 @@ float CSVHelper::GetWP(std::string dataEra, const CSVwp iCSVworkingPoint, std::s
       }
     }
     else {
-      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername" << taggername << "not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
+      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername '" << taggername << "' not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
       return 0;
     }
     return 0;
@@ -389,12 +389,12 @@ float CSVHelper::GetWP(std::string dataEra, const CSVwp iCSVworkingPoint, std::s
       }
     }
     else {
-      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername" << taggername << "not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
+      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername '" << taggername << "' not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
       return 0;
     }
   }
   else {
-    throw cms::Exception("CSVHelper: Invalid dataEra ") << "dataEra" << dataEra << "not recognized, only 2016/2017 data possible" << std::endl;
+    throw cms::Exception("CSVHelper: Invalid dataEra ") << "dataEra '" << dataEra << "' not recognized, only 2016/2017 data possible" << std::endl;
     return 0;
   }
   return 0;
