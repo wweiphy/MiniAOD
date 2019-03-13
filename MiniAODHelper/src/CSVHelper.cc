@@ -243,7 +243,7 @@ CSVHelper::getCSVWeight(const std::vector<double>& jetPts,
       }
     } // c flavour jet
     else if (abs(flavor) == 4) {
-      / /std::cout << "c flavor jet " << std::endl;
+      // std::cout << "c flavor jet " << std::endl;
       // RESET iPt to maximum pt bin (only 5 bins for new SFs)
       // -> updated above
 
