@@ -45,8 +45,8 @@ public:
 		      double &csvWgtHF,
 		      double &csvWgtLF,
 		      double &csvWgtCF) const;
-  static float GetJetCSV(const pat::Jet& jet, const std::string taggername);
-  static float GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername);
+  static float GetJetCSV(const pat::Jet& jet, const std::string taggername = "DeepJet");
+  static float GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername = "DeepJet");
   static bool PassesCSV(std::string dataEra, const pat::Jet& iJet, std::string taggername, const CSVwp iCSVworkingPoint);
   static float GetWP(std::string dataEra, const CSVwp iCSVworkingPoint, std::string taggername);
 
