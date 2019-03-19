@@ -326,7 +326,7 @@ float CSVHelper::GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername
   return bTagVal;
 }
 
-bool CSVHelper::PassesCSV(std::string dataEra, const pat::Jet& iJet, std::string taggername, const CSVwp iCSVworkingPoint){
+bool CSVHelper::PassesCSV(const pat::Jet& iJet, std::string taggername, const CSVwp iCSVworkingPoint, std::string dataEra){
   float csvValue = GetJetCSV(iJet, taggername);
   // CSV b-tagging requirement
   if(csvValue > GetWP(dataEra, iCSVworkingPoint, taggername)){
