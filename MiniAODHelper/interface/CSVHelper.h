@@ -45,6 +45,11 @@ public:
 		      double &csvWgtHF,
 		      double &csvWgtLF,
 		      double &csvWgtCF) const;
+  std::map<std::string,double> getCSVWeightsDiff(const std::vector<double>& jetPts,
+		      const std::vector<double>& jetEtas,
+		      const std::vector<double>& jetCSVs,
+		      const std::vector<int>& jetFlavors,
+		      const Systematics::Type syst) const;
   static float GetJetCSV(const pat::Jet& jet, const std::string taggername);
   static float GetJetCSV_DNN(const pat::Jet& jet, const std::string taggername);
   static bool PassesCSV(std::string dataEra, const pat::Jet& iJet, std::string taggername, const CSVwp iCSVworkingPoint);

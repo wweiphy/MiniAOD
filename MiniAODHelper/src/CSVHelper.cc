@@ -281,6 +281,153 @@ CSVHelper::getCSVWeight(const std::vector<double>& jetPts,
 }
 
 
+std::map<std::string,double>
+CSVHelper::getCSVWeightsDiff(const std::vector<double>& jetPts,
+			const std::vector<double>& jetEtas,
+			const std::vector<double>& jetCSVs,
+			const std::vector<int>& jetFlavors,
+			const Systematics::Type syst) const
+{
+  if( !isInit_ ) {
+    throw cms::Exception("BadCSVWeightAccess") << "CSVHelper not initialized";
+  }
+  // search for the position of the desired systematic in the systs vector
+  const int iSys = std::find(systs.begin(),systs.end(),syst)-systs.begin();
+  
+  //std::cout << "Systematic index " << iSys << std::endl;
+  // initialize the weight for the different jet flavours with 1
+  double csvWgthf = 1.;
+  double csvWgtC = 1.;
+  double csvWgtlf = 1.;
+  std::vector<double> w(nHFptBins_,1);
+
+
+  // loop over all jets in the event and calculate the final weight by multiplying the single jet scale factors
+  for (size_t iJet = 0; iJet < jetPts.size(); iJet++) {
+    const double csv = jetCSVs.at(iJet);
+    const double jetPt = jetPts.at(iJet);
+    const double jetAbsEta = fabs(jetEtas.at(iJet));
+    const int flavor = jetFlavors.at(iJet);
+
+    int iPt = -1;
+    int iEta = -1;
+    // pt binning for heavy flavour jets
+    if(abs(flavor)>3) {
+        if (jetPt >= 19.99 && jetPt <= 30)
+            iPt = 0;
+        else if (jetPt > 30 && jetPt <= 50)
+            iPt = 1;
+        else if (jetPt > 50 && jetPt <= 70)
+            iPt = 2;
+        else if (jetPt > 70 && jetPt <= 100)
+            iPt = 3;
+        else if (jetPt > 100)
+            iPt = 4;
+        else
+            iPt = 5;
+    }
+    // pt binning for light flavour jets
+    else {
+        if (jetPt >= 19.99 && jetPt <= 30)
+            iPt = 0;
+        else if (jetPt > 30 && jetPt <= 40)
+            iPt = 1;
+        else if (jetPt > 40 && jetPt <= 60)
+            iPt = 2;
+        else if (jetPt > 60)
+            iPt = 3;
+        else
+            iPt = 4;
+    }
+    // light flavour jets also have eta bins
+    if (jetAbsEta >= 0 && jetAbsEta < 0.8)
+      iEta = 0;
+    else if (jetAbsEta >= 0.8 && jetAbsEta < 1.6)
+      iEta = 1;
+    else if (jetAbsEta >= 1.6 && jetAbsEta < 2.5) // difference between 2016/2017, nut not neccesary since |eta|<2.4 anyway
+      iEta = 2;
+    
+    if (iPt < 0 || iEta < 0) {
+      if( allowJetsOutOfBinning_ ) continue;
+      throw cms::Exception("BadCSVWeightAccess") << "couldn't find Pt, Eta bins for this b-flavor jet, jetPt = " << jetPt << ", jetAbsEta = " << jetAbsEta;
+    }
+    
+    //std::cout << "program is in front of calculating the csv weights " << std::endl;
+    // b flavour jet
+    if (abs(flavor) == 5) {
+      // std::cout << "b flavor jet " << std::endl;
+      // RESET iPt to maximum pt bin (only 5 bins for new SFs)
+      // -> updated above
+      if(iPt>=nHFptBins_){
+	      iPt=nHFptBins_-1;// [20-30], [30-50], [50-70], [70,100] and [100-10000] only 5 Pt bins for hf
+      }
+      if(h_csv_wgt_hf.at(iSys).at(iPt)) {
+        const int useCSVBin = (csv >= 0.) ? h_csv_wgt_hf.at(iSys).at(iPt)->FindBin(csv) : 1;
+        const double iCSVWgtHF = h_csv_wgt_hf.at(iSys).at(iPt)->GetBinContent(useCSVBin);
+        w.at(iPt) *= iCSVWgtHF;
+        if (iCSVWgtHF != 0) csvWgthf *= iCSVWgtHF;
+      }
+    } // c flavour jet
+    else if (abs(flavor) == 4) {
+      // std::cout << "c flavor jet " << std::endl;
+      // RESET iPt to maximum pt bin (only 5 bins for new SFs)
+      // -> updated above
+
+      if(iPt>=nHFptBins_){
+	      iPt=nHFptBins_-1;// [20-30], [30-50], [50-70], [70,100] and [100-10000] only 5 Pt bins for hf
+      }
+      if(c_csv_wgt_hf.at(iSys).at(iPt)) {
+        const int useCSVBin = (csv >= 0.) ? c_csv_wgt_hf.at(iSys).at(iPt)->FindBin(csv) : 1;
+        const double iCSVWgtC = c_csv_wgt_hf.at(iSys).at(iPt)->GetBinContent(useCSVBin);
+        w.at(iPt) *= iCSVWgtC;
+        if (iCSVWgtC != 0) csvWgtC *= iCSVWgtC;
+      }
+    } // light flavour jet
+    else {
+      // std::cout << "light flavor jet " << std::endl;
+      // RESET iPt to maximum pt bin (only 5 bins for new SFs)
+      // -> updated above
+      if (iPt >= nLFptBins_) {
+        iPt = nLFptBins_-1; // [20-30], [30-40], [40-60] and [60-10000] only 4 Pt bins for lf
+      }
+      if(h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)) {
+        const int useCSVBin = (csv >= 0.) ? h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)->FindBin(csv) : 1;
+        const double iCSVWgtLF = h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)->GetBinContent(useCSVBin);
+        w.at(iPt) *= iCSVWgtLF;
+        if (iCSVWgtLF != 0) csvWgtlf *= iCSVWgtLF;
+      }
+    }
+  }
+
+  const double csvWgtTotal = csvWgthf * csvWgtC * csvWgtlf;
+
+  std::map<std::string,double> weights;
+  bool isUp = false;
+  TString basename = Systematics::toString(syst);
+  if(basename.EndsWith("up")){
+    isUp = true;    
+  }
+  basename.ReplaceAll("up","");
+  basename.ReplaceAll("down","");
+
+  for(int i=0; i < nHFptBins_; i++){
+    TString name = basename+"_Pt"+std::to_string(i);
+    if(isUp){
+      name +="up";
+    }
+    else {
+      name +="down";
+    } 
+    weights[name.Data()] = w.at(i);
+    // std::cout << w.at(i) << std::endl;
+  }
+  // std::cout << "#########" << std::endl;
+  // std::cout << csvWgtTotal << std::endl;
+
+  return weights;
+}
+
+
 float CSVHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername){
 
   float defaultFailure = -.1;

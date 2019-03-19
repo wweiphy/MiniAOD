@@ -1873,14 +1873,14 @@ float MiniAODHelper::GetJetCSV_DNN(const pat::Jet& jet, const std::string tagger
 bool MiniAODHelper::PassesCSV(const pat::Jet& iJet, const char iCSVworkingPoint){
   //CheckSetUp();
 
-  float csvValue = GetJetCSV(iJet,"DeepCSV");
+  float csvValue = GetJetCSV(iJet,"DeepFlavour");
 
   // CSV b-tagging requirement
   switch(iCSVworkingPoint){
   case 'L':	if(csvValue > CSVLwp){ return true; }	break;
   case 'M':	if(csvValue > CSVMwp){ return true; }	break;
   case 'T':	if(csvValue > CSVTwp){ return true; }	break;
-  case '-':	return true;                            break;
+  case '-':	return true;                          break;
   }
   return false;
 }
