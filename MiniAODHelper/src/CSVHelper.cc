@@ -370,7 +370,7 @@ float CSVHelper::GetWP(std::string dataEra, const CSVwp iCSVworkingPoint, std::s
     return 0;
   }
   else if (TString(dataEra).Contains("2017")){
-    if (taggername == "DeepCSV"){
+    if (taggername == "DeepCSV"){ 
       switch(iCSVworkingPoint){
       case CSVwp::Loose:	  { return 0.1522; }	break;
       case CSVwp::Medium: 	{ return 0.4941; }	break;
@@ -386,7 +386,37 @@ float CSVHelper::GetWP(std::string dataEra, const CSVwp iCSVworkingPoint, std::s
       case CSVwp::None:	    return 0;  
       }
     }
-    else if (taggername == "CSVv2"){
+    else if (taggername == "CSVv2"){ // CAREFUL: no WP avaiable !!!
+      switch(iCSVworkingPoint){
+      case CSVwp::Loose:	  { return 0.5803; }	break;
+      case CSVwp::Medium: 	{ return 0.8838; }	break;
+      case CSVwp::Tight:	  { return 0.9693; }	break;
+      case CSVwp::None:	    return 0;  
+      }
+    }
+    else {
+      throw cms::Exception("CSVHelper: Invalid taggername ") << "Taggername '" << taggername << "' not recognized, only DeepCSV/DeepJet/CSVv2 possible" << std::endl;
+      return 0;
+    }
+  }
+  else if (TString(dataEra).Contains("2018")){
+    if (taggername == "DeepCSV"){ 
+      switch(iCSVworkingPoint){
+      case CSVwp::Loose:	  { return 0.1241	; }	break;
+      case CSVwp::Medium: 	{ return 0.4184	; }	break;
+      case CSVwp::Tight:	  { return 0.7527; }	break;
+      case CSVwp::None:	    return 0;  
+      }
+    }
+    else if (taggername == "DeepJet"){
+      switch(iCSVworkingPoint){
+      case CSVwp::Loose:	  { return 0.0494; }	break;
+      case CSVwp::Medium: 	{ return 0.2770; }	break;
+      case CSVwp::Tight:	  { return 0.7264; }	break;
+      case CSVwp::None:	    return 0;  
+      }
+    }
+    else if (taggername == "CSVv2"){ // CAREFUL: no WP avaiable !!!
       switch(iCSVworkingPoint){
       case CSVwp::Loose:	  { return 0.5803; }	break;
       case CSVwp::Medium: 	{ return 0.8838; }	break;
@@ -400,7 +430,7 @@ float CSVHelper::GetWP(std::string dataEra, const CSVwp iCSVworkingPoint, std::s
     }
   }
   else {
-    throw cms::Exception("CSVHelper: Invalid dataEra ") << "dataEra '" << dataEra << "' not recognized, only 2016/2017 data possible" << std::endl;
+    throw cms::Exception("CSVHelper: Invalid dataEra ") << "dataEra '" << dataEra << "' not recognized, only 2016/2017/2018 data possible" << std::endl;
     return 0;
   }
   return 0;
