@@ -68,8 +68,11 @@ class LeptonSFHelper {
   float muonMinPtHigh;
   float muonMaxEta;
 
+  TFile *f_muon_TRIGGERSF = nullptr;
   std::string muon_TRIGGERinputFile;
   std::string muon_TRIGGERhistname;
+
+  TFile *f_electron_TRIGGERSF = nullptr;
 
   std::string electron_TRIGGERinputFile;
   std::string electron_TRIGGERhistname;

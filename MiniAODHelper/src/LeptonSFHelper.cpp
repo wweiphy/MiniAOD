@@ -33,7 +33,8 @@ LeptonSFHelper::LeptonSFHelper( ){
 }
 
 LeptonSFHelper::~LeptonSFHelper( ){
-
+  delete f_muon_TRIGGERSF;
+  delete f_electron_TRIGGERSF;
 }
 
 std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< pat::Electron >& Electrons,
@@ -199,119 +200,6 @@ float LeptonSFHelper::GetLeptonTriggerSF(  const double& lepton_pt , const doubl
 
 }
 
-float LeptonSFHelper::GetElectronSF(  float electronPt , float electronEta , int syst ) {
-  if ( electronPt == 0.0 ){ return 1.0; }
-
-  int thisBin=0;
-
-  // restrict electron eta 
-  float searchEta=electronEta;
-  if(searchEta<0 and searchEta<=-electronMaxEta){searchEta=-electronMaxEta;}
-  if(searchEta>0 and searchEta>=electronMaxEta){searchEta=electronMaxEta;}
-  
-  if(searchEta<0 and searchEta<=-electronMaxEtaLow){searchEta=-electronMaxEtaLow;}
-  if(searchEta>0 and searchEta>=electronMaxEtaLow){searchEta=electronMaxEtaLow;}
-    
-  // restrict electron pT
-  float searchPt=electronPt;
-  if(searchPt>electronLowPtRangeCut){
-    if(searchPt>=electronMaxPtHigher) {searchPt=electronMaxPtHigher;}; // if e_pt >= 500 go to last bin by setting searchPt to 499
-    if(searchPt<electronMinPt){searchPt=electronMinPt;}; // if e_pt < 20 go to first bin by setting searchPt to 20
-  }
-  else{
-  // these are now for the low pt Reco SF 
-  if(searchPt>=electronMaxPtLowPt) {searchPt=electronMaxPtLowPt;}; // if e_pt >= 500 go to last bin by setting searchPtLowPt to 499
-  if(searchPt<electronMinPtLowPt){searchPt=electronMinPtLowPt;}; // if e_pt < 20 go to first bin by setting searchPtLowPt to 20
-  }
-
-  float nomval = 0;
-  float error = 0;
-  float upval = 0;
-  float downval= 0;
-  float nomvalBtoF = 0;
-  float errorBtoF = 0;
-  float upvalBtoF = 0;
-  float downvalBtoF= 0;
-
-  if ( h_ele_TRIGGER_abseta_pt_ratio ){
-    // std::cout << "getting Trigger SF\n";
-    thisBin = h_ele_TRIGGER_abseta_pt_ratio->FindBin( searchPt, searchEta );
-    nomval=h_ele_TRIGGER_abseta_pt_ratio->GetBinContent( thisBin );
-    error=h_ele_TRIGGER_abseta_pt_ratio->GetBinError( thisBin );
-    upval=nomval+error;
-    downval=nomval-error;
-
-  }
-  else {
-
-    std::cerr << "ERROR: Could not load histogram for electron trigger SFs" << std::endl;
-    throw std::exception();
-
-  }
-
-  if ( syst==-1 ){ return downval; }
-  else if ( syst==1 ){ return upval; }
-  else { return nomval; }
-
-}
-
-float LeptonSFHelper::GetMuonSF(  const double& muonPt , const double& muonEta , const int& syst){
-  if ( muonPt == 0.0 ){ return 1.0; }
-
-  int thisBin=0;
-
-  auto eta=fabs( muonEta );
-  auto pt= muonPt;
-  auto h_SFs = h_mu_TRIGGER_abseta_pt; //TODO: change this!
-
-  float nomval = 0;
-  //float error = 0;
-  float upval = 0;
-  float downval= 0;
-  float nomvalBtoF = 0;
-  float errorBtoF = 0;
-  float upvalBtoF = 0;
-  float downvalBtoF= 0;
-  if ( h_SFs ){
-    // determine the ranges of the given TH2Fs
-    auto xmin = h_SFs->GetXaxis()->GetXmin();
-    auto xmax = h_SFs->GetXaxis()->GetXmax();
-    auto ymin = h_SFs->GetYaxis()->GetXmin();
-    auto ymax = h_SFs->GetYaxis()->GetXmax();
-    
-    // make sure to stay within the range ot the histograms
-    eta = std::max(xmin+0.1,eta);
-    eta = std::min(xmax-0.1,eta);
-    pt = std::max(ymin+0.1,pt);
-    pt = std::min(ymax-0.1,pt);
-
-
-    thisBin = h_SFs->FindBin(  pt, eta  );
-    nomvalBtoF=h_SFs->GetBinContent( thisBin );
-    errorBtoF=h_SFs->GetBinError( thisBin );
-    upvalBtoF=( nomvalBtoF+errorBtoF );
-    downvalBtoF=( nomvalBtoF-errorBtoF );
-
-    nomval=nomvalBtoF;
-    upval=upvalBtoF;
-    downval=downvalBtoF;
-    
-  }
-  
-  else {
-
-    std::cerr << "ERROR: Could not load histogram for muon trigger SFs" << std::endl;
-    throw std::exception();
-
-  }
-
-
-  if ( syst==-1 ){ return downval; }
-  else if ( syst==1 ){ return upval; }
-  else { return nomval; }
-
-
-}
 float LeptonSFHelper::GetElectronElectronSF(  float electronEta1 , float electronEta2 , int syst , std::string type  ) {
 
   int thisBin=0;
@@ -364,17 +252,17 @@ float LeptonSFHelper::GetElectronMuonSF(  float electronEta , float muonEta , in
 void LeptonSFHelper::SetElectronHistos( ){
 
   
-  TFile *f_TRIGGERSF = new TFile(electron_TRIGGERinputFile.c_str(),"READ");
+  f_electron_TRIGGERSF = new TFile(electron_TRIGGERinputFile.c_str(),"READ");
   
-  h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_TRIGGERSF->Get(electron_TRIGGERhistname.c_str());
+  h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_electron_TRIGGERSF->Get(electron_TRIGGERhistname.c_str());
 
 }
 
 void LeptonSFHelper::SetMuonHistos( ){
   
-  TFile *f_TRIGGERSF = new TFile(muon_TRIGGERinputFile.c_str(),"READ");
+  f_muon_TRIGGERSF = new TFile(muon_TRIGGERinputFile.c_str(),"READ");
   
-  h_mu_TRIGGER_abseta_pt= (TH2F*)f_TRIGGERSF->Get(muon_TRIGGERhistname.c_str());  
+  h_mu_TRIGGER_abseta_pt= (TH2F*)f_muon_TRIGGERSF->Get(muon_TRIGGERhistname.c_str());  
 }
 
 void LeptonSFHelper::SetElectronElectronHistos( ){
