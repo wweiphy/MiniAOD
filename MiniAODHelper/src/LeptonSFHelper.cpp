@@ -10,31 +10,11 @@ LeptonSFHelper::LeptonSFHelper( ){
   SetElectronElectronHistos( );
   SetMuonMuonHistos( );
   SetElectronMuonHistos( );
-
-  electronLowPtRangeCut=20.0;
-  electronMaxPt = 150.0;
-  electronMinPt = 20.0;
-  electronMinPtLowPt = 10;
-  electronMaxPtLowPt = 19.9; 
-  electronMaxPtHigh= 201.0;
-  electronMaxPtHigher= 499.0;  //TH2 histos from Fall17 are binned up to 500 GeV
-  electronMaxEta=2.49;
-  electronMaxEtaLow=2.19;
-  
-  
-  
-  muonMaxPt = 119.0;
-  muonMaxPtHigh = 1199.;       //TH2 Trigger SF histos from Fall17 are binned up to 1200 GEV 
-  muonMinPt = 20.0;
-  muonMinPtHigh = 29.0;
-  
-  muonMaxEta = 2.39;
-
 }
 
 LeptonSFHelper::~LeptonSFHelper( ){
-  delete f_muon_TRIGGERSF;
-  delete f_electron_TRIGGERSF;
+  if(f_muon_TRIGGERSF) delete f_muon_TRIGGERSF;
+  if(f_electron_TRIGGERSF) delete f_electron_TRIGGERSF;
 }
 
 std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< pat::Electron >& Electrons,
@@ -68,11 +48,6 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
     }
     
     else {
-        
-        // ElectronTriggerSF = ElectronTriggerSF * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 0, "Trigger");
-        // ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), 1, "Trigger");
-        // ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetElectronSF(Electron.pt(), Electron.superCluster()->eta(), -1, "Trigger");
-        
         std::cerr << "ERROR: could not get ElectronTriggerSF because muon lacks property 'ptBeforeRun2Calibration'!" << std::endl;
         throw std::exception();
     }
@@ -91,9 +66,6 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
     }
     
     else {
-        // MuonTriggerSF = MuonTriggerSF * GetMuonSF(Muon.pt(), Muon.eta(), 0);
-        // MuonTriggerSF_Up = MuonTriggerSF_Up  * GetMuonSF(Muon.pt(), Muon.eta(), 1);
-        // MuonTriggerSF_Down = MuonTriggerSF_Down * GetMuonSF(Muon.pt(), Muon.eta(), -1);
       std::cerr << "ERROR: could not get MuonTriggerSF because muon lacks property 'PtbeforeRC'!" << std::endl;
       throw std::exception();
         
@@ -129,29 +101,29 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
 
   //std::cout << ElectronElectronTriggerSF << "  " << MuonMuonTriggerSF << "  " << ElectronMuonTriggerSF << std::endl;
 
-  ScaleFactorMap["ElectronSFTrigger"] = ElectronTriggerSF;
-  ScaleFactorMap["ElectronSFTrigger_Up"] = ElectronTriggerSF_Up;
-  ScaleFactorMap["ElectronSFTrigger_Down"] = ElectronTriggerSF_Down;
+  ScaleFactorMap["ElectronTriggerSF"] = ElectronTriggerSF;
+  ScaleFactorMap["ElectronTriggerSF_Up"] = ElectronTriggerSF_Up;
+  ScaleFactorMap["ElectronTriggerSF_Down"] = ElectronTriggerSF_Down;
 
-  // ScaleFactorMap["MuonSFTrigger"] = MuonTriggerSF;
-  // ScaleFactorMap["MuonSFTrigger_Up"] = MuonTriggerSF_Up;
-  // ScaleFactorMap["MuonSFTrigger_Down"] = MuonTriggerSF_Down;
+  ScaleFactorMap["MuonTriggerSF"] = MuonTriggerSF;
+  ScaleFactorMap["MuonTriggerSF_Up"] = MuonTriggerSF_Up;
+  ScaleFactorMap["MuonTriggerSF_Down"] = MuonTriggerSF_Down;
   
   ScaleFactorMap["MuonMuonTriggerSF"] = MuonMuonTriggerSF;
 
   ScaleFactorMap["ElectronMuonTriggerSF"] = ElectronMuonTriggerSF;
 
-  ScaleFactorMap["ElectronSF"]= ElectronTriggerSF;
-  ScaleFactorMap["ElectronSF_Up"]= ElectronTriggerSF_Up;
-  ScaleFactorMap["ElectronSF_Down"]= ElectronTriggerSF_Down;
+  // ScaleFactorMap["ElectronSF"]= ElectronTriggerSF;
+  // ScaleFactorMap["ElectronSF_Up"]= ElectronTriggerSF_Up;
+  // ScaleFactorMap["ElectronSF_Down"]= ElectronTriggerSF_Down;
 
-  ScaleFactorMap["MuonSF"]=  MuonTriggerSF;
-  ScaleFactorMap["MuonSF_Up"]= MuonTriggerSF_Up;
-  ScaleFactorMap["MuonSF_Down"]= MuonTriggerSF_Down;
+  // ScaleFactorMap["MuonSF"]=  MuonTriggerSF;
+  // ScaleFactorMap["MuonSF_Up"]= MuonTriggerSF_Up;
+  // ScaleFactorMap["MuonSF_Down"]= MuonTriggerSF_Down;
 
-  ScaleFactorMap["LeptonSF"]= ScaleFactorMap["ElectronSF"] * ScaleFactorMap["MuonSF"];
-  ScaleFactorMap["LeptonSF_Up"]= ScaleFactorMap["ElectronSF_Up"] * ScaleFactorMap["MuonSF_Up"];
-  ScaleFactorMap["LeptonSF_Down"]= ScaleFactorMap["ElectronSF_Down"] * ScaleFactorMap["MuonSF_Down"];
+  ScaleFactorMap["LeptonTriggerSF"]= ScaleFactorMap["ElectronTriggerSF"] * ScaleFactorMap["MuonTriggerSF"];
+  ScaleFactorMap["LeptonTriggerSF_Up"]= ScaleFactorMap["ElectronTriggerSF_Up"] * ScaleFactorMap["MuonTriggerSF_Up"];
+  ScaleFactorMap["LeptonTriggerSF_Down"]= ScaleFactorMap["ElectronTriggerSF_Down"] * ScaleFactorMap["MuonTriggerSF_Down"];
 
   return ScaleFactorMap;
 }
