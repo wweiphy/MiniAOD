@@ -1,15 +1,24 @@
 #include "MiniAOD/MiniAODHelper/interface/LeptonSFHelper.h"
 
 //PUBLIC
-LeptonSFHelper::LeptonSFHelper( ){
+LeptonSFHelper::LeptonSFHelper( const edm::ParameterSet& iConfig){
 
   //std::cout << "Initializing Lepton scale factors" << std::endl;
+  if( iConfig.existsAs<edm::ParameterSet>("leptonTriggerSFInfos",true) ) {
+    const edm::ParameterSet leptonTriggerSFInfos = iConfig.getParameter<edm::ParameterSet>("leptonTriggerSFInfos");
+    electron_TRIGGERinputFile = iConfig.getParameter<std::string>("elecFileName");
+    electron_TRIGGERhistname = iConfig.getParameter<std::string>("elecHistName");
+    muon_TRIGGERinputFile = iConfig.getParameter<std::string>("muonFileName");
+    muon_TRIGGERhistname = iConfig.getParameter<std::string>("muonHistName");
 
-  SetElectronHistos( );
-  SetMuonHistos( );
-  SetElectronElectronHistos( );
-  SetMuonMuonHistos( );
-  SetElectronMuonHistos( );
+    SetElectronHistos( );
+    SetMuonHistos( );
+    SetElectronElectronHistos( );
+    SetMuonMuonHistos( );
+    SetElectronMuonHistos( );
+    
+  } 
+
 }
 
 LeptonSFHelper::~LeptonSFHelper( ){

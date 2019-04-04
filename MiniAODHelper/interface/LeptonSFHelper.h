@@ -14,12 +14,13 @@
 
 #include "DataFormats/PatCandidates/interface/Muon.h"
 #include "DataFormats/PatCandidates/interface/Electron.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 
 class LeptonSFHelper {
 
  public:
-  LeptonSFHelper( );
+  LeptonSFHelper(const edm::ParameterSet& iConfig);
   ~LeptonSFHelper( );
 
   std::map< std::string, float>  GetLeptonSF( const std::vector< pat::Electron >& Electrons,
