@@ -6,10 +6,10 @@ LeptonSFHelper::LeptonSFHelper( const edm::ParameterSet& iConfig){
   //std::cout << "Initializing Lepton scale factors" << std::endl;
   if( iConfig.existsAs<edm::ParameterSet>("leptonTriggerSFInfos",true) ) {
     const edm::ParameterSet leptonTriggerSFInfos = iConfig.getParameter<edm::ParameterSet>("leptonTriggerSFInfos");
-    electron_TRIGGERinputFile = iConfig.getParameter<std::string>("elecFileName");
-    electron_TRIGGERhistname = iConfig.getParameter<std::string>("elecHistName");
-    muon_TRIGGERinputFile = iConfig.getParameter<std::string>("muonFileName");
-    muon_TRIGGERhistname = iConfig.getParameter<std::string>("muonHistName");
+    electron_TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/" + leptonTriggerSFInfos.getParameter<std::string>("elecFileName");
+    electron_TRIGGERhistname = leptonTriggerSFInfos.getParameter<std::string>("elecHistName");
+    muon_TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/" + leptonTriggerSFInfos.getParameter<std::string>("muonFileName");
+    muon_TRIGGERhistname = leptonTriggerSFInfos.getParameter<std::string>("muonHistName");
 
     SetElectronHistos( );
     SetMuonHistos( );
@@ -49,11 +49,11 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   for (auto Electron: Electrons){ //Electron is of type pat::Electron
       
     if(Electron.hasUserFloat("ptBeforeRun2Calibration")) {
-      pt = Electron.userFloat("ptBeforeRun2Calibration");
-      eta = Electron.superCluster()->eta();
-      ElectronTriggerSF = ElectronTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_ele_TRIGGER_abseta_pt_ratio);
-      ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_ele_TRIGGER_abseta_pt_ratio);
-      ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_ele_TRIGGER_abseta_pt_ratio);
+      //pt = Electron.userFloat("ptBeforeRun2Calibration");
+      //eta = Electron.superCluster()->eta();
+      //ElectronTriggerSF = ElectronTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_ele_TRIGGER_abseta_pt_ratio);
+      //ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_ele_TRIGGER_abseta_pt_ratio);
+      //ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_ele_TRIGGER_abseta_pt_ratio);
     }
     
     else {
@@ -110,9 +110,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
 
   //std::cout << ElectronElectronTriggerSF << "  " << MuonMuonTriggerSF << "  " << ElectronMuonTriggerSF << std::endl;
 
-  ScaleFactorMap["ElectronTriggerSF"] = ElectronTriggerSF;
-  ScaleFactorMap["ElectronTriggerSF_Up"] = ElectronTriggerSF_Up;
-  ScaleFactorMap["ElectronTriggerSF_Down"] = ElectronTriggerSF_Down;
+  //ScaleFactorMap["ElectronTriggerSF"] = ElectronTriggerSF;
+  //ScaleFactorMap["ElectronTriggerSF_Up"] = ElectronTriggerSF_Up;
+  //ScaleFactorMap["ElectronTriggerSF_Down"] = ElectronTriggerSF_Down;
 
   ScaleFactorMap["MuonTriggerSF"] = MuonTriggerSF;
   ScaleFactorMap["MuonTriggerSF_Up"] = MuonTriggerSF_Up;
@@ -130,9 +130,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   // ScaleFactorMap["MuonSF_Up"]= MuonTriggerSF_Up;
   // ScaleFactorMap["MuonSF_Down"]= MuonTriggerSF_Down;
 
-  ScaleFactorMap["LeptonTriggerSF"]= ScaleFactorMap["ElectronTriggerSF"] * ScaleFactorMap["MuonTriggerSF"];
-  ScaleFactorMap["LeptonTriggerSF_Up"]= ScaleFactorMap["ElectronTriggerSF_Up"] * ScaleFactorMap["MuonTriggerSF_Up"];
-  ScaleFactorMap["LeptonTriggerSF_Down"]= ScaleFactorMap["ElectronTriggerSF_Down"] * ScaleFactorMap["MuonTriggerSF_Down"];
+  //ScaleFactorMap["LeptonTriggerSF"]= ScaleFactorMap["ElectronTriggerSF"] * ScaleFactorMap["MuonTriggerSF"];
+  //ScaleFactorMap["LeptonTriggerSF_Up"]= ScaleFactorMap["ElectronTriggerSF_Up"] * ScaleFactorMap["MuonTriggerSF_Up"];
+  //ScaleFactorMap["LeptonTriggerSF_Down"]= ScaleFactorMap["ElectronTriggerSF_Down"] * ScaleFactorMap["MuonTriggerSF_Down"];
 
   return ScaleFactorMap;
 }
@@ -155,10 +155,10 @@ float LeptonSFHelper::GetLeptonTriggerSF(  const double& lepton_pt , const doubl
     auto ymax = h_SFs->GetYaxis()->GetXmax();
     
     // make sure to stay within the range ot the histograms
-    eta = std::max(xmin+0.1,lepton_eta);
-    eta = std::min(xmax-0.1,lepton_eta);
-    pt = std::max(ymin+0.1,lepton_pt);
-    pt = std::min(ymax-0.1,lepton_pt);
+    pt = std::max(xmin+0.1,lepton_pt);
+    pt = std::min(xmax-0.1,pt);
+    eta = std::max(ymin+0.1,lepton_eta);
+    eta = std::min(ymax-0.1,eta);
 
 
     thisBin = h_SFs->FindBin(  pt, eta  );
