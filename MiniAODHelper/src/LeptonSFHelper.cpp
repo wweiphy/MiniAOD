@@ -10,7 +10,8 @@ LeptonSFHelper::LeptonSFHelper( const edm::ParameterSet& iConfig){
     electron_TRIGGERhistname = leptonTriggerSFInfos.getParameter<std::string>("elecHistName");
     muon_TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/" + leptonTriggerSFInfos.getParameter<std::string>("muonFileName");
     muon_TRIGGERhistname = leptonTriggerSFInfos.getParameter<std::string>("muonHistName");
-
+    //HACK: 2016 muon trigger SFs require special treatment, so load dataEra from config
+    dataEra = iConfig.getParameter<std::string>("dataEra");
     SetElectronHistos( );
     SetMuonHistos( );
     SetElectronElectronHistos( );
@@ -49,16 +50,16 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   for (auto Electron: Electrons){ //Electron is of type pat::Electron
       
     if(Electron.hasUserFloat("ptBeforeRun2Calibration")) {
-      //pt = Electron.userFloat("ptBeforeRun2Calibration");
-      //eta = Electron.superCluster()->eta();
-      //ElectronTriggerSF = ElectronTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_ele_TRIGGER_abseta_pt_ratio);
-      //ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_ele_TRIGGER_abseta_pt_ratio);
-      //ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_ele_TRIGGER_abseta_pt_ratio);
+      pt = Electron.userFloat("ptBeforeRun2Calibration");
+      eta = Electron.superCluster()->eta();
+      ElectronTriggerSF = ElectronTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_ele_TRIGGER_abseta_pt_ratio);
+      ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_ele_TRIGGER_abseta_pt_ratio);
+      ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_ele_TRIGGER_abseta_pt_ratio);
     }
     
     else {
-        std::cerr << "ERROR: could not get ElectronTriggerSF because muon lacks property 'ptBeforeRun2Calibration'!" << std::endl;
-        throw std::exception();
+        std::cerr << "ERROR: could not get ElectronTriggerSF because electron lacks property 'ptBeforeRun2Calibration'!" << std::endl;
+        // throw std::exception();
     }
 
 
@@ -69,14 +70,14 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
     if(Muon.hasUserFloat("PtbeforeRC")) {
       pt = Muon.userFloat("PtbeforeRC");
       eta = fabs(Muon.eta());
-      MuonTriggerSF = MuonTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_mu_TRIGGER_abseta_pt);
-      MuonTriggerSF_Up = MuonTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_mu_TRIGGER_abseta_pt);
-      MuonTriggerSF_Down = MuonTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_mu_TRIGGER_abseta_pt);
+      MuonTriggerSF = MuonTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_mu_TRIGGER_abseta_pt, true);
+      MuonTriggerSF_Up = MuonTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_mu_TRIGGER_abseta_pt, true);
+      MuonTriggerSF_Down = MuonTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_mu_TRIGGER_abseta_pt, true);
     }
     
     else {
       std::cerr << "ERROR: could not get MuonTriggerSF because muon lacks property 'PtbeforeRC'!" << std::endl;
-      throw std::exception();
+      // throw std::exception();
         
     }
 
@@ -109,10 +110,9 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   }
 
   //std::cout << ElectronElectronTriggerSF << "  " << MuonMuonTriggerSF << "  " << ElectronMuonTriggerSF << std::endl;
-
-  //ScaleFactorMap["ElectronTriggerSF"] = ElectronTriggerSF;
-  //ScaleFactorMap["ElectronTriggerSF_Up"] = ElectronTriggerSF_Up;
-  //ScaleFactorMap["ElectronTriggerSF_Down"] = ElectronTriggerSF_Down;
+  ScaleFactorMap["ElectronTriggerSF"] = ElectronTriggerSF;
+  ScaleFactorMap["ElectronTriggerSF_Up"] = ElectronTriggerSF_Up;
+  ScaleFactorMap["ElectronTriggerSF_Down"] = ElectronTriggerSF_Down;
 
   ScaleFactorMap["MuonTriggerSF"] = MuonTriggerSF;
   ScaleFactorMap["MuonTriggerSF_Up"] = MuonTriggerSF_Up;
@@ -130,16 +130,20 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
   // ScaleFactorMap["MuonSF_Up"]= MuonTriggerSF_Up;
   // ScaleFactorMap["MuonSF_Down"]= MuonTriggerSF_Down;
 
-  //ScaleFactorMap["LeptonTriggerSF"]= ScaleFactorMap["ElectronTriggerSF"] * ScaleFactorMap["MuonTriggerSF"];
-  //ScaleFactorMap["LeptonTriggerSF_Up"]= ScaleFactorMap["ElectronTriggerSF_Up"] * ScaleFactorMap["MuonTriggerSF_Up"];
-  //ScaleFactorMap["LeptonTriggerSF_Down"]= ScaleFactorMap["ElectronTriggerSF_Down"] * ScaleFactorMap["MuonTriggerSF_Down"];
+  ScaleFactorMap["LeptonTriggerSF"]= ScaleFactorMap["ElectronTriggerSF"] * ScaleFactorMap["MuonTriggerSF"];
+  ScaleFactorMap["LeptonTriggerSF_Up"]= ScaleFactorMap["ElectronTriggerSF_Up"] * ScaleFactorMap["MuonTriggerSF_Up"];
+  ScaleFactorMap["LeptonTriggerSF_Down"]= ScaleFactorMap["ElectronTriggerSF_Down"] * ScaleFactorMap["MuonTriggerSF_Down"];
 
   return ScaleFactorMap;
 }
 
-float LeptonSFHelper::GetLeptonTriggerSF(  const double& lepton_pt , const double& lepton_eta , const int& syst, TH2F* h_SFs){
+/*
+Load trigger SF for leptons depending on the lepton's pt and eta.
+HACK: Muons for 2016 require special treatment, which is why it's necessary to know the lepton type (-> isMuon).
+      Default value is in header file (false).
+*/
+float LeptonSFHelper::GetLeptonTriggerSF(  const double& lepton_pt , const double& lepton_eta , const int& syst, TH2F* h_SFs, const bool& isMuon) const{
   if ( lepton_pt == 0.0 ){ return 1.0; }
-
   int thisBin=0;
   float nomval = 0;
   float error = 0;
@@ -164,6 +168,10 @@ float LeptonSFHelper::GetLeptonTriggerSF(  const double& lepton_pt , const doubl
     thisBin = h_SFs->FindBin(  pt, eta  );
     nomval=h_SFs->GetBinContent( thisBin );
     error=h_SFs->GetBinError( thisBin );
+    //HACK: Muon trigger SFs for IsoMu24 in 2016 require additional 0.5% systematic uncertainty
+    if(isMuon and dataEra == "2016"){
+      error = TMath::Sqrt(TMath::Power(error,2) + TMath::Power(0.005,2));
+    }
     upval=( nomval+error );
     downval=( nomval-error );
   }
@@ -232,8 +240,9 @@ float LeptonSFHelper::GetElectronMuonSF(  float electronEta , float muonEta , in
 
 void LeptonSFHelper::SetElectronHistos( ){
 
-  
+  std::cout << "loading electron histo from " << electron_TRIGGERinputFile.c_str() << std::endl; 
   f_electron_TRIGGERSF = new TFile(electron_TRIGGERinputFile.c_str(),"READ");
+
   
   h_ele_TRIGGER_abseta_pt_ratio = (TH2F*)f_electron_TRIGGERSF->Get(electron_TRIGGERhistname.c_str());
 
@@ -241,6 +250,7 @@ void LeptonSFHelper::SetElectronHistos( ){
 
 void LeptonSFHelper::SetMuonHistos( ){
   
+  std::cout << "loading muon histo from " << muon_TRIGGERinputFile.c_str() << std::endl;
   f_muon_TRIGGERSF = new TFile(muon_TRIGGERinputFile.c_str(),"READ");
   
   h_mu_TRIGGER_abseta_pt= (TH2F*)f_muon_TRIGGERSF->Get(muon_TRIGGERhistname.c_str());  

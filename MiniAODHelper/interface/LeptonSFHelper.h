@@ -26,7 +26,7 @@ class LeptonSFHelper {
   std::map< std::string, float>  GetLeptonSF( const std::vector< pat::Electron >& Electrons,
 					      const std::vector< pat::Muon >& Muons);
 
-  float GetLeptonTriggerSF(  const double& lepton_pt , const double& lepton_eta , const int& syst, TH2F* h_SFs);
+  float GetLeptonTriggerSF(  const double& lepton_pt , const double& lepton_eta , const int& syst, TH2F* h_SFs, const bool& isMuon = false) const;
   float GetElectronElectronSF( float electronEta1, float electronEta2, int syst , std::string type);
   float GetMuonMuonSF( float muonEta1, float muonEta2, int syst , std::string type);
   float GetElectronMuonSF( float electronEta, float muonEta, int syst , std::string type);
@@ -57,6 +57,7 @@ class LeptonSFHelper {
 
   std::string electron_TRIGGERinputFile;
   std::string electron_TRIGGERhistname;
+  std::string dataEra;
 
 };
 
