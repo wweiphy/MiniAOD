@@ -285,9 +285,9 @@ class MiniAODHelper{
   analysisType::analysisType analysis;
   string samplename;
 
-  static constexpr float CSVLwp = 0.1522;
-  static constexpr float CSVMwp = 0.4941;
-  static constexpr float CSVTwp = 0.8001;
+  static constexpr float CSVLwp = 0.0521;
+  static constexpr float CSVMwp = 0.3033;
+  static constexpr float CSVTwp = 0.7489;
 
   double useRho;
   const std::vector<pat::PackedCandidate> * allcands_;
