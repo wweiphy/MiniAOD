@@ -299,8 +299,8 @@ CSVHelper::getCSVWeightsDiff(const std::vector<double>& jetPts,
   double csvWgthf = 1.;
   double csvWgtC = 1.;
   double csvWgtlf = 1.;
-  std::vector<double> w(nHFptBins_,1);
-
+  std::vector<double> w_HF(nHFptBins_,1);
+  std::vector<std::vector<double>> w_LF(nLFptBins_, std::vector<double>(nLFetaBins_,1));
 
   // loop over all jets in the event and calculate the final weight by multiplying the single jet scale factors
   for (size_t iJet = 0; iJet < jetPts.size(); iJet++) {
@@ -364,7 +364,7 @@ CSVHelper::getCSVWeightsDiff(const std::vector<double>& jetPts,
       if(h_csv_wgt_hf.at(iSys).at(iPt)) {
         const int useCSVBin = (csv >= 0.) ? h_csv_wgt_hf.at(iSys).at(iPt)->FindBin(csv) : 1;
         const double iCSVWgtHF = h_csv_wgt_hf.at(iSys).at(iPt)->GetBinContent(useCSVBin);
-        w.at(iPt) *= iCSVWgtHF;
+        w_HF.at(iPt) *= iCSVWgtHF;
         if (iCSVWgtHF != 0) csvWgthf *= iCSVWgtHF;
       }
     } // c flavour jet
@@ -379,7 +379,7 @@ CSVHelper::getCSVWeightsDiff(const std::vector<double>& jetPts,
       if(c_csv_wgt_hf.at(iSys).at(iPt)) {
         const int useCSVBin = (csv >= 0.) ? c_csv_wgt_hf.at(iSys).at(iPt)->FindBin(csv) : 1;
         const double iCSVWgtC = c_csv_wgt_hf.at(iSys).at(iPt)->GetBinContent(useCSVBin);
-        w.at(iPt) *= iCSVWgtC;
+        w_HF.at(iPt) *= iCSVWgtC;
         if (iCSVWgtC != 0) csvWgtC *= iCSVWgtC;
       }
     } // light flavour jet
@@ -393,7 +393,7 @@ CSVHelper::getCSVWeightsDiff(const std::vector<double>& jetPts,
       if(h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)) {
         const int useCSVBin = (csv >= 0.) ? h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)->FindBin(csv) : 1;
         const double iCSVWgtLF = h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)->GetBinContent(useCSVBin);
-        w.at(iPt) *= iCSVWgtLF;
+        w_LF[iPt][iEta] *= iCSVWgtLF;
         if (iCSVWgtLF != 0) csvWgtlf *= iCSVWgtLF;
       }
     }
@@ -411,19 +411,32 @@ CSVHelper::getCSVWeightsDiff(const std::vector<double>& jetPts,
   basename.ReplaceAll("down","");
 
   for(int i=0; i < nHFptBins_; i++){
-    TString name = basename+"_Pt"+std::to_string(i);
+    TString name = "HF_"+basename+"_Pt"+std::to_string(i);
     if(isUp){
       name +="up";
     }
     else {
       name +="down";
     } 
-    weights[name.Data()] = w.at(i);
-    // std::cout << w.at(i) << std::endl;
+    weights[name.Data()] = w_HF.at(i);
   }
-  // std::cout << "#########" << std::endl;
-  // std::cout << csvWgtTotal << std::endl;
 
+  for (int i = 0; i < nLFptBins_; i++)
+  {
+    for (int j = 0; j < nLFetaBins_; j++)
+    {
+      TString name = "LF_" + basename + "_Pt" + std::to_string(i)+"_Eta"+std::to_string(j);
+      if (isUp)
+      {
+        name += "up";
+      }
+      else
+      {
+        name += "down";
+      }
+      weights[name.Data()] = w_LF[i][j];
+    }
+  }
   return weights;
 }
 
