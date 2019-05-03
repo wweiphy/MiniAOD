@@ -52,17 +52,14 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
     if(Electron.hasUserFloat("ptBeforeRun2Calibration")) {
       pt = Electron.userFloat("ptBeforeRun2Calibration");
       eta = Electron.superCluster()->eta();
-      ElectronTriggerSF = ElectronTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_ele_TRIGGER_abseta_pt_ratio);
-      ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_ele_TRIGGER_abseta_pt_ratio);
-      ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_ele_TRIGGER_abseta_pt_ratio);
     }
-    
     else {
-        std::cerr << "ERROR: could not get ElectronTriggerSF because electron lacks property 'ptBeforeRun2Calibration'!" << std::endl;
-        // throw std::exception();
+      pt = Electron.pt();
+      eta = Electron.superCluster()->eta();
     }
-
-
+    ElectronTriggerSF = ElectronTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_ele_TRIGGER_abseta_pt_ratio);
+    ElectronTriggerSF_Up = ElectronTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_ele_TRIGGER_abseta_pt_ratio);
+    ElectronTriggerSF_Down = ElectronTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_ele_TRIGGER_abseta_pt_ratio);
   }
   
   for (auto Muon: Muons){ //Muon is of type pat::Muon
@@ -70,16 +67,14 @@ std::map< std::string, float >  LeptonSFHelper::GetLeptonSF( const std::vector< 
     if(Muon.hasUserFloat("PtbeforeRC")) {
       pt = Muon.userFloat("PtbeforeRC");
       eta = fabs(Muon.eta());
-      MuonTriggerSF = MuonTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_mu_TRIGGER_abseta_pt, true);
-      MuonTriggerSF_Up = MuonTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_mu_TRIGGER_abseta_pt, true);
-      MuonTriggerSF_Down = MuonTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_mu_TRIGGER_abseta_pt, true);
     }
-    
     else {
-      std::cerr << "ERROR: could not get MuonTriggerSF because muon lacks property 'PtbeforeRC'!" << std::endl;
-      // throw std::exception();
-        
+      pt = Muon.pt();
+      eta = fabs(Muon.eta());
     }
+    MuonTriggerSF = MuonTriggerSF * GetLeptonTriggerSF(pt, eta, 0, h_mu_TRIGGER_abseta_pt, true);
+    MuonTriggerSF_Up = MuonTriggerSF_Up  * GetLeptonTriggerSF(pt, eta, 1, h_mu_TRIGGER_abseta_pt, true);
+    MuonTriggerSF_Down = MuonTriggerSF_Down * GetLeptonTriggerSF(pt, eta, -1, h_mu_TRIGGER_abseta_pt, true);
 
   }
 
