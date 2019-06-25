@@ -1356,7 +1356,8 @@ MiniAODHelper::isGoodJet(const pat::Jet& iJet, const float iMinPt, const float i
     {
         tight = ( iJet.neutralEmEnergyFraction()>0.02 &&
              iJet.neutralEmEnergyFraction()<0.99 &&
-             (iJet.neutralMultiplicity()+iJet.chargedMultiplicity())>2 );
+             //(iJet.neutralMultiplicity()+iJet.chargedMultiplicity())>2 );
+             iJet.neutralMultiplicity()>2 );
     }
     if ( fabs(iJet.eta())>3.0 )
     {
