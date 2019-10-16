@@ -12,6 +12,7 @@ std::map<Systematics::Type,std::string> Systematics::typeLabelMap_  = std::map<S
 void Systematics::init() {
   add( JESup,JESdown,"JES","Uncertainty");
   add( JERup,JERdown,"JER","JER");
+  add( JESHEMup,                 JESHEMdown,                 "JESHEM",                   "HEM"                 );             
   add( JESAbsoluteStatup,        JESAbsoluteStatdown,        "JESAbsoluteStat",          "AbsoluteStat"        );             
   add( JESAbsoluteScaleup,       JESAbsoluteScaledown,       "JESAbsoluteScale",         "AbsoluteScale"       );             
   add( JESAbsoluteFlavMapup,     JESAbsoluteFlavMapdown,     "JESAbsoluteFlavMap",       "AbsoluteFlavMap"     );                             

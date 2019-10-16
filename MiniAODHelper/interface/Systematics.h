@@ -12,7 +12,11 @@ public:
     // total JEC uncertainties
     JESup,			
     JESdown,			
-
+    
+    // additional JES source for 2018 HEM issue
+    JESHEMup,
+    JESHEMdown,
+    
     // individual JEC uncertainties up
     JESAbsoluteStatup,
     JESAbsoluteScaleup,
