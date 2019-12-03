@@ -11,12 +11,45 @@ public:
 
     // total JEC uncertainties
     JESup,			
-    JESdown,			
-    
+    JESdown,	
+
+    // JES grouping by JETMET recommendation: https://docs.google.com/spreadsheets/d/1Feuj1n0MdotcPq19Mht7SUIgvkXkA4hiB0BxEuBShLw/edit#gid=1345121349
+    JESAbsoluteup,
+    JESAbsolutedown,
+
+    JESAbsoluteyearup,    
+    JESAbsoluteyeardown,
+
+    // JESFlavorQCDup,
+    // JESFlavorQCDdown,
+
+    JESBBEC1up,
+    JESBBEC1down,
+
+    JESBBEC1yearup,
+    JESBBEC1yeardown,
+
+    JESEC2up,
+    JESEC2down,
+
+    JESEC2yearup,
+    JESEC2yeardown,
+
+    JESHFup,
+    JESHFdown,
+
+    JESHFyearup,
+    JESHFyeardown,
+
+    // JESRelativeBalup,
+    // JESRelativeBaldown,
+
+    JESRelativeSampleyearup,
+    JESRelativeSampleyeardown,
+
     // additional JES source for 2018 HEM issue
     JESHEMup,
     JESHEMdown,
-    
     // individual JEC uncertainties up
     JESAbsoluteStatup,
     JESAbsoluteScaleup,
@@ -35,7 +68,7 @@ public:
     JESRelativePtEC2up,
     JESRelativePtHFup,
     JESRelativeBalup,
-    JESRelativeSampleup, 
+    JESRelativeSampleup,
     JESRelativeFSRup,
     JESRelativeStatFSRup,
     JESRelativeStatECup,

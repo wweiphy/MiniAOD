@@ -12,7 +12,20 @@ std::map<Systematics::Type,std::string> Systematics::typeLabelMap_  = std::map<S
 void Systematics::init() {
   add( JESup,JESdown,"JES","Uncertainty");
   add( JERup,JERdown,"JER","JER");
-  add( JESHEMup,                 JESHEMdown,                 "JESHEM",                   "HEM"                 );             
+  add( JESHEMup,                 JESHEMdown,                 "JESHEM",                   "HEM"                 );    
+
+  add(JESAbsoluteup,             JESAbsolutedown,            "JESAbsolute",              "Absoluteup"          );
+  add(JESAbsoluteyearup,         JESAbsoluteyeardown,        "JESAbsoluteyear",          "Absoluteyear"       );
+  // add(JESFlavorQCDup,            JESFlavorQCDdown,           "JESFlavorQCD",             "FlavorQCD"           );
+  add(JESBBEC1up,                JESBBEC1down,               "JESBBEC1",                 "BBEC1"               );
+  add(JESBBEC1yearup,            JESBBEC1yeardown,           "JESBBEC1year",             "BBEC1year"           );
+  add(JESEC2up,                  JESEC2down,                 "JESEC2up",                 "EC2"                 );
+  add(JESEC2yearup,              JESEC2yeardown,             "JESEC2year",               "EC2year"             );
+  add(JESHFup,                   JESHFdown,                  "JESHF",                    "HF"                  );
+  add(JESHFyearup,               JESHFyeardown,              "JESHFyear",                "HFyear"              );
+  // add(JESRelativeBalup,          JESRelativeBaldown,         "JESRelativeBal",           "RelativeBal"         );
+  add(JESRelativeSampleyearup,   JESRelativeSampleyeardown, "JESRelativeSampleyear",     "RelativeSampleyear" );
+
   add( JESAbsoluteStatup,        JESAbsoluteStatdown,        "JESAbsoluteStat",          "AbsoluteStat"        );             
   add( JESAbsoluteScaleup,       JESAbsoluteScaledown,       "JESAbsoluteScale",         "AbsoluteScale"       );             
   add( JESAbsoluteFlavMapup,     JESAbsoluteFlavMapdown,     "JESAbsoluteFlavMap",       "AbsoluteFlavMap"     );                             
