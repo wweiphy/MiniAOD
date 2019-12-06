@@ -168,6 +168,17 @@ public:
     JERup,			
     JERdown,
 
+    JERpt0eta0up,
+    JERpt0eta0down,
+    JERpt0eta1up,
+    JERpt0eta1down,
+    JERpt1eta0up,
+    JERpt1eta0down,
+    JERpt1eta1up,
+    JERpt1eta1down,
+    JEReta2up,
+    JEReta2down,
+
     hfSFup,
     hfSFdown,
     lfSFdown,
