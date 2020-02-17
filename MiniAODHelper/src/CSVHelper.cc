@@ -487,7 +487,7 @@ float CSVHelper::GetWP(std::string dataEra, const CSVwp iCSVworkingPoint, std::s
                     return 0.3093;
                 } break;
                 case CSVwp::Tight: {
-                    return 7221;
+                    return 0.7221;
                 } break;
                 case CSVwp::None: return 0;
             }
