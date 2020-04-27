@@ -202,7 +202,11 @@ public:
     CSVCErr1up,
     CSVCErr1down,
     CSVCErr2up,
-    CSVCErr2down 
+    CSVCErr2down,
+    
+    // Unclustered energy (for MET)
+    METUnclEnup,
+    METUnclEndown
   };
 
   // convert between string and int representation
