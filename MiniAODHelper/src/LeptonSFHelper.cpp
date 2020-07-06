@@ -3,7 +3,7 @@
 //PUBLIC
 LeptonSFHelper::LeptonSFHelper( const edm::ParameterSet& iConfig){
 
-  //std::cout << "Initializing Lepton scale factors" << std::endl;
+  std::cout << "Initializing Lepton scale factors" << std::endl;
   if( iConfig.existsAs<edm::ParameterSet>("leptonTriggerSFInfos",true) ) {
     const edm::ParameterSet leptonTriggerSFInfos = iConfig.getParameter<edm::ParameterSet>("leptonTriggerSFInfos");
     electron_TRIGGERinputFile = std::string(getenv("CMSSW_BASE")) + "/src/" + leptonTriggerSFInfos.getParameter<std::string>("elecFileName");
@@ -18,7 +18,10 @@ LeptonSFHelper::LeptonSFHelper( const edm::ParameterSet& iConfig){
     SetMuonMuonHistos( );
     SetElectronMuonHistos( );
     
-  } 
+  }
+  else {
+  std::cout << "iConfig dies not exist as leptonTriggerSFInfos parameter set" << std::endl;
+  }
 
 }
 
