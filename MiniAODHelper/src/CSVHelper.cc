@@ -101,12 +101,12 @@ CSVHelper::fillCSVHistos(TFile *fileHF, TFile *fileLF, const std::vector<Systema
         // only read the histogram if it exits in the root file
         if(fileHF->GetListOfKeys()->Contains(name)) {
             h_csv_wgt_hf.at(iSys).at(iPt) = readHistogram(fileHF,name);
-            std::cout <<"for "<<systematic_original<< " added " <<  h_csv_wgt_hf.at(iSys).at(iPt)->GetName() << " from HF file" << std::endl;
+            //std::cout <<"for "<<systematic_original<< " added " <<  h_csv_wgt_hf.at(iSys).at(iPt)->GetName() << " from HF file" << std::endl;
         }
         else {
-            std::cout << "WARNING: didn't find Histogram " << name << " in HF File, using nominal instead" << std::endl;     
+            //std::cout << "WARNING: didn't find Histogram " << name << " in HF File, using nominal instead" << std::endl;     
             h_csv_wgt_hf.at(iSys).at(iPt) = readHistogram(fileHF,name.ReplaceAll(systematic,""));
-            std::cout <<"for "<<systematic_original<< " added " <<  h_csv_wgt_hf.at(iSys).at(iPt)->GetName() << " from HF file" << std::endl;
+            //std::cout <<"for "<<systematic_original<< " added " <<  h_csv_wgt_hf.at(iSys).at(iPt)->GetName() << " from HF file" << std::endl;
         }
     }
     // c flavor
@@ -114,12 +114,12 @@ CSVHelper::fillCSVHistos(TFile *fileHF, TFile *fileLF, const std::vector<Systema
         TString name = Form("c_csv_ratio_Pt%i_Eta0_%s", iPt, (syst_csv_suffix+systematic).Data());
         if(fileHF->GetListOfKeys()->Contains(name)) {
             c_csv_wgt_hf.at(iSys).at(iPt) = readHistogram(fileHF,name);
-            std::cout <<"for "<<systematic_original<< " added " << c_csv_wgt_hf.at(iSys).at(iPt)->GetName() << " from CF(HF) file" << std::endl;
+            //std::cout <<"for "<<systematic_original<< " added " << c_csv_wgt_hf.at(iSys).at(iPt)->GetName() << " from CF(HF) file" << std::endl;
         }
         else {
-            std::cout << "WARNING: didn't find Histogram " << name << " in CF(HF) File, using nominal instead" << std::endl;     
+            //std::cout << "WARNING: didn't find Histogram " << name << " in CF(HF) File, using nominal instead" << std::endl;     
             c_csv_wgt_hf.at(iSys).at(iPt) = readHistogram(fileHF,name.ReplaceAll(systematic,""));
-            std::cout <<"for "<<systematic_original<< " added " << c_csv_wgt_hf.at(iSys).at(iPt)->GetName() << " from CF(HF) file" << std::endl;
+            //std::cout <<"for "<<systematic_original<< " added " << c_csv_wgt_hf.at(iSys).at(iPt)->GetName() << " from CF(HF) file" << std::endl;
         }
     }
     // light flavor
@@ -128,12 +128,12 @@ CSVHelper::fillCSVHistos(TFile *fileHF, TFile *fileLF, const std::vector<Systema
             TString name = Form("csv_ratio_Pt%i_Eta%i_%s", iPt, iEta, (syst_csv_suffix+systematic).Data());
             if(fileLF->GetListOfKeys()->Contains(name)) {
                 h_csv_wgt_lf.at(iSys).at(iPt).at(iEta) = readHistogram(fileLF,name);
-                std::cout <<"for "<<systematic_original<< " added " << h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)->GetName() << " from LF file" << std::endl;
+                //std::cout <<"for "<<systematic_original<< " added " << h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)->GetName() << " from LF file" << std::endl;
             }
             else {
-                std::cout << "WARNING: didn't find Histogram " << name << " in LF File, using nominal instead" << std::endl;     
+                //std::cout << "WARNING: didn't find Histogram " << name << " in LF File, using nominal instead" << std::endl;     
                 h_csv_wgt_lf.at(iSys).at(iPt).at(iEta) = readHistogram(fileLF,name.ReplaceAll(systematic,""));
-                std::cout <<"for "<<systematic_original<< " added " << h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)->GetName() << " from LF file" << std::endl;
+                //std::cout <<"for "<<systematic_original<< " added " << h_csv_wgt_lf.at(iSys).at(iPt).at(iEta)->GetName() << " from LF file" << std::endl;
             }
         }
     }
