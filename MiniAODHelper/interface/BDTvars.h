@@ -49,7 +49,7 @@
 #include "DataFormats/PatCandidates/interface/Particle.h"
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
 #include "PhysicsTools/SelectorUtils/interface/strbitset.h"
-#include "RecoEgamma/EgammaTools/interface/ConversionTools.h"
+#include "CommonTools/Egamma/interface/ConversionTools.h"
 
 #include "DataFormats/Math/interface/LorentzVector.h"
 
