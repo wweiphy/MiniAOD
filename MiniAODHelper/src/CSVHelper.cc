@@ -459,7 +459,7 @@ float CSVHelper::GetJetCSV(const pat::Jet& jet, const std::string taggername){
       bTagVal = defaultFailure;
   }
 
-  if(isnan(bTagVal)) return defaultFailure;
+  if(std::isnan(bTagVal)) return defaultFailure;
 
   if(bTagVal > 1.) return 1.;
   if(bTagVal < 0.) return defaultFailure;
