@@ -177,8 +177,10 @@ MiniAODHelper::~MiniAODHelper(){
 void MiniAODHelper::SetJER_SF_Tool(const edm::EventSetup& iSetup){
 
   // Accessing from Global Tag
-  JER_ak4_resolution = JME::JetResolution::get(iSetup, "AK4PFchs_pt");
-  JER_ak4_resolutionSF = JME::JetResolutionScaleFactor::get(iSetup, "AK4PFchs");
+  m_resolutions_token = esConsumes(edm::ESInputTag("", "AK4PFchs_pt"));
+  m_scale_factors_token = esConsumes(edm::ESInputTag("", "AK4PFchs"));
+  JER_ak4_resolution = JME::JetResolution::get(iSetup, m_resolutions_token);
+  JER_ak4_resolutionSF = JME::JetResolutionScaleFactor::get(iSetup, m_scale_factors_token);
 
 }
 
