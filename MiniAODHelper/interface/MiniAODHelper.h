@@ -375,6 +375,8 @@ class MiniAODHelper{
 
   JME::JetResolution            JER_ak4_resolution ;
   JME::JetResolutionScaleFactor JER_ak4_resolutionSF ;
+  JME::JetResolution::Token m_resolutions_token;	
+  JME::JetResolutionScaleFactor::Token m_scale_factors_token;
   TRandom3 JERRandumGenerator ;
 
 }; // End of class prototype
