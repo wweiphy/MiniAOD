@@ -68,6 +68,7 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "MiniAOD/MiniAODHelper/interface/PUWeightProducer.h"
 
