@@ -51,6 +51,7 @@
 #include "DataFormats/PatCandidates/interface/Particle.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include "FWCore/Framework/interface/ConsumesCollector.h"
 #include "MiniAOD/BoostedObjects/interface/BoostedJet.h"
 
 #include "PhysicsTools/SelectorUtils/interface/JetIDSelectionFunctor.h"
